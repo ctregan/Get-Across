@@ -5,15 +5,33 @@ using System.Collections;
 using PlayerIO.GameLibrary;
 using System.Drawing;
 
-namespace MyGame {
+namespace GetAcross {
+    //Player class. Each player that joins the game will have these attributes
 	public class Player : BasePlayer {
 		public string Name;
+        public int level;
+        public int AP;
+        public int positionX;
+        public int positionY;
+        public string characterClass;
 	}
+    
+    //Tile class. Each tile will have these attributes
+    public class Tile
+    {
+        public int cost;
+        public String type;
+    }
 
-	[RoomType("MyCode")]
+	[RoomType("GetAcross")]
 	public class GameCode : Game<Player> {
+        private Player[] players;
+        private Tile[,] field;
 		// This method is called when an instance of your the game is created
 		public override void GameStarted() {
+            players = new Player[1];
+            field = new Tile[5,5];
+
 			// anything you write to the Console will show up in the 
 			// output window of the development server
 			Console.WriteLine("Game is started: " + RoomId);
@@ -43,10 +61,22 @@ namespace MyGame {
 		// This method is called whenever a player joins the game
 		public override void UserJoined(Player player) {
 			// this is how you send a player a message
-			player.Send("hello");
 
-			// this is how you broadcast a message to all players connected to the game
-			Broadcast("UserJoined", player.Id);
+            if (players[0] == null)
+            {
+                player.Send("init", 0, player.ConnectUserId);
+                players[0] = player;
+                player.AP = 20;
+                player.positionX = 0;
+                player.positionY = 4;
+                player.characterClass = "Novice";
+                // this is how you broadcast a message to all players connected to the game
+                Broadcast("UserJoined", player.Id);
+            }
+            else
+            {
+                player.Send("full");
+            }
 		}
 
 		// This method is called when a player leaves the game
@@ -59,9 +89,36 @@ namespace MyGame {
 			switch(message.Type) {
 				// This is how you would set a players name when they send in their name in a 
 				// "MyNameIs" message
-				case "MyNameIs":
-					player.Name = message.GetString(0);
-					break;
+
+                case "MyNameIs":
+                    {
+                        player.Name = message.GetString(0);
+                        break;
+                    }
+                case "move":
+                    {
+                        int messageX = message.GetInt(0);
+                        int messageY = message.GetInt(1);
+                        int xDistance = Math.Abs(messageX - player.positionX);
+                        int yDistance = Math.Abs(messageY - player.positionY);
+                        if ((xDistance > 1 || yDistance > 1) || (xDistance == 0 && yDistance == 0))
+                        {
+                            player.Send("invalidMove");
+                            break;
+                        }
+                        else if (field[messageX, messageY].cost > player.AP)
+                        {
+                            player.Send("insufficientAP");
+                            break;
+                        }
+                        else
+                        {
+                            player.positionX = messageX;
+                            player.positionY = messageY;
+                            player.AP = player.AP - field[messageX, messageY].cost;
+                        }
+                        break;
+                    }
 			}
 		}
 
@@ -102,5 +159,11 @@ namespace MyGame {
 		public void SetDebugPoint(int x, int y) {
 			debugPoint = new Point(x,y);
 		}
+
+        //This private method calculates the movement cost necessary to move from start position to end position
+        private int calculateMoveCost(int startX, int startY, int endX, int endY)
+        {
+            return 0;
+        }
 	}
 }
