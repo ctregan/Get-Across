@@ -17,13 +17,13 @@
       <value>'4/25/2011'</value>
     </define>
     <source-path append="true">
-      <path-element>C:\Documents and Settings\cregan.CORPNET\My Documents\TileTest2\src</path-element>
-      <path-element>C:\Documents and Settings\cregan.CORPNET\My Documents\TileTest2\lib\Flixel</path-element>
-      <path-element>C:\Program Files\FlashDevelop\Library\AS3\classes</path-element>
+      <path-element>C:\Users\Charlie\Desktop\Get Across\Test Code\TileTest2\src</path-element>
+      <path-element>C:\Users\Charlie\Desktop\Get Across\Test Code\TileTest2\lib\Flixel</path-element>
+      <path-element>C:\Program Files (x86)\FlashDevelop\Library\AS3\classes</path-element>
     </source-path>
   </compiler>
   <file-specs>
-    <path-element>C:\Documents and Settings\cregan.CORPNET\My Documents\TileTest2\src\HelloWorld.as</path-element>
+    <path-element>C:\Users\Charlie\Desktop\Get Across\Test Code\TileTest2\src\HelloWorld.as</path-element>
   </file-specs>
   <default-background-color>#FFFFFF</default-background-color>
   <default-frame-rate>30</default-frame-rate>
