@@ -30,63 +30,29 @@ package
 				return;
 			}
 			if (FlxG.keys.justPressed("DOWN")) {
-				/*if (PlayState.myMap.getTile(xPos, yPos + 1) == 4) {
-					errorMessage = "Invalid Move, cant cross water";
-				}else if(yPos >= PlayState.myMap.heightInTiles - 1){
-					errorMessage = "Invalid Move, reached bottom edge";
-				}else {
-					yPos++;
-					AP = AP - findCost();
-					this.y = this.y + 32
-				}*/
 				if (checkMove(xPos, yPos + 1)) {
 					yPos++;
 					AP = AP - findCost(xPos, yPos);
 					this.y = this.y + 32;
 				}
-				//velocity.y += _move_speed * FlxG.elapsed;
-				
 			}else if (FlxG.keys.justPressed("UP")) {
-				/*if(yPos >= 1){
-					yPos--;
-					AP = AP - findCost();
-					this.y = this.y - 32
-				}else {
-					errorMessage = "Invalid Move, reached top edge";
-				}*/
 				if (checkMove(xPos, yPos - 1)) {
 					yPos--;
 					AP = AP - findCost(xPos, yPos);
 					this.y = this.y - 32;
 				}
 			}else if (FlxG.keys.justPressed("RIGHT")) {
-				/*if(xPos < PlayState.myMap.widthInTiles - 1){
-					xPos++;
-					AP = AP - findCost();
-					this.x = this.x + 32
-				}else {
-					errorMessage = "Invalid Move, reached right edge";
-				}*/
 				if (checkMove(xPos+1, yPos)) {
 					xPos++;
 					AP = AP - findCost(xPos, yPos);
 					this.x = this.x + 32;
 				}
-				//velocity.x -= _move_speed * FlxG.elapsed;
 			}else if (FlxG.keys.justPressed("LEFT")) {
-				/*if(xPos >= 1){
-					xPos--;
-					AP = AP - findCost();
-					this.x = this.x - 32
-				}else {
-					errorMessage = "Invalid Move, reached left edge";
-				}*/
 				if (checkMove(xPos - 1, yPos)) {
 					xPos--;
 					AP = AP - findCost(xPos, yPos);
 					this.x = this.x - 32;
 				}
-				//velocity.x += _move_speed * FlxG.elapsed;
 			}
 			
 			super.update();

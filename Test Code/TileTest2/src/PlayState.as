@@ -1,6 +1,7 @@
 package  
 {
 	import org.flixel.*;
+	import org.flixel.data.FlxAnim;
 	import org.flixel.data.FlxMouse;
 	/**
 	 * ...
@@ -19,6 +20,8 @@ package
 		private var location:FlxText;
 		private var mouseLocation:FlxText;
 		private var counter:Number;
+		private var goals:FlxText;
+		private var abilities:FlxText;
 
 		public static var myMap:FlxTilemap;
 		
@@ -33,12 +36,10 @@ package
 			
 			counter = 15; //15 sec/1ap
 			
-			myMouse = FlxG.mouse;
-			FlxG.mouse.show(null, 0, 0);
-			
 			lyrStage = new FlxGroup; //Map exists here
             lyrSprites = new FlxGroup; //Character Sprites exist here
             lyrHUD = new FlxGroup; //HUD elements exist here
+			myMouse = FlxG.mouse;
 			
 			myMap = new FlxTilemap();
 			myMap.drawIndex = 0;
@@ -49,12 +50,18 @@ package
 			myPlayer = new Player(0,0);
 			lyrSprites.add(myPlayer);
 			
-			apInfo = new FlxText(0, (myMap.heightInTiles * 32), 100, "AP:" + myPlayer.AP, true);
-			errorMessage = new FlxText(0, ((myMap.heightInTiles - 1) * 32) + 60, 120, "Errors Appear Here", true);
-			location = new FlxText(150, ((myMap.heightInTiles - 1) * 32) + 40, 100, "(0,0)", true);
-			mouseLocation = new FlxText(150, ((myMap.heightInTiles - 1) * 32) + 60, 200, "(0,0)", true);
-			secCounter = new FlxText(200, ((myMap.heightInTiles - 1) * 32) + 40, 100, "15 Sec until AP", true);
+			apInfo = new FlxText(0, (myMap.height), 100, "AP:" + myPlayer.AP, true);
+			errorMessage = new FlxText(0, myMap.height + 20, 120, "Errors Appear Here", true);
+			location = new FlxText(150, myMap.height, 100, "(0,0)", true);
+			mouseLocation = new FlxText(150, myMap.height + 20, 200, "(0,0)", true);
+			secCounter = new FlxText(200, myMap.height, 100, "15 Sec until AP", true);
 			
+			goals = new FlxText(myMap.width, 0, 100, "Goals:\nReach the Red Star", true); 
+			goals.frameHeight = 75;
+			abilities = new FlxText(myMap.width, 80, 100, "Abilities:", true);
+			
+			lyrHUD.add(abilities);
+			lyrHUD.add(goals);
 			lyrHUD.add(secCounter);
 			lyrHUD.add(location);
 			lyrHUD.add(errorMessage);

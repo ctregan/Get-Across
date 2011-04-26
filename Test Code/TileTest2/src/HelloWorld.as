@@ -1,7 +1,7 @@
 package  
 {
 	import org.flixel.*;
-	[SWF(width="320", height="400", backgroundColor="#000000")] //Set the size and color of the Flash file
+	[SWF(width="450", height="400", backgroundColor="#000000")] //Set the size and color of the Flash file
 
 	/**
 	 * ...
@@ -12,7 +12,7 @@ package
 		
 		public function HelloWorld() 
 		{
-			super(320,400,PlayState,1); //Create a new FlxGame object at 320x240 with 2x pixels, then load PlayState
+			super(450,400,LoginState,1);
 		}
 		
 	}
