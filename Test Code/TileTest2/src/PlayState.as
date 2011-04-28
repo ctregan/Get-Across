@@ -39,10 +39,10 @@ package
 		private var infoBox:InfoBox;
 		
 
-		public function PlayState():void
+		public function PlayState(connection:Connection):void
 		{
 			super();
-			//COnnect to PlayerIO server
+			/*//COnnect to PlayerIO server
 			new Prompt(FlxG.stage, "What's your name?", "Guest-" + (Math.random()*9999<<0), function(name:String){
 				PlayerIO.connect(
 					FlxG.stage,								//Referance to stage
@@ -54,6 +54,45 @@ package
 					handleConnect,						//Function executed on successful connect
 					handleError							//Function executed if we recive an error
 				);   
+			})*/
+			trace("Sucessfully connected to the multiplayer server");
+		
+			
+			infoBox = new InfoBox(resetGame,joinGame);
+			addChild(infoBox)
+			
+			infoBox.Show("waiting");						
+			
+			this.connection = connection;
+			
+			//Connection successful, load board and player
+			connection.addMessageHandler("init", function(m:Message, iAm:int, name:String){
+				imPlayer = iAm;
+				connected = true;
+				connection.send("playerInfo");
+				boardSetup();
+			})
+			//Recieve Info from server about your saved character
+			connection.addMessageHandler("playerInfo", function(m:Message, posX:int, posY:int) {
+				if (myPlayer == null) {
+					myPlayer = new Player(posX, posY);
+					playersArray[imPlayer - 1] = myPlayer;
+					lyrSprites.add(myPlayer);
+				}
+				
+			})
+			//New user has joined, make their character
+			connection.addMessageHandler("UserJoined", function(m:Message, userID:int, posX:int, posY:int) {
+				if(userID != imPlayer){
+					playersArray[userID-1] = (new Player(posX, posY));
+					lyrSprites.add(playersArray[userID-1]);
+				}
+			})
+			//Player has moved and we hear about it
+			connection.addMessageHandler("PlayerMove", function(m:Message, userID:int, posX:int, posY:int) {
+				if(userID != imPlayer){
+					Player(playersArray[userID - 1]).movePlayer(posX, posY);
+				}
 			})
 			
 			
@@ -125,7 +164,8 @@ package
 		private function boardSetup():void 
 		{
 			counter = 15; //15 sec/1ap
-			
+			//Add chat to game
+			var chat:Chat = new Chat(stage, connection);
 			//Different Layers
 			lyrStage = new FlxGroup; //Map exists here
             lyrSprites = new FlxGroup; //Character Sprites exist here
@@ -166,74 +206,10 @@ package
             this.add(lyrHUD);
 		}
 		
-		//**************************************************************
-		//********************PlayIO Functions**************************
-		//**************************************************************
-		
-		private function handleConnect(client:Client):void{
-			trace("Sucessfully connected to player.io");
-			
-			
-			//Set developmentsever (Comment out to connect to your server online)
-			client.multiplayer.developmentServer = "127.0.0.1:8184";
-			
-			//Create lobby
-			lobby = new Lobby(client, "GetAcross", handleJoin, handleError)
-			
-			//Show lobby (parsing true hides the cancel button)
-			lobby.show(true);
-			
-			//gotoAndStop(2); //Tbis is pure Flash, need to change this to AS3 (not sure the equivalent
-		
-			
-		}
-		
-		private function handleJoin(connection:Connection):void{
-			trace("Sucessfully connected to the multiplayer server");
-		
-			
-			infoBox = new InfoBox(resetGame,joinGame);
-			addChild(infoBox)
-			
-			infoBox.Show("waiting");						
-			
-			this.connection = connection;
-
-			//Add chat to game
-			var chat:Chat = new Chat(stage, connection);			
-			//Connection successful, load board and player
-			connection.addMessageHandler("init", function(m:Message, iAm:int, name:String){
-				imPlayer = iAm;
-				connected = true;
-				connection.send("playerInfo");
-				boardSetup();
-			})
-			//Recieve Info from server about your saved character
-			connection.addMessageHandler("playerInfo", function(m:Message, posX:int, posY:int) {
-				if (myPlayer == null) {
-					myPlayer = new Player(posX, posY);
-					playersArray[imPlayer - 1] = myPlayer;
-					lyrSprites.add(myPlayer);
-				}
-				
-			})
-			//New user has joined, make their character
-			connection.addMessageHandler("UserJoined", function(m:Message, userID:int, posX:int, posY:int) {
-				if(userID != imPlayer){
-					playersArray[userID-1] = (new Player(posX, posY));
-					lyrSprites.add(playersArray[userID-1]);
-				}
-			})
-			//Player has moved and we hear about it
-			connection.addMessageHandler("PlayerMove", function(m:Message, userID:int, posX:int, posY:int) {
-				if(userID != imPlayer){
-					Player(playersArray[userID - 1]).movePlayer(posX, posY);
-				}
-			})
-			
-			
-		}
 	
+		//***************************************************
+		//*****************PLAYERIO Functions****************
+		//***************************************************
 		private function resetGame():void{
 			connection.send("reset");
 			infoBox.Show("waiting");
@@ -254,11 +230,7 @@ package
 			trace("Disconnected from server")
 		}
 		
-		private function handleError(error:PlayerIOError):void{
-			trace("Got", error)
-			FlxG.state = new LoginState();
 
-		}
 		
 	}
 
