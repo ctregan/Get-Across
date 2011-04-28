@@ -7,57 +7,32 @@ package
 	 */
 	public class Player extends FlxSprite
 	{
-		[Embed(source = "data/Ship.png")] public var ship_img:Class;
-		public var AP:Number;
+		[Embed(source = "data/character1.png")] public var ship_img:Class;
+		public var AP:Number; //Amount of AP
 		public var errorMessage:String;
-		public var xPos:Number;
-		public var yPos:Number;
+		public var xPos:Number; //X Tile Position
+		public var yPos:Number; //Y Tile Position
 		private var _move_speed:int = 400;
-		public function Player(startX:Number, startY:Number ) 
+		public function Player(startX:Number, startY:Number) 
 		{
 			errorMessage = "";
 			xPos = startX;
 			yPos = startY;
 			AP = 20;
-			super(0, 0, ship_img);
+			super((32 * xPos), (32 * yPos), ship_img);
 		}
-		override public function update():void 
-		{
-			if (AP <= 0 && FlxG.keys.justPressed("A")) {
-				AP += 20;
-			}else if (AP <= 0) {
-				super.update();
-				return;
+		//Public function that can be called to move the position of the player based on a tile change
+		//thus to move one tile to the right send (1,0) as arugments, one to left is (-1,0)
+		public function movePlayer(xChange:Number, yChange:Number):void {
+			if (checkMove(xPos + xChange, yPos + yChange)) {
+				xPos = xPos + xChange;
+				yPos = yPos + yChange;
+				AP = AP - findCost(xPos, yPos);
+				this.x = this.x + (32 * xChange);
+				this.y = this.y + (32 * yChange);
 			}
-			if (FlxG.keys.justPressed("DOWN")) {
-				if (checkMove(xPos, yPos + 1)) {
-					yPos++;
-					AP = AP - findCost(xPos, yPos);
-					this.y = this.y + 32;
-				}
-			}else if (FlxG.keys.justPressed("UP")) {
-				if (checkMove(xPos, yPos - 1)) {
-					yPos--;
-					AP = AP - findCost(xPos, yPos);
-					this.y = this.y - 32;
-				}
-			}else if (FlxG.keys.justPressed("RIGHT")) {
-				if (checkMove(xPos+1, yPos)) {
-					xPos++;
-					AP = AP - findCost(xPos, yPos);
-					this.x = this.x + 32;
-				}
-			}else if (FlxG.keys.justPressed("LEFT")) {
-				if (checkMove(xPos - 1, yPos)) {
-					xPos--;
-					AP = AP - findCost(xPos, yPos);
-					this.x = this.x - 32;
-				}
-			}
-			
-			super.update();
 		}
-		
+		//Find AP Cost of the tile at the given location.
 		private function findCost(proposedX:Number, proposedY:Number):Number {
 			if (PlayState.myMap.getTile(proposedX, proposedY) == 1) {
 				return 3;
@@ -65,6 +40,7 @@ package
 				return 1;
 			}
 		}
+		//Sees if the desired move for the player is valid.
 		private function checkMove(proposedX:Number, proposedY:Number):Boolean {
 			if (PlayState.myMap.getTile(proposedX, proposedY) == 4) {
 				errorMessage = "Invalid Move, cant cross water";

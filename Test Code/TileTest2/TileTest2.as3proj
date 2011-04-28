@@ -15,6 +15,8 @@
   <classpaths>
     <class path="src" />
     <class path="lib\Flixel" />
+    <class path="lib\test" />
+    <class path="lib\sample" />
   </classpaths>
   <!-- Build options -->
   <build>
