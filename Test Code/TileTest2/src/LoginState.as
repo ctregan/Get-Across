@@ -1,74 +1,65 @@
 package  
 {
+	import flash.display.DisplayObject;
 	import flash.text.TextField;
+	import flash.ui.Mouse;
+	import flash.ui.MouseCursor;
+	import org.flixel.data.FlxPanel;
 	import org.flixel.FlxButton;
+	import org.flixel.FlxGroup;
+	import org.flixel.FlxObject;
 	import org.flixel.FlxState;
 	import org.flixel.FlxText;
 	import org.flixel.FlxG;
+	import flash.events.Event
+	import org.flixel.FlxU;
+	import playerio.*;
+	import sample.ui.Login;
+	import flash.text.TextFormatAlign;
+	import sample.ui.components.*;
+	import sample.ui.Registration;
 	/**
 	 * ...
 	 * @author Charlie Regan
 	 */
 	public class LoginState extends FlxState
 	{
-		private var loginButton:FlxButton;
-		
-		
+		private var loginBox:Box;
+		private var mainMenu:Box;
+		private var accountCreateBox:Box;
+		private var loginObj:Login;
+		private var registrationObj:Registration;
+		private var testMouse:Mouse;
+			
 		public function LoginState() 
 		{
+			super();
+			FlxG.mouse.show();
 			
-			FlxG.mouse.show(null, 0, 0);
-		
-			var text1:FlxText = new FlxText(FlxG.width / 6, 30, FlxG.width - 30, "Get Across",true);
-			var text2:FlxText = new FlxText(FlxG.width / 3, 100, FlxG.width - 30, "Login", true);
-			text1.size = 40;
-			text2.size = 30;
-			
-			var text3:FlxText = new FlxText(25, 200, 75, "Username: ", true);
-			text3.size = 10;
-			var userName:TextField = new TextField();
-			userName.x = 100;
-			userName.y = 200;
-			userName.height = 20;
-			userName.textColor = 0xFFFFFF;
-			userName.border = true;
-			userName.borderColor = 0xFFFFFF;
-			userName.multiline = false;
-			userName.type = "input"
-			userName.backgroundColor = 0xFFFFFF;
-			
-			var text4:FlxText = new FlxText(25, 240, 75, "Password: ", true);
-			text4.size = 10;
-			
-			var password:TextField = new TextField();
-			password.x = 100;
-			password.y = 240;
-			password.height = 20;
-			password.textColor = 0xFFFFFF;
-			password.border = true;
-			password.borderColor = 0xFFFFFF;
-			password.multiline = false;
-			password.type = "input"
-			password.backgroundColor = 0xFFFFFF;
-			
-			loginButton = new FlxButton(FlxG.width / 3, FlxG.height - 30, attemptLogin);
-			loginButton.loadText(new FlxText(30, 5, 100, "Log In", true), null);
-		
-			this.add(text1);
-			this.add(text2);
-			this.add(text3);
-			this.addChild(userName);
-			this.add(text4);
-			this.addChild(password);
-			this.add(loginButton);
-			
-			
+			mainMenu = new Box().fill(0xFFFFFF, 0.8, 0)
+			mainMenu.add(new Box().fill(0x00000, .5, 15).margin(10, 10, 10, 10).minSize(300, FlxG.height).add(
+				new Box().fill(0xffffff,1,5).margin(10,10,10,10).minSize(300,0).add(
+						new Rows(
+							new Label("Get Across", 30, TextFormatAlign.CENTER),
+							new TextButton("Login", openLogin),
+							new TextButton("Create Account", openAccountCreate)
+						).spacing(30)
+					)))
+			this.addChildAt(mainMenu, 0)
 		}
-		
-		private function attemptLogin():void 
+		//Create a login box over the main menu
+		private function openLogin():void 
 		{
-			FlxG.state = new PlayState();
+			loginObj = new Login(this);
+			loginObj.Show();
 		}
+		//Creates an account create box over the main menu
+		private function openAccountCreate():void {
+			registrationObj = new Registration(this);
+			registrationObj.Show();
+		}
+		
+		
 		
 	}
 

@@ -26,16 +26,18 @@ namespace GetAcross {
 	[RoomType("GetAcross")]
 	public class GameCode : Game<Player> {
         private Player[] players;
+        private int numPlayers;
         private Tile[,] field;
 		// This method is called when an instance of your the game is created
 		public override void GameStarted() {
-            players = new Player[1];
-            field = new Tile[5,5];
+            players = new Player[2];
+            field = new Tile[10,10];
+            numPlayers = 0;
 
 			// anything you write to the Console will show up in the 
 			// output window of the development server
 			Console.WriteLine("Game is started: " + RoomId);
-
+            /*
 			// This is how you setup a timer
 			AddTimer(delegate {
 				// code here will code every 100th millisecond (ten times a second)
@@ -50,7 +52,7 @@ namespace GetAcross {
 				// This will cause the GenerateDebugImage() method to be called
 				// so you can draw a grapical version of the game state.
 				RefreshDebugView(); 
-			}, 250);
+			}, 250);*/
 		}
 
 		// This method is called when the last player leaves the room, and it's closed down.
@@ -61,17 +63,29 @@ namespace GetAcross {
 		// This method is called whenever a player joins the game
 		public override void UserJoined(Player player) {
 			// this is how you send a player a message
-
-            if (players[0] == null)
+            //Send the player their player Number.
+            if (numPlayers < players.Length)
             {
-                player.Send("init", 0, player.ConnectUserId);
-                players[0] = player;
+                player.Send("init", player.Id, player.ConnectUserId, "Tutorial_1");
+                players[numPlayers] = player;
+                Console.WriteLine("New Player " + player.Id);
                 player.AP = 20;
                 player.positionX = 0;
-                player.positionY = 4;
+                player.positionY = 0;
                 player.characterClass = "Novice";
+                numPlayers++;
                 // this is how you broadcast a message to all players connected to the game
-                Broadcast("UserJoined", player.Id);
+                Broadcast("UserJoined", player.Id, player.positionX, player.positionY);
+                //Update them on who is already in the game
+                foreach (Player x in players)
+                {
+                    
+                    if (x!= null && x != player)
+                    {
+                        Console.WriteLine("Sending Player " + player.Id + " Player " + x.Id + " Position (" + x.positionX + ", " + x.positionY + ")"); //debug
+                        player.Send("UserJoined", x.Id, x.positionX, x.positionY);
+                    }
+                }
             }
             else
             {
@@ -95,13 +109,18 @@ namespace GetAcross {
                         player.Name = message.GetString(0);
                         break;
                     }
+                case "join":
+                    {
+                        joinGame(player);
+                        break;
+                    }
                 case "move":
                     {
                         int messageX = message.GetInt(0);
                         int messageY = message.GetInt(1);
                         int xDistance = Math.Abs(messageX - player.positionX);
                         int yDistance = Math.Abs(messageY - player.positionY);
-                        if ((xDistance > 1 || yDistance > 1) || (xDistance == 0 && yDistance == 0))
+                        /*if ((xDistance > 1 || yDistance > 1) || (xDistance == 0 && yDistance == 0))
                         {
                             player.Send("invalidMove");
                             break;
@@ -112,14 +131,42 @@ namespace GetAcross {
                             break;
                         }
                         else
+                        {*/
+                        player.positionX = player.positionX + messageX;
+                        player.positionY = player.positionY + messageY;
+                        Console.WriteLine("Player " + player.Id + " is moving to (" + player.positionX + ", " + player.positionY + ")"); //debug 
+                        Broadcast("PlayerMove", player.Id, messageX, messageY);
+                            //player.AP = player.AP - field[messageX, messageY].cost;
+                        //}
+                        break;
+                    }
+                case "playerInfo":
+                    {
+                        if (players[player.Id-1] == null)
                         {
-                            player.positionX = messageX;
-                            player.positionY = messageY;
-                            player.AP = player.AP - field[messageX, messageY].cost;
+                            player.Send("noSuchPlayer");
+                        }
+                        else
+                        {
+                            player.Send("playerInfo", players[player.Id - 1].positionX, players[player.Id - 1].positionY);
                         }
                         break;
                     }
+                case "MapTileChanged":
+                    {
+                        int xTile = message.GetInt(0);
+                        int yTile = message.GetInt(1);
+                        int newTileType = message.GetInt(2);
+                        Console.WriteLine("Map Tile Change From Player " + player.Id + " (" + xTile + "," + yTile + ") to type: " + newTileType);
+                        Broadcast("MapTileChanged", player.Id, xTile, yTile, newTileType);
+                        break;
+                    }
 			}
+		}
+
+        private void joinGame(Player user) {
+            
+
 		}
 
 		Point debugPoint;
@@ -160,10 +207,6 @@ namespace GetAcross {
 			debugPoint = new Point(x,y);
 		}
 
-        //This private method calculates the movement cost necessary to move from start position to end position
-        private int calculateMoveCost(int startX, int startY, int endX, int endY)
-        {
-            return 0;
-        }
+
 	}
 }
