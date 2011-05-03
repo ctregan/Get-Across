@@ -111,7 +111,7 @@ package sample.ui{
 		private function createAccount(password:String, username:String, email:String):void 
 		{
 			PlayerIO.quickConnect.simpleRegister(_stage.stage,
-				"getacross-rny1binyakgosozwy0h8wg", 
+				"get-across-ynrpgn4egdtvzlz3wg8w", 
 				username, 
 				password, 
 				email, 
@@ -141,6 +141,14 @@ package sample.ui{
 		//Account Creation Successful
 		private function registrationComplete(client:Client):void {
 			errorMessage.textColor = 0x00FF00
+			//SET DEFAULT PLAYER INFORMATION HERE
+			client.bigDB.loadMyPlayerObject(function(ob:DatabaseObject):void {
+				ob.role = "Novice"
+				ob.level = 1
+				ob.ap = 20
+				ob.xp = 0
+				ob.save()
+			})
 			errorMessage.text = "Registration Successful. You May Now Log In."
 		}
 	}	

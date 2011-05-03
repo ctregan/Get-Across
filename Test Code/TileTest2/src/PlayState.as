@@ -3,6 +3,8 @@ package
 	import org.flixel.*
 	import org.flixel.data.FlxMouse;
 	import playerio.*
+	import sample.ui.Alert;
+	import sample.ui.InGamePrompt;
 	import sample.ui.Prompt
 	import sample.ui.Chat
 	import sample.ui.Lobby
@@ -12,7 +14,7 @@ package
 	 */
 	public class PlayState extends FlxState
 	{
-		[Embed(source = "data/map_data.txt", mimeType = "application/octet-stream")] public var data_map:Class; //Tile Map array
+		//[Embed(source = "data/map_data.txt", mimeType = "application/octet-stream")] public var data_map:Class; //Tile Map array
 		[Embed(source = "data/testTileSet.png")] public var data_tiles:Class; //Tile Set Image
 		[Embed(source = "data/Cursor.png")] public var cursor_img:Class; //Mouse Cursor
 		private var apInfo:FlxText; //Text field to reflect the numner of AP left
@@ -29,48 +31,39 @@ package
 		private var connected:Boolean = false; //Indicates if connection has been established1
 
 		public static var myMap:FlxTilemap; //The tile map where the tileset is drawn
-		private var connection:Connection //connection to server
+		private var connection:Connection; //connection to server
 		public static var lyrStage:FlxGroup;
         public static var lyrSprites:FlxGroup;
         public static var lyrHUD:FlxGroup;
 		
-		private var lobby:Lobby
+		private var lobby:Lobby;
 		private var imPlayer:int;
 		private var infoBox:InfoBox;
+		private var client:Client;
 		
 
-		public function PlayState(connection:Connection):void
+		public function PlayState(connection:Connection, client:Client):void
 		{
 			super();
-			/*//COnnect to PlayerIO server
-			new Prompt(FlxG.stage, "What's your name?", "Guest-" + (Math.random()*9999<<0), function(name:String){
-				PlayerIO.connect(
-					FlxG.stage,								//Referance to stage
-					"getacross-rny1binyakgosozwy0h8wg",			//Game id (Get your own at playerio.com. 1: Create user, 2:Goto admin pannel, 3:Create game, 4: Copy game id inside the "")
-					"public",							//Connection id, default is public
-					name,								//Username
-					"",									//User auth. Can be left blank if authentication is disabled on connection
-					null,								//Current PartnerPay partner.
-					handleConnect,						//Function executed on successful connect
-					handleError							//Function executed if we recive an error
-				);   
-			})*/
 			trace("Sucessfully connected to the multiplayer server");
-		
 			
 			infoBox = new InfoBox(resetGame,joinGame);
-			addChild(infoBox)
+			//addChild(infoBox);
 			
 			infoBox.Show("waiting");						
 			
+			this.client = client;
 			this.connection = connection;
 			
 			//Connection successful, load board and player
-			connection.addMessageHandler("init", function(m:Message, iAm:int, name:String){
+			connection.addMessageHandler("init", function(m:Message, iAm:int, name:String, level:String){
 				imPlayer = iAm;
-				connected = true;
-				connection.send("playerInfo");
-				boardSetup();
+				//boardSetup(level);
+				client.bigDB.load("StaticMaps", level, function(ob:DatabaseObject):void {
+					var values:Array = ob.tileValues; //Recieve Tile Array from database to be turned into string with line breaks between each line
+					boardSetup(values.join("\n"));
+					
+				});
 			})
 			//Recieve Info from server about your saved character
 			connection.addMessageHandler("playerInfo", function(m:Message, posX:int, posY:int) {
@@ -92,6 +85,12 @@ package
 			connection.addMessageHandler("PlayerMove", function(m:Message, userID:int, posX:int, posY:int) {
 				if(userID != imPlayer){
 					Player(playersArray[userID - 1]).movePlayer(posX, posY);
+				}
+			})
+			//A tile has changed and needs to be updated locally
+			connection.addMessageHandler("MapTileChanged", function(m:Message, userID:int, posX:int, posY:int, newTileType:int) {
+				if(userID != imPlayer){
+					myMap.setTile(posX, posY, newTileType, true);
 				}
 			})
 			
@@ -127,14 +126,21 @@ package
 					}else if (FlxG.keys.justPressed("LEFT")) {
 						myPlayer.movePlayer( -1, 0);
 						connection.send("move", -1, 0);
+					}else if (myMouse.justPressed() &&  mouseWithinTileMap()) {
+						//TO DO: ADD ALERT MESSAGE!!!
+						//new InGamePrompt(this, "Are you sure?", function(){ 
+							myMap.setTile(myMouse.x / 32, myMouse.y / 32, 5, true);
+							connection.send("MapTileChanged", (myMouse.x - (myMouse.x % 32)) / 32, (myMouse.y - (myMouse.y % 32)) / 32, 5); //Test Code, will turn any clicked tile into a star
+						//})
 					}
 					apInfo.text = "AP:" + myPlayer.AP;
 					location.text = "(" + myPlayer.xPos + "," + myPlayer.yPos + ")";
 					errorMessage.text = "" + myPlayer.errorMessage;
+					mouseLocation.text = tileInformation(myMap.getTile(myMouse.x / 32, myMouse.y / 32));
 				}else {
-					errorMessage.text = "Loading Player Information";
+					//errorMessage.text = "Loading Player Information";
 				}
-				mouseLocation.text = tileInformation(myMap.getTile(myMouse.x / 32, myMouse.y / 32));
+				
 				super.update();
 			}
 		}
@@ -161,11 +167,11 @@ package
 		}
 		
 		//Add all flixel elements to the board, essentially drawing the game.
-		private function boardSetup():void 
+		private function boardSetup(map_data:String):void 
 		{
 			counter = 15; //15 sec/1ap
 			//Add chat to game
-			var chat:Chat = new Chat(stage, connection);
+			//var chat:Chat = new Chat(FlxG.stage, connection);
 			//Different Layers
 			lyrStage = new FlxGroup; //Map exists here
             lyrSprites = new FlxGroup; //Character Sprites exist here
@@ -175,7 +181,7 @@ package
 			//Tile Map
 			myMap = new FlxTilemap();
 			myMap.drawIndex = 0;
-			myMap.loadMap(new data_map, data_tiles, 32, 32);
+			myMap.loadMap(map_data, data_tiles, 32, 32);
 			myMap.collideIndex = 1;
 			lyrStage.add(myMap);
 			
@@ -204,6 +210,18 @@ package
 			this.add(lyrStage);
             this.add(lyrSprites);
             this.add(lyrHUD);
+			
+			connected = true;
+			connection.send("playerInfo");
+		}
+		
+		//Determines whether the mouse is within the game map board, return true if it is or false if it is outside the board
+		private function mouseWithinTileMap():Boolean
+		{
+			if (myMap.x < myMouse.x && myMouse.x < (myMap.x + myMap.width) && myMap.y < myMouse.y && myMouse.y < (myMap.y + myMap.height)) {
+				return true;
+			}
+			return false;
 		}
 		
 	

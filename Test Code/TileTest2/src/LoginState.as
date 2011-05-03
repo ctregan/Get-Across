@@ -2,11 +2,17 @@ package
 {
 	import flash.display.DisplayObject;
 	import flash.text.TextField;
+	import flash.ui.Mouse;
+	import flash.ui.MouseCursor;
+	import org.flixel.data.FlxPanel;
 	import org.flixel.FlxButton;
+	import org.flixel.FlxGroup;
+	import org.flixel.FlxObject;
 	import org.flixel.FlxState;
 	import org.flixel.FlxText;
 	import org.flixel.FlxG;
 	import flash.events.Event
+	import org.flixel.FlxU;
 	import playerio.*;
 	import sample.ui.Login;
 	import flash.text.TextFormatAlign;
@@ -23,13 +29,12 @@ package
 		private var accountCreateBox:Box;
 		private var loginObj:Login;
 		private var registrationObj:Registration;
+		private var testMouse:Mouse;
 			
 		public function LoginState() 
 		{
 			super();
-			FlxG.mouse.show(null, 0, 0);
-			
-			
+			FlxG.mouse.show();
 			
 			mainMenu = new Box().fill(0xFFFFFF, 0.8, 0)
 			mainMenu.add(new Box().fill(0x00000, .5, 15).margin(10, 10, 10, 10).minSize(300, FlxG.height).add(
@@ -38,12 +43,9 @@ package
 							new Label("Get Across", 30, TextFormatAlign.CENTER),
 							new TextButton("Login", openLogin),
 							new TextButton("Create Account", openAccountCreate)
-						).spacing(10)
+						).spacing(30)
 					)))
-			addChild(mainMenu);
-
-			
-			
+			this.addChildAt(mainMenu, 0)
 		}
 		//Create a login box over the main menu
 		private function openLogin():void 

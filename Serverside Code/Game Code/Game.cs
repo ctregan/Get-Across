@@ -66,7 +66,7 @@ namespace GetAcross {
             //Send the player their player Number.
             if (numPlayers < players.Length)
             {
-                player.Send("init", player.Id, player.ConnectUserId);
+                player.Send("init", player.Id, player.ConnectUserId, "Tutorial_1");
                 players[numPlayers] = player;
                 Console.WriteLine("New Player " + player.Id);
                 player.AP = 20;
@@ -150,6 +150,15 @@ namespace GetAcross {
                         {
                             player.Send("playerInfo", players[player.Id - 1].positionX, players[player.Id - 1].positionY);
                         }
+                        break;
+                    }
+                case "MapTileChanged":
+                    {
+                        int xTile = message.GetInt(0);
+                        int yTile = message.GetInt(1);
+                        int newTileType = message.GetInt(2);
+                        Console.WriteLine("Map Tile Change From Player " + player.Id + " (" + xTile + "," + yTile + ") to type: " + newTileType);
+                        Broadcast("MapTileChanged", player.Id, xTile, yTile, newTileType);
                         break;
                     }
 			}

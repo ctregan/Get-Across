@@ -13,8 +13,7 @@ package
 		
 		public function HelloWorld() 
 		{
-			
-			super(450,400,LoginState,1);
+			super(450, 400, LoginState,1);
 		}
 	}
 
