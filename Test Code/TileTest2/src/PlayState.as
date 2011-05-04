@@ -29,7 +29,11 @@ package
 		private var goals:FlxText; //Simple text field where goals can be written
 		private var abilities:FlxText; //Simple text label for abilities
 		private var connected:Boolean = false; //Indicates if connection has been established1
-
+		private var lvl:FlxText;
+		private var experience:FlxText;
+		private var resources:FlxText;
+		//private var background:Background;
+		
 		public static var myMap:FlxTilemap; //The tile map where the tileset is drawn
 		private var connection:Connection; //connection to server
 		public static var lyrStage:FlxGroup;
@@ -40,6 +44,31 @@ package
 		private var imPlayer:int;
 		private var infoBox:InfoBox;
 		private var client:Client;
+		
+				// constants/offset numbers
+		private var _mapOffsetX:int = 100;
+		private var _mapOffsetY:int = 40;
+		private var _apBoxOffsetX:int = 290;
+		private var _apBoxOffsetY:int = 5;
+		private var _timerOffsetX:int = 330;
+		private var _timerOffsetY:int = 5;
+		private var _positionInfoOffsetX:int = 450;
+		private var _positionInfoOffsetY:int = 330;
+		private var _terrainMessageBoxOffsetX:int = 450;
+		private var _terrainMessageBoxOffsetY:int = 300;
+		private var _errorMessageOffsetX: int = 450;
+		private var _errorMessageOffsetY: int = 370;
+		private var _goalsBoxOffsetX:int = 450;
+		private var _goalsBoxOffsetY:int = 15;
+		private var _cardBoxOffsetX:int = 450;
+		private var _cardBoxOffsetY:int = 100;
+		private var _tileSize:int = 32;
+		private var _lvlTextOffsetX:int = 5;
+		private var _lvlTextOffsetY:int = 5;
+		private var _experienceTextOffsetX:int = 70;
+		private var _experienceTextOffsetY:int = 5;
+		private var _resoruceTextOffsetX:int = 450;
+		private var _resourceTextOffsetY:int = 500;
 		
 
 		public function PlayState(connection:Connection, client:Client):void
@@ -68,7 +97,7 @@ package
 			//Recieve Info from server about your saved character
 			connection.addMessageHandler("playerInfo", function(m:Message, posX:int, posY:int) {
 				if (myPlayer == null) {
-					myPlayer = new Player(posX, posY);
+					myPlayer = new Player(posX, posY, _mapOffsetX, _mapOffsetY, _tileSize);
 					playersArray[imPlayer - 1] = myPlayer;
 					lyrSprites.add(myPlayer);
 				}
@@ -77,20 +106,21 @@ package
 			//New user has joined, make their character
 			connection.addMessageHandler("UserJoined", function(m:Message, userID:int, posX:int, posY:int) {
 				if(userID != imPlayer){
-					playersArray[userID-1] = (new Player(posX, posY));
+					playersArray[userID-1] = (new Player(posX, posY, _mapOffsetX, _mapOffsetY, _tileSize));
 					lyrSprites.add(playersArray[userID-1]);
 				}
 			})
 			//Player has moved and we hear about it
 			connection.addMessageHandler("PlayerMove", function(m:Message, userID:int, posX:int, posY:int) {
 				if(userID != imPlayer){
-					Player(playersArray[userID - 1]).movePlayer(posX, posY);
+					Player(playersArray[userID - 1]).movePlayer(posX, posY, _tileSize);
 				}
 			})
 			//A tile has changed and needs to be updated locally
 			connection.addMessageHandler("MapTileChanged", function(m:Message, userID:int, posX:int, posY:int, newTileType:int) {
-				if(userID != imPlayer){
-					myMap.setTile(posX, posY, newTileType, true);
+				if (userID != imPlayer) {
+					setTileIdentity(posX, posY, newTileType);
+					//myMap.setTile(posX, posY, newTileType, true);
 				}
 			})
 			
@@ -115,16 +145,16 @@ package
 						myPlayer.AP += 20;
 					}
 					if (FlxG.keys.justPressed("DOWN")) {
-						myPlayer.movePlayer(0, 1);
+						myPlayer.movePlayer(0, 1, _tileSize);
 						connection.send("move", 0, 1);
 					}else if (FlxG.keys.justPressed("UP")) {
-						myPlayer.movePlayer(0, -1);
+						myPlayer.movePlayer(0, -1, _tileSize);
 						connection.send("move", 0, -1);
 					}else if (FlxG.keys.justPressed("RIGHT")) {
-						myPlayer.movePlayer(1, 0);
+						myPlayer.movePlayer(1, 0, _tileSize);
 						connection.send("move", 1, 0);
 					}else if (FlxG.keys.justPressed("LEFT")) {
-						myPlayer.movePlayer( -1, 0);
+						myPlayer.movePlayer( -1, 0, _tileSize);
 						connection.send("move", -1, 0);
 					}else if (myMouse.justPressed() &&  mouseWithinTileMap()) {
 						//TO DO: ADD ALERT MESSAGE!!!
@@ -136,7 +166,11 @@ package
 					apInfo.text = "AP:" + myPlayer.AP;
 					location.text = "(" + myPlayer.xPos + "," + myPlayer.yPos + ")";
 					errorMessage.text = "" + myPlayer.errorMessage;
-					mouseLocation.text = tileInformation(myMap.getTile(myMouse.x / 32, myMouse.y / 32));
+					if (mouseWithinTileMap()){
+					mouseLocation.text = tileInformation(getTileIdentity(myMouse.x, myMouse.y));
+					} else {
+						mouseLocation.text = "";
+					}
 				}
 				
 				super.update();
@@ -181,21 +215,32 @@ package
 			myMap.drawIndex = 0;
 			myMap.loadMap(map_data, data_tiles, 32, 32);
 			myMap.collideIndex = 1;
+			myMap.x = _mapOffsetX;
+			myMap.y = _mapOffsetY;			
 			lyrStage.add(myMap);
 			
+			// Top HUD
+			apInfo = new FlxText(_apBoxOffsetX, _apBoxOffsetY, 100, "AP:", true);
+			lvl = new FlxText(_lvlTextOffsetX, _lvlTextOffsetY, 100, "Lvl:1", true);
+			experience = new FlxText(_experienceTextOffsetX, _experienceTextOffsetY, 100, "Exp:0", true);
 			
 			//Bottom HUD
-			apInfo = new FlxText(0, (myMap.height), 100, "AP:", true);
-			errorMessage = new FlxText(0, myMap.height + 20, 120, "Errors Appear Here", true);
-			location = new FlxText(150, myMap.height, 100, "(0,0)", true);
-			mouseLocation = new FlxText(150, myMap.height + 20, 200, "(0,0)", true);
-			secCounter = new FlxText(200, myMap.height, 100, "15 Sec until AP", true);
-			
+
+
+						
 			//Right Side HUD
-			goals = new FlxText(myMap.width, 0, 100, "Goals:\nReach the Red Star", true); 
-			goals.frameHeight = 75;
-			abilities = new FlxText(myMap.width, 80, 100, "Abilities:", true);
-			
+			resources = new FlxText(_resoruceTextOffsetX, _resourceTextOffsetY, 150, "Resources", true);			
+			goals = new FlxText(_goalsBoxOffsetX, _goalsBoxOffsetY, 100, "Goals:\nReach the Red Star", true); 
+			goals.frameHeight = 75;			
+			errorMessage = new FlxText(_errorMessageOffsetX, _errorMessageOffsetY + 20, 120, "Errors Appear Here", true);
+			location = new FlxText(_positionInfoOffsetX, _positionInfoOffsetY, 100, "(0,0)", true);
+			mouseLocation = new FlxText(_terrainMessageBoxOffsetX, _terrainMessageBoxOffsetY, 200, "(0,0)", true);
+			secCounter = new FlxText(_timerOffsetX, _timerOffsetY, 100, "15 Sec until AP", true);			
+			abilities = new FlxText(_cardBoxOffsetX, _cardBoxOffsetY, 100, "Abilities:", true);
+
+			lyrHUD.add(resources);
+			lyrHUD.add(lvl);
+			lyrHUD.add(experience);
 			lyrHUD.add(abilities);
 			lyrHUD.add(goals);
 			lyrHUD.add(secCounter);
@@ -216,10 +261,21 @@ package
 		//Determines whether the mouse is within the game map board, return true if it is or false if it is outside the board
 		private function mouseWithinTileMap():Boolean
 		{
-			if (myMap.x < myMouse.x && myMouse.x < (myMap.x + myMap.width) && myMap.y < myMouse.y && myMouse.y < (myMap.y + myMap.height)) {
+			if (myMap.x < myMouse.x + _mapOffsetX 
+				&& myMouse.x < (myMap.x + myMap.width + _mapOffsetX) 
+				&& myMap.y < myMouse.y +_mapOffsetY
+				&& myMouse.y < (myMap.y + myMap.height + _mapOffsetY)) {
 				return true;
 			}
 			return false;
+		}
+		
+		private function getTileIdentity(x:int,y:int):uint {
+			return myMap.getTile((x - _mapOffsetX) / _tileSize, (y - _mapOffsetY) / _tileSize);
+		}
+		
+		private function setTileIdentity(x:int,y:int,identity:int):void {
+			myMap.setTile((x - _mapOffsetX) / _tileSize, (y - _mapOffsetY) / _tileSize, identity, true);
 		}
 		
 	
