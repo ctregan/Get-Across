@@ -13,23 +13,24 @@ package
 		public var xPos:Number; //X Tile Position
 		public var yPos:Number; //Y Tile Position
 		private var _move_speed:int = 400;
-		public function Player(startX:Number, startY:Number) 
+		public function Player(startX:Number, startY:Number, xStartPos:int, yStartPos:int, tileSize:int) 
 		{
 			errorMessage = "";
 			xPos = startX;
 			yPos = startY;
 			AP = 20;
-			super((32 * xPos), (32 * yPos), ship_img);
+			super(((startX + .25) * tileSize) + xStartPos, ((startY + .25) * tileSize) + yStartPos, ship_img);
 		}
 		//Public function that can be called to move the position of the player based on a tile change
 		//thus to move one tile to the right send (1,0) as arugments, one to left is (-1,0)
-		public function movePlayer(xChange:Number, yChange:Number):void {
+		public function movePlayer(xChange:Number, yChange:Number, tileSize:int):void {
+			trace("x:" + xPos + " y:" + yPos + " change_x:" + xChange + " change_y:" + yChange + " tile_size:" + tileSize);
 			if (checkMove(xPos + xChange, yPos + yChange)) {
 				xPos = xPos + xChange;
 				yPos = yPos + yChange;
 				AP = AP - findCost(xPos, yPos);
-				this.x = this.x + (32 * xChange);
-				this.y = this.y + (32 * yChange);
+				this.x = this.x + (tileSize * xChange);
+				this.y = this.y + (tileSize * yChange);
 			}
 		}
 		//Find AP Cost of the tile at the given location.
