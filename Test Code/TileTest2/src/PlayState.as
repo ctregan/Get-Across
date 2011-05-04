@@ -32,13 +32,14 @@ package
 		private var lvl:FlxText;
 		private var experience:FlxText;
 		private var resources:FlxText;
-		//private var background:Background;
+		private var background:Background;
 		
 		public static var myMap:FlxTilemap; //The tile map where the tileset is drawn
 		private var connection:Connection; //connection to server
 		public static var lyrStage:FlxGroup;
         public static var lyrSprites:FlxGroup;
         public static var lyrHUD:FlxGroup;
+		public static var lyrBackground:FlxGroup;
 		
 		private var lobby:Lobby;
 		private var imPlayer:int;
@@ -208,6 +209,7 @@ package
 			lyrStage = new FlxGroup; //Map exists here
             lyrSprites = new FlxGroup; //Character Sprites exist here
             lyrHUD = new FlxGroup; //HUD elements exist here
+			lyrBackground = new FlxGroup;
 			myMouse = FlxG.mouse;
 			
 			//Tile Map
@@ -238,6 +240,9 @@ package
 			secCounter = new FlxText(_timerOffsetX, _timerOffsetY, 100, "15 Sec until AP", true);			
 			abilities = new FlxText(_cardBoxOffsetX, _cardBoxOffsetY, 100, "Abilities:", true);
 
+			// background
+			background = new Background();
+			
 			lyrHUD.add(resources);
 			lyrHUD.add(lvl);
 			lyrHUD.add(experience);
@@ -248,8 +253,9 @@ package
 			lyrHUD.add(errorMessage);
 			lyrHUD.add(apInfo);
 			lyrHUD.add(mouseLocation);
+			lyrBackground.add(background);
 		
-			
+			this.add(lyrBackground);
 			this.add(lyrStage);
             this.add(lyrSprites);
             this.add(lyrHUD);
