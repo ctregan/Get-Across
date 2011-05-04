@@ -129,16 +129,14 @@ package
 					}else if (myMouse.justPressed() &&  mouseWithinTileMap()) {
 						//TO DO: ADD ALERT MESSAGE!!!
 						//new InGamePrompt(this, "Are you sure?", function(){ 
-							myMap.setTile(myMouse.x / 32, myMouse.y / 32, 5, true);
-							connection.send("MapTileChanged", (myMouse.x - (myMouse.x % 32)) / 32, (myMouse.y - (myMouse.y % 32)) / 32, 5); //Test Code, will turn any clicked tile into a star
+						//	myMap.setTile(myMouse.x / 32, myMouse.y / 32, 5, true);
+						//	connection.send("MapTileChanged", (myMouse.x - (myMouse.x % 32)) / 32, (myMouse.y - (myMouse.y % 32)) / 32, 5); //Test Code, will turn any clicked tile into a star
 						//})
 					}
 					apInfo.text = "AP:" + myPlayer.AP;
 					location.text = "(" + myPlayer.xPos + "," + myPlayer.yPos + ")";
 					errorMessage.text = "" + myPlayer.errorMessage;
 					mouseLocation.text = tileInformation(myMap.getTile(myMouse.x / 32, myMouse.y / 32));
-				}else {
-					//errorMessage.text = "Loading Player Information";
 				}
 				
 				super.update();

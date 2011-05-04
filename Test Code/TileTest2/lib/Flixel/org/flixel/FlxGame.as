@@ -88,7 +88,7 @@ package org.flixel
 		 */
 		public function FlxGame(GameSizeX:uint,GameSizeY:uint,InitialState:Class,Zoom:uint=2)
 		{
-			flash.ui.Mouse.hide();
+			flash.ui.Mouse.show();
 			
 			_zoom = Zoom;
 			FlxState.bgColor = 0xff000000;
@@ -248,7 +248,7 @@ package org.flixel
 		 */
 		internal function unpauseGame():void
 		{
-			if(!FlxG.panel.visible) flash.ui.Mouse.hide();
+			if(!FlxG.panel.visible) flash.ui.Mouse.show();
 			FlxG.resetInput();
 			_paused = false;
 			stage.frameRate = _framerate;
@@ -275,7 +275,7 @@ package org.flixel
 		protected function update(event:Event):void
 		{
 			var mark:uint = getTimer();
-			
+			flash.ui.Mouse.show()
 			var i:uint;
 			var soundPrefs:FlxSave;
 
