@@ -15,38 +15,51 @@ package
 		private var characterInfo:Label //Will Hold Player Info Loaded from DB
 		private var mainMenu:Box
 		private var myClient:Client;
+		private var tutorialButton:TextButton;
+		private var tutorialLevel:int = 0;
 		
 		public function MenuState(client:Client) 
 		{
 			myClient = client
 			super()
-			characterInfo = new Label("",12, TextFormatAlign.CENTER)
 			client.bigDB.loadMyPlayerObject(loadPlayerSuccess)
-			mainMenu = new Box().fill(0xFFFFFF, 0.8, 0)
-			mainMenu.add(new Box().fill(0x00000, .5, 15).margin(10, 10, 10, 10).minSize(FlxG.width, FlxG.height).add(
-				new Box().fill(0xffffff,1,5).margin(10,10,10,10).minSize(300,0).add(
-						new Rows(
-							new Label("Main Menu", 30, TextFormatAlign.CENTER),
-							characterInfo,
-							new TextButton("Start Tutorial", startTutorial),
-							new TextButton("New Game", newGame),
-							new TextButton("Random Map", randomMap)
-						).spacing(30)
-					)))
-			addChild(mainMenu);
+			
 			
 		}
 		
 		//Callback function called when Player data object has been successfully loaded
 		private function loadPlayerSuccess(ob:DatabaseObject):void 
 		{
-			characterInfo.text = "Level: " + ob.level + " Class: " + ob.role;
+			characterInfo = new Label("Level: " + ob.level + "	Class: " + ob.role + "	Coin: " + ob.coin, 12, TextFormatAlign.CENTER);
+			tutorialLevel = ob.tutorial;
+			if (tutorialLevel == 1) {
+				tutorialLevel = 1;
+				tutorialButton = new TextButton("Start Tutorial", startTutorial);
+			}else if (tutorialLevel > 1 && tutorialLevel < 10) {
+				tutorialButton = new TextButton("Continue Tutorial", startTutorial);
+			}else {
+				tutorialButton = new TextButton("Continue Tutorial", startTutorial);
+				tutorialButton.enabled = false;
+			}
+			mainMenu = new Box().fill(0xFFFFFF, 0.8, 0)
+			mainMenu.add(new Box().fill(0x00000, .5, 15).margin(10, 10, 10, 10).minSize(FlxG.width, FlxG.height).add(
+				new Box().fill(0xffffff,1,5).margin(10,10,10,10).minSize(300,0).add(
+						new Rows(
+							new Label("Main Menu", 30, TextFormatAlign.CENTER),
+							characterInfo,
+							tutorialButton,
+							new TextButton("New Game", newGame),
+							new TextButton("Random Map", randomMap)
+						).spacing(30)
+					)))
+			addChild(mainMenu);
+
 		}
 		
 		//Callback function for when Start Tutorial Button is Pressed
 		private function startTutorial():void
 		{
-			var lobby:Lobby = new Lobby(myClient, "GetAcross", handleJoin, handleError)
+			var lobby:Lobby = new Lobby(myClient, "GetAcross", "Tutorial_" + tutorialLevel, handleJoin, handleError)
 			
 			//Show lobby (parsing true hides the cancel button)
 			//this.Hide(null);

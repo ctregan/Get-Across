@@ -147,6 +147,8 @@ package sample.ui{
 				ob.level = 1
 				ob.ap = 20
 				ob.xp = 0
+				ob.coin = 0
+				ob.tutorial = 1
 				ob.save()
 			})
 			errorMessage.text = "Registration Successful. You May Now Log In."

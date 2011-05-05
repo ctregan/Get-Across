@@ -28,15 +28,21 @@ namespace GetAcross {
         private Player[] players;
         private int numPlayers;
         private Tile[,] field;
+        private String levelKey;
 		// This method is called when an instance of your the game is created
 		public override void GameStarted() {
             players = new Player[2];
             field = new Tile[10,10];
             numPlayers = 0;
-
+            levelKey = RoomData["key"];
+            PreloadPlayerObjects = true;
+            if (levelKey.Contains("Tutorial"))
+            {
+                Visible = false;
+            }
 			// anything you write to the Console will show up in the 
 			// output window of the development server
-			Console.WriteLine("Game is started: " + RoomId);
+			Console.WriteLine("Game is started: " + RoomId + "\nLevel Key: " + levelKey);
             /*
 			// This is how you setup a timer
 			AddTimer(delegate {
@@ -66,7 +72,7 @@ namespace GetAcross {
             //Send the player their player Number.
             if (numPlayers < players.Length)
             {
-                player.Send("init", player.Id, player.ConnectUserId, "Tutorial_1");
+                player.Send("init", player.Id, player.ConnectUserId, levelKey);
                 players[numPlayers] = player;
                 Console.WriteLine("New Player " + player.Id);
                 player.AP = 20;
@@ -159,6 +165,35 @@ namespace GetAcross {
                         int newTileType = message.GetInt(2);
                         Console.WriteLine("Map Tile Change From Player " + player.Id + " (" + xTile + "," + yTile + ") to type: " + newTileType);
                         Broadcast("MapTileChanged", player.Id, xTile, yTile, newTileType);
+                        break;
+                    }
+                case "win":
+                    {
+
+                        PlayerIO.BigDB.Load("StaticMaps", levelKey,
+                            delegate(DatabaseObject result)
+                            {
+
+                                int gainedxp = result.GetInt("XP", 0); //How much XP the Level was worth
+                                int gainedcoin = result.GetInt("Coin", 0); //How mucg coin the level was worth
+
+                                //Check to see if player completed Tutorial level, in which case update their tutorial value
+                                if (levelKey == "Tutorial_1")
+                                {
+                                    player.PlayerObject.Set("tutorial", 2);
+                                }
+
+                                player.PlayerObject.Set("xp", player.PlayerObject.GetInt("xp", 0) + gainedxp);
+                                player.PlayerObject.Set("coin", player.PlayerObject.GetInt("coin", 0) + gainedcoin);
+                                player.PlayerObject.Save();
+                                Broadcast("win", player.Id, gainedxp, gainedcoin);
+                                
+                            },
+                            delegate(PlayerIOError error)
+                            {
+                                Console.WriteLine(error.ToString());
+                            });
+                        
                         break;
                     }
 			}
