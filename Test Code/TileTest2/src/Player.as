@@ -1,6 +1,7 @@
 package  
 {
 	import org.flixel.*;
+	import playerio.Connection;
 	/**
 	 * ...
 	 * @author Charlie Regan
@@ -32,7 +33,7 @@ package
 		//Public function that can be called to move the position of the player based on a tile change
 		//thus to move one tile to the right send (1,0) as arugments, one to left is (-1,0)
 		//NOW RETURNS A BOOLEAN, True if the move has caused the user to reach the end, False if not
-		public function movePlayer(xChange:Number, yChange:Number, tileSize:int):Boolean {
+		public function movePlayer(xChange:Number, yChange:Number, tileSize:int, connection:Connection):Boolean {
 			trace("x:" + xPos + " y:" + yPos + " change_x:" + xChange + " change_y:" + yChange + " tile_size:" + tileSize);
 			if (checkMove(xPos + xChange, yPos + yChange)) {
 				xPos = xPos + xChange;
@@ -40,6 +41,7 @@ package
 				AP = AP - findCost(xPos, yPos);
 				this.x = this.x + (tileSize * xChange);
 				this.y = this.y + (tileSize * yChange);
+				connection.send("move", xChange, yChange);
 				if (PlayState.myMap.getTile(xPos, yPos) == WIN_TILE) {
 					return true;
 				}

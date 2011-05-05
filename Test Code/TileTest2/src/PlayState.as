@@ -139,6 +139,7 @@ package
 			})
 			//A player has reached the end, victory!
 			connection.addMessageHandler("win", function(m:Message, userID:int, xp:int, coin:int) {
+				connection.disconnect();
 				FlxG.state = new QuestCompleteState(xp, coin, client);
 			})
 			
@@ -164,16 +165,12 @@ package
 					}
 					if (FlxG.keys.justPressed("DOWN")) {
 						win = myPlayer.movePlayer(0, 1, _tileSize);
-						connection.send("move", 0, 1);
 					}else if (FlxG.keys.justPressed("UP")) {
-						win = myPlayer.movePlayer(0, -1, _tileSize);
-						connection.send("move", 0, -1);
+						win = myPlayer.movePlayer(0, -1, _tileSize, connection);
 					}else if (FlxG.keys.justPressed("RIGHT")) {
-						win = myPlayer.movePlayer(1, 0, _tileSize);
-						connection.send("move", 1, 0);
+						win = myPlayer.movePlayer(1, 0, _tileSize, connection);
 					}else if (FlxG.keys.justPressed("LEFT")) {
-						win = myPlayer.movePlayer( -1, 0, _tileSize);
-						connection.send("move", -1, 0);
+						win = myPlayer.movePlayer( -1, 0, _tileSize, connection);
 					}else if (myMouse.justPressed() &&  mouseWithinTileMap()) {
 						//TO DO: ADD ALERT MESSAGE!!!
 						//new InGamePrompt(this, "Are you sure?", function(){ 
