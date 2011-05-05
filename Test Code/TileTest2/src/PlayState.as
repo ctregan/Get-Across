@@ -28,6 +28,8 @@ package
 		[Embed(source = "data/testTileSet2_32.png")] public var data_tiles:Class; //Tile Set Image
 		[Embed(source = "data/Cursor.png")] public var cursor_img:Class; //Mouse Cursor
 		private var apInfo:FlxText; //Text field to reflect the numner of AP left
+		private var apGauge:APGauge;
+		private var apBar:APBar;
 		private var myPlayer:Player;
 		private var playersArray:Array = []; //Array of all players on board
 		private var myMouse:FlxMouse; //Mouse
@@ -42,6 +44,9 @@ package
 		private var lvl:FlxText;
 		private var experience:FlxText;
 		private var resources:FlxText;
+		private var coin:FlxText;
+		private var role:FlxText;
+		
 		private var background:Background;
 		
 		public static var myMap:FlxTilemap; //The tile map where the tileset is drawn
@@ -80,8 +85,9 @@ package
 		private var _experienceTextOffsetX:int = 70;
 		private var _experienceTextOffsetY:int = 5;
 		private var _resoruceTextOffsetX:int = 450;
-		private var _resourceTextOffsetY:int = 300;
-		
+		private var _resourceTextOffsetY:int = 270;
+		private var _coinOffsetX:int = 150;
+		private var _coinOffsetY:int = 5;
 
 		public function PlayState(connection:Connection, client:Client):void
 		{
@@ -181,7 +187,8 @@ package
 						//	connection.send("MapTileChanged", (myMouse.x - (myMouse.x % 32)) / 32, (myMouse.y - (myMouse.y % 32)) / 32, 5); //Test Code, will turn any clicked tile into a star
 						//})
 					}
-					apInfo.text = "AP:" + myPlayer.AP;
+					//apInfo.text = "AP:" + myPlayer.AP;
+					apBar.change(myPlayer.AP);
 					location.text = "(" + myPlayer.xPos + "," + myPlayer.yPos + ")";
 					errorMessage.text = "" + myPlayer.errorMessage;
 					if (win) {
@@ -193,6 +200,8 @@ package
 						mouseLocation.text = "";
 					}
 				}
+				// Also update money, experience, level
+				// later
 				
 				super.update();
 			}
@@ -242,9 +251,12 @@ package
 			lyrStage.add(myMap);
 			
 			// Top HUD
-			apInfo = new FlxText(_apBoxOffsetX, _apBoxOffsetY, 100, "AP:", true);
+			//apInfo = new FlxText(_apBoxOffsetX, _apBoxOffsetY, 100, "AP:", true);
 			lvl = new FlxText(_lvlTextOffsetX, _lvlTextOffsetY, 100, "Lvl:1", true);
 			experience = new FlxText(_experienceTextOffsetX, _experienceTextOffsetY, 100, "Exp:0", true);
+			coin = new FlxText(_coinOffsetX, _coinOffsetY, 50, "Coin:0", true);
+			apBar = new APBar(_apBoxOffsetX + 20, _apBoxOffsetY + 2, 15, 20);
+			apGauge new APGauge(_apBoxOffsetX, _apBoxOffsetY);
 			
 			//Bottom HUD
 
@@ -272,7 +284,11 @@ package
 			lyrHUD.add(location);
 			lyrHUD.add(errorMessage);
 			lyrHUD.add(apInfo);
+			//lyrHUD.add(apGauge);
+			//lyrHUD.add(apBar);
 			lyrHUD.add(mouseLocation);
+			lyrHUD.add(coin);
+			
 			lyrBackground.add(background);
 		
 			this.add(lyrBackground);

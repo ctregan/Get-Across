@@ -17,6 +17,9 @@ package
 		
 		[Embed(source = "data/character1.png")] public var ship_img:Class;
 		public var AP:Number; //Amount of AP
+		public var level:Number;
+		public var coin:Number;
+		public var exp:Number;
 		public var errorMessage:String;
 		public var xPos:Number; //X Tile Position
 		public var yPos:Number; //Y Tile Position
