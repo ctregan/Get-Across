@@ -127,7 +127,7 @@ package
 			//Player has moved and we hear about it
 			connection.addMessageHandler("PlayerMove", function(m:Message, userID:int, posX:int, posY:int) {
 				if(userID != imPlayer){
-					Player(playersArray[userID - 1]).movePlayer(posX, posY, _tileSize);
+					Player(playersArray[userID - 1]).movePlayer(posX, posY, _tileSize, connection);
 				}
 			})
 			//A tile has changed and needs to be updated locally
@@ -164,7 +164,7 @@ package
 						myPlayer.AP += 20;
 					}
 					if (FlxG.keys.justPressed("DOWN")) {
-						win = myPlayer.movePlayer(0, 1, _tileSize);
+						win = myPlayer.movePlayer(0, 1, _tileSize, connection);
 					}else if (FlxG.keys.justPressed("UP")) {
 						win = myPlayer.movePlayer(0, -1, _tileSize, connection);
 					}else if (FlxG.keys.justPressed("RIGHT")) {

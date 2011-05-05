@@ -114,10 +114,10 @@ package sample.ui{
 				"get-across-ynrpgn4egdtvzlz3wg8w", 
 				username, 
 				password, 
-				email, 
+				email,
 				"", 
-				"", 
-				null, 
+				"",
+				{role:"Novice", level:1, ap:20, xp:0, coin:0, tutorial:1}, 
 				"", 
 				registrationComplete, 
 				getRegistrationError);
@@ -151,6 +151,7 @@ package sample.ui{
 				ob.tutorial = 1
 				ob.save()
 			})
+			
 			errorMessage.text = "Registration Successful. You May Now Log In."
 		}
 	}	
