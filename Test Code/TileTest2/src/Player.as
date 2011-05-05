@@ -7,6 +7,14 @@ package
 	 */
 	public class Player extends FlxSprite
 	{
+		//Tile Value Constants, if tileSet changes, need to update these!!
+		private const GRASS_TILE:int = 0;
+		private const HILL_TILE:int = 1;
+		private const TREE_TILE:int = 2;
+		private const CHERRY_TILE:int = 3;
+		private const WATER_TILE:int = 4;
+		private const WIN_TILE:int = 5;
+		
 		[Embed(source = "data/character1.png")] public var ship_img:Class;
 		public var AP:Number; //Amount of AP
 		public var errorMessage:String;
@@ -23,7 +31,8 @@ package
 		}
 		//Public function that can be called to move the position of the player based on a tile change
 		//thus to move one tile to the right send (1,0) as arugments, one to left is (-1,0)
-		public function movePlayer(xChange:Number, yChange:Number, tileSize:int):void {
+		//NOW RETURNS A BOOLEAN, True if the move has caused the user to reach the end, False if not
+		public function movePlayer(xChange:Number, yChange:Number, tileSize:int):Boolean {
 			trace("x:" + xPos + " y:" + yPos + " change_x:" + xChange + " change_y:" + yChange + " tile_size:" + tileSize);
 			if (checkMove(xPos + xChange, yPos + yChange)) {
 				xPos = xPos + xChange;
@@ -31,7 +40,11 @@ package
 				AP = AP - findCost(xPos, yPos);
 				this.x = this.x + (tileSize * xChange);
 				this.y = this.y + (tileSize * yChange);
+				if (PlayState.myMap.getTile(xPos, yPos) == WIN_TILE) {
+					return true;
+				}
 			}
+			return false;
 		}
 		//Find AP Cost of the tile at the given location.
 		private function findCost(proposedX:Number, proposedY:Number):Number {
@@ -43,7 +56,7 @@ package
 		}
 		//Sees if the desired move for the player is valid.
 		private function checkMove(proposedX:Number, proposedY:Number):Boolean {
-			if (PlayState.myMap.getTile(proposedX, proposedY) == 4) {
+			if (PlayState.myMap.getTile(proposedX, proposedY) == WATER_TILE) {
 				errorMessage = "Invalid Move, cant cross water";
 				return false;
 			}else if (AP < findCost(proposedX, proposedY)) {

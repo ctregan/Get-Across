@@ -7,13 +7,23 @@ package
 	import sample.ui.InGamePrompt;
 	import sample.ui.Prompt
 	import sample.ui.Chat
-	import sample.ui.Lobby
 	/**
 	 * ...
 	 * @author Charlie Regan
 	 */
 	public class PlayState extends FlxState
 	{
+		//Tile Value Constants, if tileSet changes, need to update these!!
+		private const GRASS_TILE:int = 0;
+		private const HILL_TILE:int = 1;
+		private const TREE_TILE:int = 2;
+		private const CHERRY_TILE:int = 3;
+		private const WATER_TILE:int = 4;
+		private const WIN_TILE:int = 5;
+		
+		
+		
+		
 		//[Embed(source = "data/map_data.txt", mimeType = "application/octet-stream")] public var data_map:Class; //Tile Map array
 		[Embed(source = "data/testTileSet.png")] public var data_tiles:Class; //Tile Set Image
 		[Embed(source = "data/Cursor.png")] public var cursor_img:Class; //Mouse Cursor
@@ -35,18 +45,19 @@ package
 		private var background:Background;
 		
 		public static var myMap:FlxTilemap; //The tile map where the tileset is drawn
-		private var connection:Connection; //connection to server
 		public static var lyrStage:FlxGroup;
         public static var lyrSprites:FlxGroup;
         public static var lyrHUD:FlxGroup;
 		public static var lyrBackground:FlxGroup;
 		
-		private var lobby:Lobby;
 		private var imPlayer:int;
 		private var infoBox:InfoBox;
 		private var client:Client;
+		private var connection:Connection; //connection to server
 		
-				// constants/offset numbers
+		private var win:Boolean = false; //This variable will indicate if a user has won or not
+		
+		// constants/offset numbers
 		private var _mapOffsetX:int = 100;
 		private var _mapOffsetY:int = 40;
 		private var _apBoxOffsetX:int = 290;
@@ -124,6 +135,10 @@ package
 					//myMap.setTile(posX, posY, newTileType, true);
 				}
 			})
+			//A player has reached the end, victory!
+			connection.addMessageHandler("win", function(m:Message, userID:int, xp:int, coin:int) {
+				FlxG.state = new QuestCompleteState(xp, coin, client);
+			})
 			
 			
 		}
@@ -141,21 +156,21 @@ package
 				//Update HUD Information
 				secCounter.text = counter.toPrecision(3) + " Sec until AP";
 				//Player moves only one character, detect keys presses here
-				if (myPlayer != null) {
+				if (myPlayer != null && !win) {
 					if (myPlayer.AP <= 0 && FlxG.keys.justPressed("A")) {
 						myPlayer.AP += 20;
 					}
 					if (FlxG.keys.justPressed("DOWN")) {
-						myPlayer.movePlayer(0, 1, _tileSize);
+						win = myPlayer.movePlayer(0, 1, _tileSize);
 						connection.send("move", 0, 1);
 					}else if (FlxG.keys.justPressed("UP")) {
-						myPlayer.movePlayer(0, -1, _tileSize);
+						win = myPlayer.movePlayer(0, -1, _tileSize);
 						connection.send("move", 0, -1);
 					}else if (FlxG.keys.justPressed("RIGHT")) {
-						myPlayer.movePlayer(1, 0, _tileSize);
+						win = myPlayer.movePlayer(1, 0, _tileSize);
 						connection.send("move", 1, 0);
 					}else if (FlxG.keys.justPressed("LEFT")) {
-						myPlayer.movePlayer( -1, 0, _tileSize);
+						win = myPlayer.movePlayer( -1, 0, _tileSize);
 						connection.send("move", -1, 0);
 					}else if (myMouse.justPressed() &&  mouseWithinTileMap()) {
 						//TO DO: ADD ALERT MESSAGE!!!
@@ -167,8 +182,11 @@ package
 					apInfo.text = "AP:" + myPlayer.AP;
 					location.text = "(" + myPlayer.xPos + "," + myPlayer.yPos + ")";
 					errorMessage.text = "" + myPlayer.errorMessage;
+					if (win) {
+						connection.send("win")
+					}
 					if (mouseWithinTileMap()){
-					mouseLocation.text = tileInformation(getTileIdentity(myMouse.x, myMouse.y));
+						mouseLocation.text = tileInformation(getTileIdentity(myMouse.x, myMouse.y));
 					} else {
 						mouseLocation.text = "";
 					}
@@ -181,17 +199,17 @@ package
 		//Give a tile number and return information String about that Tile
 		private function tileInformation(type:Number):String
 		{
-			if (type == 1) {
+			if (type == HILL_TILE) {
 				return "Hill (Travel Cost = 3AP)";
-			}else if (type == 2) {
+			}else if (type == TREE_TILE) {
 				return "Tree (Travel Cost = 1AP)";
-			}else if (type == 3) {
+			}else if (type == CHERRY_TILE) {
 				return "Cherry Tree (Travel Cost = 1AP)";
-			}else if (type == 4) {
+			}else if (type == WATER_TILE) {
 				return "Water (Impassible without help)";
-			}else if (type == 0) {
+			}else if (type == GRASS_TILE) {
 				return "Land (Travel Cost = 1AP)";
-			}else if (type == 5 ) {
+			}else if (type == WIN_TILE) {
 				return "End Point (Reach here to win!)";
 			}else{
 				return "Unkown Land Type";
