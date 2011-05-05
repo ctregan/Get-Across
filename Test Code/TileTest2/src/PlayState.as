@@ -15,7 +15,7 @@ package
 	public class PlayState extends FlxState
 	{
 		//[Embed(source = "data/map_data.txt", mimeType = "application/octet-stream")] public var data_map:Class; //Tile Map array
-		[Embed(source = "data/testTileSet.png")] public var data_tiles:Class; //Tile Set Image
+		[Embed(source = "data/testTileSet2_32.png")] public var data_tiles:Class; //Tile Set Image
 		[Embed(source = "data/Cursor.png")] public var cursor_img:Class; //Mouse Cursor
 		private var apInfo:FlxText; //Text field to reflect the numner of AP left
 		private var myPlayer:Player;
@@ -69,7 +69,7 @@ package
 		private var _experienceTextOffsetX:int = 70;
 		private var _experienceTextOffsetY:int = 5;
 		private var _resoruceTextOffsetX:int = 450;
-		private var _resourceTextOffsetY:int = 500;
+		private var _resourceTextOffsetY:int = 300;
 		
 
 		public function PlayState(connection:Connection, client:Client):void
@@ -102,6 +102,8 @@ package
 					playersArray[imPlayer - 1] = myPlayer;
 					lyrSprites.add(myPlayer);
 				}
+				//FlxG.follow(myPlayer);
+				//FlxG.followBounds(0, 0, myMap.width, myMap.height);
 				
 			})
 			//New user has joined, make their character
@@ -215,7 +217,7 @@ package
 			//Tile Map
 			myMap = new FlxTilemap();
 			myMap.drawIndex = 0;
-			myMap.loadMap(map_data, data_tiles, 32, 32);
+			myMap.loadMap(map_data, data_tiles, _tileSize, _tileSize);
 			myMap.collideIndex = 1;
 			myMap.x = _mapOffsetX;
 			myMap.y = _mapOffsetY;			
@@ -231,12 +233,12 @@ package
 
 						
 			//Right Side HUD
-			resources = new FlxText(_resoruceTextOffsetX, _resourceTextOffsetY, 150, "Resources", true);			
+			resources = new FlxText(_resoruceTextOffsetX, _resourceTextOffsetY, 150, "Resources:", true);			
 			goals = new FlxText(_goalsBoxOffsetX, _goalsBoxOffsetY, 100, "Goals:\nReach the Red Star", true); 
 			goals.frameHeight = 75;			
-			errorMessage = new FlxText(_errorMessageOffsetX, _errorMessageOffsetY + 20, 120, "Errors Appear Here", true);
+			errorMessage = new FlxText(_errorMessageOffsetX, _errorMessageOffsetY, 120, "Errors Appear Here", true);
 			location = new FlxText(_positionInfoOffsetX, _positionInfoOffsetY, 100, "(0,0)", true);
-			mouseLocation = new FlxText(_terrainMessageBoxOffsetX, _terrainMessageBoxOffsetY, 200, "(0,0)", true);
+			mouseLocation = new FlxText(_terrainMessageBoxOffsetX, _terrainMessageBoxOffsetY, 150, "(0,0)", true);
 			secCounter = new FlxText(_timerOffsetX, _timerOffsetY, 100, "15 Sec until AP", true);			
 			abilities = new FlxText(_cardBoxOffsetX, _cardBoxOffsetY, 100, "Abilities:", true);
 
