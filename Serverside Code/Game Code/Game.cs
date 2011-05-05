@@ -82,6 +82,23 @@ namespace GetAcross {
                 numPlayers++;
                 // this is how you broadcast a message to all players connected to the game
                 Broadcast("UserJoined", player.Id, player.positionX, player.positionY);
+
+                // connect player to a Quest object
+                PlayerIO.BigDB.LoadOrCreate("Quests", player.ConnectUserId,
+                    delegate(DatabaseObject result)
+                    {
+                        if (!result.Contains("username"))
+                        {
+                            // player is not a part of this quest; add them to it
+                            result.Set("username", player.ConnectUserId);
+                        }
+
+                        result.Set("positionX", player.positionX);
+                        result.Set("positionY", player.positionY);
+                        result.Save();
+                    }
+                );
+
                 //Update them on who is already in the game
                 foreach (Player x in players)
                 {
@@ -144,6 +161,21 @@ namespace GetAcross {
                         Broadcast("PlayerMove", player.Id, messageX, messageY);
                             //player.AP = player.AP - field[messageX, messageY].cost;
                         //}
+
+                        // update Quest db on new player position
+                        PlayerIO.BigDB.Load("Quests", player.ConnectUserId,
+                            delegate(DatabaseObject result)
+                            {
+                                if (result != null)
+                                {
+                                    // player is not a part of this quest; add them to it
+                                    result.Set("positionX", player.positionX);
+                                    result.Set("positionY", player.positionY);
+                                    result.Save();
+                                }
+                            }
+                        );
+
                         break;
                     }
                 case "playerInfo":
