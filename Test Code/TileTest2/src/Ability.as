@@ -30,11 +30,14 @@ package
 			
 			_fromTile = fromTile;
 			_toTile = toTile;
-			if(_range == 1){
-				super(_caster.x - (tileSize * range) , _caster.y - (tileSize * range), range1); //need to make sure position image on the center of the players tile
+			var img:Class = range1
+			if (_range == 1) {
+				img = range1;
+				
 			}else if (_range == 2) {
-				super(_caster.x - (tileSize * range) , _caster.y - (tileSize * range), range2);
+				img = range2;
 			}
+			super(_caster.x - (tileSize * range) , _caster.y - (tileSize * range), img); //need to make sure position image on the center of the players tile
 			
 			trace("Ability X: " + this.x + " Y:" + this.y);
 			
