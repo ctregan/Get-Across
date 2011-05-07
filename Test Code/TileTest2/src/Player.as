@@ -16,21 +16,22 @@ package
 		private const WATER_TILE:int = 4;
 		private const WIN_TILE:int = 5;
 		
-		[Embed(source = "data/character1.png")] public var ship_img:Class;
+		[Embed(source = "data/character1.png")] public var player_avatar:Class;
 		public var AP:Number; //Amount of AP
 		public var errorMessage:String;
 		public var xPos:Number; //X Tile Position
 		public var yPos:Number; //Y Tile Position
-		public var xTilePixel:Number; //The X tile location in pixels for the players current tile
-		public var yTilePixel:Number; //The Y tile location in pixels for the players current tile
+		public var xTilePixel:Number; //The X tile location in pixels for the player's current tile
+		public var yTilePixel:Number; //The Y tile location in pixels for the player's current tile
 		private var _move_speed:int = 400;
+		
 		public function Player(startX:Number, startY:Number, xOffset:int, yOffset:int, tileSize:int) 
 		{
 			errorMessage = "";
 			xPos = startX;
 			yPos = startY;
 			AP = 20;
-			super(((startX + .25) * tileSize) + xOffset, ((startY + .25) * tileSize) + yOffset, ship_img);
+			super(((startX + .25) * tileSize) + xOffset, ((startY + .25) * tileSize) + yOffset, player_avatar);
 		}
 		//Public function that can be called to move the position of the player based on a tile change
 		//thus to move one tile to the right send (1,0) as arugments, one to left is (-1,0)
@@ -72,8 +73,5 @@ package
 			}
 			return true;
 		}
-		
 	}
-	
-
 }
