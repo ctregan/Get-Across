@@ -50,6 +50,8 @@ package
 		private var experience:FlxText;
 		private var resources:FlxText;
 		private var background:Background;
+		private var playerStartX: int = 0;	// starting x position of this player
+		private var playerStartY: int = 0;	// starting y position of this player
 		
 		public static var myMap:FlxTilemap; //The tile map where the tileset is drawn
 		public static var lyrStage:FlxGroup;
@@ -66,8 +68,8 @@ package
 		private var win:Boolean = false; //This variable will indicate if a user has won or not
 		
 		// constants/offset numbers
-		private var _mapOffsetX:int = 100;
-		private var _mapOffsetY:int = 40;
+		private var _mapOffsetX:int = 100; 	// left border of map
+		private var _mapOffsetY:int = 40;	// top border of map
 		private var _apBoxOffsetX:int = 290;
 		private var _apBoxOffsetY:int = 5;
 		private var _timerOffsetX:int = 330;
@@ -105,21 +107,36 @@ package
 			this.connection = connection;
 			
 			//Connection successful, load board and player
-			connection.addMessageHandler("init", function(m:Message, iAm:int, name:String, level:String){
+			connection.addMessageHandler("init", function(m:Message, iAm:int, name:String, level:String) {
 				imPlayer = iAm;
 				//boardSetup(level);
 				client.bigDB.load("StaticMaps", level, function(ob:DatabaseObject):void {
 					var values:Array = ob.tileValues; //Recieve Tile Array from database to be turned into string with line breaks between each line
 					boardSetup(values.join("\n"));
-					
 				});
 			})
 			//Recieve Info from server about your saved character
-			connection.addMessageHandler("playerInfo", function(m:Message, posX:int, posY:int) {
+			connection.addMessageHandler("playerInfo", function(m:Message, posX:int, posY:int, name:String) {
 				if (myPlayer == null) {
-					myPlayer = new Player(posX, posY, _mapOffsetX, _mapOffsetY, _tileSize);
-					playersArray[imPlayer - 1] = myPlayer;
-					lyrSprites.add(myPlayer);
+					// add player to screen --
+					// if player has previous position saved in database, place player there
+					client.bigDB.load("Quests", name, function(results:DatabaseObject):void {
+						// player has previous position on this map
+						if (results != null) {
+							playerStartX = results.positionX;
+							playerStartY = results.positionY;
+							myPlayer = new Player(playerStartX, playerStartY, _mapOffsetX, _mapOffsetY, _tileSize);
+							playersArray[imPlayer - 1] = myPlayer;
+							lyrSprites.add(myPlayer);
+						}
+						else
+						{
+							myPlayer = new Player(playerStartX, playerStartY, _mapOffsetX, _mapOffsetY, _tileSize);
+							playersArray[imPlayer - 1] = myPlayer;
+							lyrSprites.add(myPlayer);
+						}
+					});
+					
 					//Load Abilities for Player From Database
 					client.bigDB.loadMyPlayerObject(function(db:DatabaseObject) {
 						try {
@@ -148,7 +165,6 @@ package
 				}
 				//FlxG.follow(myPlayer);
 				//FlxG.followBounds(0, 0, myMap.width, myMap.height);
-				
 			})
 			//New user has joined, make their character
 			connection.addMessageHandler("UserJoined", function(m:Message, userID:int, posX:int, posY:int) {

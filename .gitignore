@@ -1,0 +1,11 @@
+# executable files
+Test\ Code/TileTest2/bin/TileTest2.swf
+Output/GetAcross.dll
+Serverside\ Code/Game\ Code/bin/Debug/GetAcross.dll
+Serverside\ Code/Player.IO\ Test\ Server\ Project/bin/Debug/TestServer.vshost.exe
+Test\ Code/TileTest2/obj/TileTest2Config.old
+Test\ Code/TileTest2/obj/TileTest2Config.xml
+
+# files that contain Game ID
+Test\ Code/TileTest2/lib/test/sample/ui/Login.as
+Test\ Code/TileTest2/lib/test/sample/ui/Registration.as

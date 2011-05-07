@@ -6,6 +6,7 @@ using PlayerIO.GameLibrary;
 using System.Drawing;
 
 namespace GetAcross {
+
     //Player class. Each player that joins the game will have these attributes
 	public class Player : BasePlayer {
 		public string Name;
@@ -29,6 +30,8 @@ namespace GetAcross {
         private int numPlayers;
         private Tile[,] field;
         private String levelKey;
+        private String playerConnectUserId;
+
 		// This method is called when an instance of your the game is created
 		public override void GameStarted() {
             players = new Player[2];
@@ -70,14 +73,14 @@ namespace GetAcross {
 		public override void UserJoined(Player player) {
 			// this is how you send a player a message
             //Send the player their player Number.
+            
+            playerConnectUserId = player.ConnectUserId;
             if (numPlayers < players.Length)
             {
                 player.Send("init", player.Id, player.ConnectUserId, levelKey);
                 players[numPlayers] = player;
                 Console.WriteLine("New Player " + player.Id);
                 player.AP = 20;
-                player.positionX = 0;
-                player.positionY = 0;
                 player.characterClass = "Novice";
                 numPlayers++;
                 // this is how you broadcast a message to all players connected to the game
@@ -91,6 +94,16 @@ namespace GetAcross {
                         {
                             // player is not a part of this quest; add them to it
                             result.Set("username", player.ConnectUserId);
+                            player.positionX = 0;
+                            player.positionY = 0;
+                        }
+
+                        // load player's last position
+                        else
+                        {
+                            Console.WriteLine("userJoined....old x: " + result.GetInt("positionX") + ", old y: " + result.GetInt("positionY"));
+                            player.positionX = result.GetInt("positionX");
+                            player.positionY = result.GetInt("positionY");
                         }
 
                         result.Set("positionX", player.positionX);
@@ -137,12 +150,15 @@ namespace GetAcross {
                         joinGame(player);
                         break;
                     }
+
+                // player has moved up, down, left, or right
                 case "move":
                     {
                         int messageX = message.GetInt(0);
                         int messageY = message.GetInt(1);
                         int xDistance = Math.Abs(messageX - player.positionX);
                         int yDistance = Math.Abs(messageY - player.positionY);
+                        Console.WriteLine("move message received: " + messageX + "," + messageY);
                         /*if ((xDistance > 1 || yDistance > 1) || (xDistance == 0 && yDistance == 0))
                         {
                             player.Send("invalidMove");
@@ -155,6 +171,7 @@ namespace GetAcross {
                         }
                         else
                         {*/
+                        Console.WriteLine("player pos before move: " + player.positionX + "," + player.positionY);
                         player.positionX = player.positionX + messageX;
                         player.positionY = player.positionY + messageY;
                         Console.WriteLine("Player " + player.Id + " is moving to (" + player.positionX + ", " + player.positionY + ")"); //debug 
@@ -186,8 +203,33 @@ namespace GetAcross {
                         }
                         else
                         {
-                            player.Send("playerInfo", players[player.Id - 1].positionX, players[player.Id - 1].positionY);
-                            
+                            int startX = 0;
+                            int startY = 0;
+
+                            // find player's previous position
+                            PlayerIO.BigDB.LoadOrCreate("Quests", player.ConnectUserId,
+                                delegate(DatabaseObject result)
+                                {
+                                    if (!result.Contains("username"))
+                                    {
+                                        // player is not a part of this quest; add them to it
+                                        result.Set("username", playerConnectUserId);
+                                        startX = startY = 0;
+                                        result.Set("positionX", startX);
+                                        result.Set("positionY", startY);
+                                        result.Save();
+                                    }
+
+                                    // load player's last position
+                                    else
+                                    {
+                                        Console.WriteLine("playerInfo....previous quest x: " + result.GetInt("positionX") + ", previous y: " + result.GetInt("positionY"));
+                                        startX = result.GetInt("positionX");
+                                        startY = result.GetInt("positionY");
+                                    }
+                                }
+                            );
+                            player.Send("playerInfo", players[player.Id - 1].positionX, players[player.Id - 1].positionY, playerConnectUserId);
                         }
                         break;
                         
@@ -203,7 +245,6 @@ namespace GetAcross {
                     }
                 case "win":
                     {
-
                         PlayerIO.BigDB.Load("StaticMaps", levelKey,
                             delegate(DatabaseObject result)
                             {
@@ -232,6 +273,9 @@ namespace GetAcross {
                                 Console.WriteLine(error.ToString());
                             });
                         
+                        // quest is finished; remove object from table
+                        PlayerIO.BigDB.DeleteKeys("Quests", player.ConnectUserId, null);
+
                         break;
                     }
 			}
