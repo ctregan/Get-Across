@@ -4,9 +4,15 @@ package
 	import org.flixel.data.FlxMouse;
 	import playerio.*
 	import sample.ui.Alert;
+	import sample.ui.components.AbilityButton;
+	import sample.ui.components.Box;
+	import sample.ui.components.Label;
+	import sample.ui.components.Rows;
+	import sample.ui.components.TextButton;
 	import sample.ui.InGamePrompt;
 	import sample.ui.Prompt
 	import sample.ui.Chat
+	import flash.text.TextFormatAlign
 	/**
 	 * ...
 	 * @author Charlie Regan
@@ -38,6 +44,7 @@ package
 		private var counter:Number; //Sec/ 1 ap, this will be moved serverside
 		private var goals:FlxText; //Simple text field where goals can be written
 		private var abilities:FlxText; //Simple text label for abilities
+		private var abilitiesBox:Box;
 		private var connected:Boolean = false; //Indicates if connection has been established1
 		private var lvl:FlxText;
 		private var experience:FlxText;
@@ -51,6 +58,7 @@ package
 		public static var lyrBackground:FlxGroup;
 		
 		private var imPlayer:int;
+		private var myID:String;
 		private var infoBox:InfoBox;
 		private var client:Client;
 		private var connection:Connection; //connection to server
@@ -112,6 +120,31 @@ package
 					myPlayer = new Player(posX, posY, _mapOffsetX, _mapOffsetY, _tileSize);
 					playersArray[imPlayer - 1] = myPlayer;
 					lyrSprites.add(myPlayer);
+					//Load Abilities for Player From Database
+					client.bigDB.loadMyPlayerObject(function(db:DatabaseObject) {
+						try {
+							var abilityArray:Array = db.abilities
+							if (abilityArray != null || abilityArray.length > 0) {
+								client.bigDB.loadKeys("Abilities", db.abilities, function(dbarr:Array) {
+									var abilityButtonBox:Box = new Box().fill(0xffffff, 1, 5).margin(10, 10, 10, 10);
+									abilityButtonBox.add(new Label("Abilities", 15, TextFormatAlign.CENTER));
+									for (var z:String in dbarr) {
+										var test:DatabaseObject = dbarr[z]
+										var myAbility:Ability = new Ability(_tileSize, myPlayer, test.Range, test.Cost, test.Effect.Type, test.Effect.From, test.Effect.To);
+										myAbility.visible = false;
+										lyrStage.add(myAbility);
+										trace("Loaded Ability " + test.Name + "\n");
+										abilityButtonBox.add(new AbilityButton(myAbility, test.Name))
+										abilities.text = abilities.text + test.Name + "\n"
+									}
+									abilitiesBox.add(new Box().fill(0x00000, .5, 15).margin(10, 10, 10, 10).minSize(130, 130).add(abilityButtonBox))
+								})
+							}
+						} catch (e:Error) {
+							//Catches Error is no abilities have been set yet
+							trace("unable to load abilities");
+						}
+					});
 				}
 				//FlxG.follow(myPlayer);
 				//FlxG.followBounds(0, 0, myMap.width, myMap.height);
@@ -255,7 +288,12 @@ package
 			location = new FlxText(_positionInfoOffsetX, _positionInfoOffsetY, 100, "(0,0)", true);
 			mouseLocation = new FlxText(_terrainMessageBoxOffsetX, _terrainMessageBoxOffsetY, 150, "(0,0)", true);
 			secCounter = new FlxText(_timerOffsetX, _timerOffsetY, 100, "15 Sec until AP", true);			
-			abilities = new FlxText(_cardBoxOffsetX, _cardBoxOffsetY, 100, "Abilities:", true);
+			abilities = new FlxText(_cardBoxOffsetX, _cardBoxOffsetY, 100, "Abilities:\n", true);
+			abilitiesBox = new Box().fill(0xFFFFFF, 0.8, 0)
+			abilitiesBox.x = _cardBoxOffsetX;
+			abilitiesBox.y = _cardBoxOffsetY;
+			abilitiesBox.minSize(150, 150);
+			
 
 			// background
 			background = new Background();
@@ -276,6 +314,7 @@ package
 			this.add(lyrStage);
             this.add(lyrSprites);
             this.add(lyrHUD);
+			this.addChild(abilitiesBox);
 			
 			connected = true;
 			connection.send("playerInfo");

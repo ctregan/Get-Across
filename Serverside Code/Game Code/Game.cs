@@ -187,8 +187,10 @@ namespace GetAcross {
                         else
                         {
                             player.Send("playerInfo", players[player.Id - 1].positionX, players[player.Id - 1].positionY);
+                            
                         }
                         break;
+                        
                     }
                 case "MapTileChanged":
                     {
@@ -213,6 +215,10 @@ namespace GetAcross {
                                 if (levelKey == "Tutorial_1")
                                 {
                                     player.PlayerObject.Set("tutorial", 2);
+                                }
+                                else if (levelKey == "Tutorial_2")
+                                {
+                                    player.PlayerObject.Set("tutorial", 3);
                                 }
 
                                 player.PlayerObject.Set("xp", player.PlayerObject.GetInt("xp", 0) + gainedxp);

@@ -21,14 +21,16 @@ package
 		public var errorMessage:String;
 		public var xPos:Number; //X Tile Position
 		public var yPos:Number; //Y Tile Position
+		public var xTilePixel:Number; //The X tile location in pixels for the players current tile
+		public var yTilePixel:Number; //The Y tile location in pixels for the players current tile
 		private var _move_speed:int = 400;
-		public function Player(startX:Number, startY:Number, xStartPos:int, yStartPos:int, tileSize:int) 
+		public function Player(startX:Number, startY:Number, xOffset:int, yOffset:int, tileSize:int) 
 		{
 			errorMessage = "";
 			xPos = startX;
 			yPos = startY;
 			AP = 20;
-			super(((startX + .25) * tileSize) + xStartPos, ((startY + .25) * tileSize) + yStartPos, ship_img);
+			super(((startX) * tileSize) + xOffset, ((startY) * tileSize) + yOffset, ship_img);
 		}
 		//Public function that can be called to move the position of the player based on a tile change
 		//thus to move one tile to the right send (1,0) as arugments, one to left is (-1,0)
