@@ -30,7 +30,7 @@ package
 			xPos = startX;
 			yPos = startY;
 			AP = 20;
-			super(((startX) * tileSize) + xOffset, ((startY) * tileSize) + yOffset, ship_img);
+			super(((startX + .25) * tileSize) + xOffset, ((startY + .25) * tileSize) + yOffset, ship_img);
 		}
 		//Public function that can be called to move the position of the player based on a tile change
 		//thus to move one tile to the right send (1,0) as arugments, one to left is (-1,0)
