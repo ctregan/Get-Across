@@ -31,6 +31,8 @@ namespace GetAcross {
         private Tile[,] field;
         private String levelKey;
         private String playerConnectUserId;
+        DateTime startSessionTime, endSessionTime, lastSessionEndTime;
+        String DateTimeFormat = "MM/dd/yyyy HH:mm:ss";
 
 		// This method is called when an instance of your the game is created
 		public override void GameStarted() {
@@ -39,6 +41,8 @@ namespace GetAcross {
             numPlayers = 0;
             levelKey = RoomData["key"];
             PreloadPlayerObjects = true;
+            startSessionTime = DateTime.Now;
+
             if (levelKey.Contains("Tutorial"))
             {
                 Visible = false;
@@ -46,6 +50,7 @@ namespace GetAcross {
 			// anything you write to the Console will show up in the 
 			// output window of the development server
 			Console.WriteLine("Game is started: " + RoomId + "\nLevel Key: " + levelKey);
+
             /*
 			// This is how you setup a timer
 			AddTimer(delegate {
@@ -73,14 +78,13 @@ namespace GetAcross {
 		public override void UserJoined(Player player) {
 			// this is how you send a player a message
             //Send the player their player Number.
-            
+            Console.WriteLine("start session time : " + startSessionTime.ToString(DateTimeFormat));
             playerConnectUserId = player.ConnectUserId;
             if (numPlayers < players.Length)
             {
                 player.Send("init", player.Id, player.ConnectUserId, levelKey);
                 players[numPlayers] = player;
                 Console.WriteLine("New Player " + player.Id);
-                player.AP = 20;
                 player.characterClass = "Novice";
                 numPlayers++;
                 // this is how you broadcast a message to all players connected to the game
@@ -94,20 +98,19 @@ namespace GetAcross {
                         {
                             // player is not a part of this quest; add them to it
                             result.Set("username", player.ConnectUserId);
-                            player.positionX = 0;
-                            player.positionY = 0;
+                            player.positionX = player.positionY = 0;
                         }
 
                         // load player's last position
                         else
                         {
-                            Console.WriteLine("userJoined....old x: " + result.GetInt("positionX") + ", old y: " + result.GetInt("positionY"));
                             player.positionX = result.GetInt("positionX");
                             player.positionY = result.GetInt("positionY");
                         }
-
+                        
                         result.Set("positionX", player.positionX);
                         result.Set("positionY", player.positionY);
+                        result.Set("AP", player.AP);
                         result.Save();
                     }
                 );
@@ -132,6 +135,21 @@ namespace GetAcross {
 		// This method is called when a player leaves the game
 		public override void UserLeft(Player player) {
 			Broadcast("UserLeft", player.Id);
+            endSessionTime = DateTime.Now;
+            Console.WriteLine("User session end!  Set time: " + endSessionTime.ToString(DateTimeFormat));
+            
+            // update player's end session time in the Quest database
+            PlayerIO.BigDB.LoadOrCreate("Quests", player.ConnectUserId,
+                delegate(DatabaseObject result)
+                {
+                    // if player exists in Quests database
+                    if (result.Contains("username"))
+                    {
+                        result.Set("lastSessionEndTime", endSessionTime.ToString(DateTimeFormat));
+                        result.Save();
+                    }
+                }
+            );
 		}
 
 		// This method is called when a player sends a message into the server code
@@ -158,7 +176,6 @@ namespace GetAcross {
                         int messageY = message.GetInt(1);
                         int xDistance = Math.Abs(messageX - player.positionX);
                         int yDistance = Math.Abs(messageY - player.positionY);
-                        Console.WriteLine("move message received: " + messageX + "," + messageY);
                         /*if ((xDistance > 1 || yDistance > 1) || (xDistance == 0 && yDistance == 0))
                         {
                             player.Send("invalidMove");
@@ -171,7 +188,6 @@ namespace GetAcross {
                         }
                         else
                         {*/
-                        Console.WriteLine("player pos before move: " + player.positionX + "," + player.positionY);
                         player.positionX = player.positionX + messageX;
                         player.positionY = player.positionY + messageY;
                         Console.WriteLine("Player " + player.Id + " is moving to (" + player.positionX + ", " + player.positionY + ")"); //debug 
@@ -205,8 +221,10 @@ namespace GetAcross {
                         {
                             int startX = 0;
                             int startY = 0;
+                            int startAP = 20;
 
                             // find player's previous position
+                            // set player sprite to that position
                             PlayerIO.BigDB.LoadOrCreate("Quests", player.ConnectUserId,
                                 delegate(DatabaseObject result)
                                 {
@@ -217,19 +235,30 @@ namespace GetAcross {
                                         startX = startY = 0;
                                         result.Set("positionX", startX);
                                         result.Set("positionY", startY);
+                                        result.Set("AP", 20);
                                         result.Save();
+
+                                        player.Send("playerInfo", players[player.Id - 1].positionX, players[player.Id - 1].positionY, playerConnectUserId, startAP);
                                     }
 
-                                    // load player's last position
+                                    // load player's last position and AP amount
                                     else
                                     {
-                                        Console.WriteLine("playerInfo....previous quest x: " + result.GetInt("positionX") + ", previous y: " + result.GetInt("positionY"));
                                         startX = result.GetInt("positionX");
                                         startY = result.GetInt("positionY");
+                                        startAP = result.GetInt("AP");
+                                        
+                                        // figure out how much AP player should have based on how long they've been away
+                                        lastSessionEndTime = DateTime.ParseExact(result.GetString("lastSessionEndTime"), DateTimeFormat, null);
+                                        Console.WriteLine("last session end time : " + lastSessionEndTime.ToString(DateTimeFormat));
+                                        int minutesPassedSinceLastPlay = (startSessionTime - lastSessionEndTime).Minutes;
+                                        startAP += minutesPassedSinceLastPlay % 3;
+                                        if (startAP > 20) startAP = 20;
+
+                                        player.Send("playerInfo", players[player.Id - 1].positionX, players[player.Id - 1].positionY, playerConnectUserId, startAP);
                                     }
                                 }
                             );
-                            player.Send("playerInfo", players[player.Id - 1].positionX, players[player.Id - 1].positionY, playerConnectUserId);
                         }
                         break;
                         

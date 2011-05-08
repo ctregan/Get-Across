@@ -92,7 +92,9 @@ package
 		private var _resoruceTextOffsetX:int = 450;
 		private var _resourceTextOffsetY:int = 300;
 		
-
+		private static var myClient:Client;
+		private static var playerName:String;
+		
 		public function PlayState(connection:Connection, client:Client):void
 		{
 			super();
@@ -104,6 +106,7 @@ package
 			infoBox.Show("waiting");						
 			
 			this.client = client;
+			myClient = client;
 			this.connection = connection;
 			
 			//Connection successful, load board and player
@@ -116,8 +119,10 @@ package
 				});
 			})
 			//Recieve Info from server about your saved character
-			connection.addMessageHandler("playerInfo", function(m:Message, posX:int, posY:int, name:String) {
+			connection.addMessageHandler("playerInfo", function(m:Message, posX:int, posY:int, name:String, startAP:int) {
 				if (myPlayer == null) {
+					trace("playerInfo!  given AP? " + startAP);
+					playerName = name;
 					// add player to screen --
 					// if player has previous position saved in database, place player there
 					client.bigDB.load("Quests", name, function(results:DatabaseObject):void {
@@ -125,13 +130,13 @@ package
 						if (results != null) {
 							playerStartX = results.positionX;
 							playerStartY = results.positionY;
-							myPlayer = new Player(playerStartX, playerStartY, _mapOffsetX, _mapOffsetY, _tileSize);
+							myPlayer = new Player(playerStartX, playerStartY, _mapOffsetX, _mapOffsetY, _tileSize, startAP);
 							playersArray[imPlayer - 1] = myPlayer;
 							lyrSprites.add(myPlayer);
 						}
 						else
 						{
-							myPlayer = new Player(playerStartX, playerStartY, _mapOffsetX, _mapOffsetY, _tileSize);
+							myPlayer = new Player(playerStartX, playerStartY, _mapOffsetX, _mapOffsetY, _tileSize, startAP);
 							playersArray[imPlayer - 1] = myPlayer;
 							lyrSprites.add(myPlayer);
 						}
@@ -168,8 +173,9 @@ package
 			})
 			//New user has joined, make their character
 			connection.addMessageHandler("UserJoined", function(m:Message, userID:int, posX:int, posY:int) {
-				if(userID != imPlayer){
-					playersArray[userID-1] = (new Player(posX, posY, _mapOffsetX, _mapOffsetY, _tileSize));
+				if (userID != imPlayer) {
+					// create other player; AP doesn't matter, so default to 20
+					playersArray[userID-1] = (new Player(posX, posY, _mapOffsetX, _mapOffsetY, _tileSize, 20));
 					lyrSprites.add(playersArray[userID-1]);
 				}
 			})
@@ -265,6 +271,19 @@ package
 			
 		}
 		
+		// update AP value for this player in the Quests database
+		// input: new value of AP
+		public static function updateAP(newAP:int):void
+		{
+			myClient.bigDB.load("Quests", playerName, function(results:DatabaseObject):void {
+				// make sure player exists in Quests
+				if (results != null) {
+					results.AP = newAP;
+					results.save();
+				}
+			});
+		}
+		
 		//Add all flixel elements to the board, essentially drawing the game.
 		private function boardSetup(map_data:String):void 
 		{
@@ -293,9 +312,8 @@ package
 			experience = new FlxText(_experienceTextOffsetX, _experienceTextOffsetY, 100, "Exp:0", true);
 			
 			//Bottom HUD
-
-
-						
+			
+			
 			//Right Side HUD
 			resources = new FlxText(_resoruceTextOffsetX, _resourceTextOffsetY, 150, "Resources:", true);			
 			goals = new FlxText(_goalsBoxOffsetX, _goalsBoxOffsetY, 100, "Goals:\nReach the Red Star", true); 

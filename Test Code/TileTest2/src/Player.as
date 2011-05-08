@@ -1,6 +1,7 @@
 package  
 {
 	import org.flixel.*;
+	import playerio.BigDB;
 	import playerio.Connection;
 	/**
 	 * ...
@@ -25,14 +26,15 @@ package
 		public var yTilePixel:Number; //The Y tile location in pixels for the player's current tile
 		private var _move_speed:int = 400;
 		
-		public function Player(startX:Number, startY:Number, xOffset:int, yOffset:int, tileSize:int) 
+		public function Player(startX:Number, startY:Number, xOffset:int, yOffset:int, tileSize:int, startAP:int) 
 		{
 			errorMessage = "";
 			xPos = startX;
 			yPos = startY;
-			AP = 20;
+			AP = startAP;
 			super(((startX + .25) * tileSize) + xOffset, ((startY + .25) * tileSize) + yOffset, player_avatar);
 		}
+		
 		//Public function that can be called to move the position of the player based on a tile change
 		//thus to move one tile to the right send (1,0) as arugments, one to left is (-1,0)
 		//NOW RETURNS A BOOLEAN, True if the move has caused the user to reach the end, False if not
@@ -49,6 +51,10 @@ package
 					return true;
 				}
 			}
+			
+			// update AP count in Quests database
+			PlayState.updateAP(AP);
+			
 			return false;
 		}
 		//Find AP Cost of the tile at the given location.
