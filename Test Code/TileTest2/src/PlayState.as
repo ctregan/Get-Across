@@ -207,16 +207,19 @@ package
 				counter -= FlxG.elapsed;
 				if (counter <= 0)
 				{
-					// After 15 seconds has passed, the timer will reset.
+					// After 180 seconds has passed, the timer will reset.
 					//myPlayer.AP++;
-					counter = 15;
+					counter = 180;
+					incrementAP();
+					myPlayer.AP++;
 				}
 				//Update HUD Information
-				secCounter.text = counter.toPrecision(3) + " Sec until AP";
+				secCounter.text = counter.toPrecision(3) + " seconds until more AP";
 				//Player moves only one character, detect keys presses here
 				if (myPlayer != null && !win) {
 					if (myPlayer.AP <= 0 && FlxG.keys.justPressed("A")) {
-						myPlayer.AP += 20;
+						incrementAP();
+						myPlayer.AP++;
 					}
 					if (FlxG.keys.justPressed("DOWN")) {
 						win = myPlayer.movePlayer(0, 1, _tileSize, connection);
@@ -233,7 +236,7 @@ package
 						//	connection.send("MapTileChanged", (myMouse.x - (myMouse.x % 32)) / 32, (myMouse.y - (myMouse.y % 32)) / 32, 5); //Test Code, will turn any clicked tile into a star
 						//})
 					}
-					apInfo.text = "AP:" + myPlayer.AP;
+					apInfo.text = "AP: " + myPlayer.AP;
 					location.text = "(" + myPlayer.xPos + "," + myPlayer.yPos + ")";
 					errorMessage.text = "" + myPlayer.errorMessage;
 					if (win) {
@@ -284,10 +287,22 @@ package
 			});
 		}
 		
+		// increment AP value for this player in the Quests database
+		public static function incrementAP():void
+		{
+			myClient.bigDB.load("Quests", playerName, function(results:DatabaseObject):void {
+				// make sure player exists in Quests
+				if (results != null) {
+					results.AP += 1;
+					results.save();
+				}
+			});
+		}
+		
 		//Add all flixel elements to the board, essentially drawing the game.
 		private function boardSetup(map_data:String):void 
 		{
-			counter = 15; //15 sec/1ap
+			counter = 180; // 1ap gained every 3 minutes
 			//Add chat to game
 			//var chat:Chat = new Chat(FlxG.stage, connection);
 			//Different Layers

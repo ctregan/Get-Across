@@ -252,7 +252,8 @@ namespace GetAcross {
                                         lastSessionEndTime = DateTime.ParseExact(result.GetString("lastSessionEndTime"), DateTimeFormat, null);
                                         Console.WriteLine("last session end time : " + lastSessionEndTime.ToString(DateTimeFormat));
                                         int minutesPassedSinceLastPlay = (startSessionTime - lastSessionEndTime).Minutes;
-                                        startAP += minutesPassedSinceLastPlay % 3;
+                                        startAP += minutesPassedSinceLastPlay / 3;
+                                        Console.WriteLine("minutes passed: " + minutesPassedSinceLastPlay + ", amount of AP to add: " + (minutesPassedSinceLastPlay / 3) + ", starting AP: " + startAP);
                                         if (startAP > 20) startAP = 20;
 
                                         player.Send("playerInfo", players[player.Id - 1].positionX, players[player.Id - 1].positionY, playerConnectUserId, startAP);
