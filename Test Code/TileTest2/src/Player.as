@@ -32,7 +32,7 @@ package
 			xPos = startX;
 			yPos = startY;
 			AP = startAP;
-			super(((startX + .25) * tileSize) + xOffset, ((startY + .25) * tileSize) + yOffset, player_avatar);
+			super(((startX) * tileSize) + xOffset, ((startY) * tileSize) + yOffset, player_avatar);
 		}
 		
 		//Public function that can be called to move the position of the player based on a tile change
@@ -67,7 +67,7 @@ package
 		}
 		//Sees if the desired move for the player is valid.
 		private function checkMove(proposedX:Number, proposedY:Number):Boolean {
-			if (PlayState.myMap.getTile(proposedX, proposedY) == WATER_TILE) {
+			if (PlayState.myMap.getTile(proposedX, proposedY) == WATER_TILE ) {
 				errorMessage = "Invalid Move, cant cross water";
 				return false;
 			}else if (AP < findCost(proposedX, proposedY)) {

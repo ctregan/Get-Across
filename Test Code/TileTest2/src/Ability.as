@@ -49,13 +49,23 @@ package
 			this.y = _caster.y - _tileSize
 			super.update();
 		}
-		public function getCost():int {
+		
+		//Returns the cost of the ability
+		public function getCost():int 
+		{
 			return _cost;
 		}
 		
-		public function cast(tileX:int, tileY:int, connection:Connection) {
+		//Returns the range of the ability
+		public function  getRange():int
+		{
+			return _range;
+		}
+		
+		public function cast(tileX:int, tileY:int, connection:Connection) 
+		{
 			if (_effect == "Terrain" && PlayState.myMap.getTile(tileX,tileY) == _fromTile) {
-				//PlayState.myMap.setTile(tileX, tileY, toTile)
+				PlayState.myMap.setTile(tileX, tileY, _toTile)
 				connection.send("MapTileChanged", tileX, tileY, _toTile);
 			}
 		}

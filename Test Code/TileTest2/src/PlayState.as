@@ -59,6 +59,9 @@ package
         public static var lyrHUD:FlxGroup;
 		public static var lyrBackground:FlxGroup;
 		
+		private static var abilitySelected:Boolean = false; //Indicates whether an ability is activated
+		private static var activeAbility:Ability; //Which ability is currently chosen
+		
 		private var imPlayer:int;
 		private var myID:String;
 		private var infoBox:InfoBox;
@@ -187,10 +190,8 @@ package
 			})
 			//A tile has changed and needs to be updated locally
 			connection.addMessageHandler("MapTileChanged", function(m:Message, userID:int, posX:int, posY:int, newTileType:int) {
-				if (userID != imPlayer) {
-					setTileIdentity(posX, posY, newTileType);
-					//myMap.setTile(posX, posY, newTileType, true);
-				}
+				setTileIdentity(posX, posY, newTileType);
+				//myMap.setTile(posX, posY, newTileType, true);
 			})
 			//A player has reached the end, victory!
 			connection.addMessageHandler("win", function(m:Message, userID:int, xp:int, coin:int) {
@@ -229,8 +230,15 @@ package
 						win = myPlayer.movePlayer(1, 0, _tileSize, connection);
 					}else if (FlxG.keys.justPressed("LEFT")) {
 						win = myPlayer.movePlayer( -1, 0, _tileSize, connection);
-					}else if (myMouse.justPressed() &&  mouseWithinTileMap()) {
+					}else if (myMouse.justPressed() &&  mouseWithinTileMap() && abilitySelected) {
+						var selectedXTile:int = (myMouse.x - _mapOffsetX) / _tileSize
+						//(myMouse.x - (myMouse.x % 32)) / 32;
+						var selectedYTile:int = (myMouse.y - _mapOffsetY) / _tileSize
+						//(myMouse.y - (myMouse.y % 32)) / 32
 						//TO DO: ADD ALERT MESSAGE!!!
+						if (checkActiveAbilityRange(selectedXTile, selectedYTile)) {
+							activeAbility.cast(selectedXTile, selectedYTile , connection);
+						}
 						//new InGamePrompt(this, "Are you sure?", function(){ 
 						//	myMap.setTile(myMouse.x / 32, myMouse.y / 32, 5, true);
 						//	connection.send("MapTileChanged", (myMouse.x - (myMouse.x % 32)) / 32, (myMouse.y - (myMouse.y % 32)) / 32, 5); //Test Code, will turn any clicked tile into a star
@@ -262,7 +270,7 @@ package
 				return "Tree (Travel Cost = 1AP)";
 			}else if (type == CHERRY_TILE) {
 				return "Cherry Tree (Travel Cost = 1AP)";
-			}else if (type == WATER_TILE) {
+			}else if (type == WATER_TILE || type == 6 || type == 7) {
 				return "Water (Impassible without help)";
 			}else if (type == GRASS_TILE) {
 				return "Land (Travel Cost = 1AP)";
@@ -271,6 +279,13 @@ package
 			}else{
 				return "Unkown Land Type";
 			}
+			
+		}
+		
+		//Returns whether the given tile location is within range of the active ability
+		private function checkActiveAbilityRange(xTile:int, yTile:int):Boolean
+		{
+			return (Math.abs((myPlayer.xPos - xTile) + (myPlayer.yPos - yTile)) <= activeAbility.getRange()) 
 			
 		}
 		
@@ -298,6 +313,24 @@ package
 				}
 			});
 		}
+		//Returns whether an ability has been selected to be used by the player
+		public static function getAbilitySelected():Boolean 
+		{
+			return abilitySelected;
+		}
+		
+		// Updates which ability is currently active
+		public static function setActiveAbility(toActivate:Ability):void 
+		{
+			if (toActivate == null) {
+				abilitySelected = false;
+			}else {
+				abilitySelected = true;
+				activeAbility = toActivate;
+			}
+		}
+		
+		
 		
 		//Add all flixel elements to the board, essentially drawing the game.
 		private function boardSetup(map_data:String):void 
@@ -376,8 +409,10 @@ package
 				&& myMouse.x < (myMap.x + myMap.width + _mapOffsetX) 
 				&& myMap.y < myMouse.y +_mapOffsetY
 				&& myMouse.y < (myMap.y + myMap.height + _mapOffsetY)) {
+				errorMessage.text = "In the Box"	
 				return true;
 			}
+			errorMessage.text = "Out of the box"
 			return false;
 		}
 		

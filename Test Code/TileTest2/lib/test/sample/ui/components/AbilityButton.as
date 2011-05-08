@@ -15,10 +15,12 @@ package sample.ui.components{
 		function AbilityButton(ability:Ability, text:String){
 			_rangeShow = false;
 			_clickHandler = function() {
-				if (_rangeShow) {
+				if (_rangeShow && PlayState.getAbilitySelected()) {
 					ability.visible = false;
 					_rangeShow = false;
-				}else{
+					PlayState.setActiveAbility(null);
+				}else if(!_rangeShow && !PlayState.getAbilitySelected()){
+					PlayState.setActiveAbility(ability);
 					ability.visible = true;
 					_rangeShow = true;
 				}
