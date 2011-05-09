@@ -67,11 +67,11 @@ namespace GetAcross {
 		}
 
 		// This method is called whenever a player joins the game
-		public override void UserJoined(Player player) {
+		public override void UserJoined(Player player)  {
 			// this is how you send a player a message
             //Send the player their player Number.
             if (numPlayers < players.Length)
-            {
+            {             
                 player.Send("init", player.Id, player.ConnectUserId, levelKey);
                 players[numPlayers] = player;
                 Console.WriteLine("New Player " + player.Id);
