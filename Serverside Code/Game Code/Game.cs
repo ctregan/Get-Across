@@ -291,6 +291,10 @@ namespace GetAcross {
                                 {
                                     player.PlayerObject.Set("tutorial", 3);
                                 }
+                                else if (levelKey == "Tutorial_3")
+                                {
+                                    player.PlayerObject.Set("tutorial", 4);
+                                }
 
                                 player.PlayerObject.Set("xp", player.PlayerObject.GetInt("xp", 0) + gainedxp);
                                 player.PlayerObject.Set("coin", player.PlayerObject.GetInt("coin", 0) + gainedcoin);

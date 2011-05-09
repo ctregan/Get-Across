@@ -119,6 +119,18 @@ package
 				client.bigDB.load("StaticMaps", level, function(ob:DatabaseObject):void {
 					var values:Array = ob.tileValues; //Recieve Tile Array from database to be turned into string with line breaks between each line
 					boardSetup(values.join("\n"));
+					//Load Monster
+					try{
+						var monsters:Array = ob.Monsters
+						for (var z:String in monsters) {
+							//var myMonsterObject:DatabaseObject = monsters[z]
+							var myMonsterSprite:Monster = new Monster(monsters[z].Type, monsters[z].xTile, monsters[z].yTile, _mapOffsetX, _mapOffsetY, _tileSize);
+							lyrSprites.add(myMonsterSprite);
+						}
+					}catch (e:Error) {
+						trace("Monster Loading Error: " + e);
+					}
+					
 				});
 			})
 			//Recieve Info from server about your saved character
