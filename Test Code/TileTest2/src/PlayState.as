@@ -222,13 +222,17 @@ package
 						incrementAP();
 						myPlayer.AP++;
 					}
-					if (FlxG.keys.justPressed("DOWN")) {
+					if (FlxG.keys.justPressed("DOWN") && !myPlayer.isMoving) {
+						myPlayer.facing = FlxSprite.DOWN;
 						win = myPlayer.movePlayer(0, 1, _tileSize, connection);
-					}else if (FlxG.keys.justPressed("UP")) {
+					}else if (FlxG.keys.justPressed("UP") && !myPlayer.isMoving) {
+						myPlayer.facing = FlxSprite.UP;
 						win = myPlayer.movePlayer(0, -1, _tileSize, connection);
-					}else if (FlxG.keys.justPressed("RIGHT")) {
+					}else if (FlxG.keys.justPressed("RIGHT") && !myPlayer.isMoving) {
+						myPlayer.facing = FlxSprite.RIGHT;
 						win = myPlayer.movePlayer(1, 0, _tileSize, connection);
-					}else if (FlxG.keys.justPressed("LEFT")) {
+					}else if (FlxG.keys.justPressed("LEFT") && !myPlayer.isMoving) {
+						myPlayer.facing = FlxSprite.LEFT;
 						win = myPlayer.movePlayer( -1, 0, _tileSize, connection);
 					}else if (myMouse.justPressed() &&  mouseWithinTileMap() && abilitySelected) {
 						var selectedXTile:int = (myMouse.x - _mapOffsetX) / _tileSize
@@ -243,6 +247,8 @@ package
 						//	myMap.setTile(myMouse.x / 32, myMouse.y / 32, 5, true);
 						//	connection.send("MapTileChanged", (myMouse.x - (myMouse.x % 32)) / 32, (myMouse.y - (myMouse.y % 32)) / 32, 5); //Test Code, will turn any clicked tile into a star
 						//})
+					}else if(!myPlayer.isMoving) {
+						myPlayer.play("idle" + myPlayer.facing);
 					}
 					apInfo.text = "AP: " + myPlayer.AP;
 					location.text = "(" + myPlayer.xPos + "," + myPlayer.yPos + ")";
@@ -277,7 +283,7 @@ package
 			}else if (type == WIN_TILE) {
 				return "End Point (Reach here to win!)";
 			}else{
-				return "Unkown Land Type";
+				return "Unknown Land Type";
 			}
 			
 		}
