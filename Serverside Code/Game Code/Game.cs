@@ -6,6 +6,7 @@ using PlayerIO.GameLibrary;
 using System.Drawing;
 
 namespace GetAcross {
+
     //Player class. Each player that joins the game will have these attributes
 	public class Player : BasePlayer {
 		public string Name;
@@ -29,6 +30,10 @@ namespace GetAcross {
         private int numPlayers;
         private Tile[,] field;
         private String levelKey;
+        private String playerConnectUserId;
+        DateTime startSessionTime, endSessionTime, lastSessionEndTime;
+        String DateTimeFormat = "MM/dd/yyyy HH:mm:ss";
+
 		// This method is called when an instance of your the game is created
 		public override void GameStarted() {
             players = new Player[2];
@@ -36,6 +41,8 @@ namespace GetAcross {
             numPlayers = 0;
             levelKey = RoomData["key"];
             PreloadPlayerObjects = true;
+            startSessionTime = DateTime.Now;
+
             if (levelKey.Contains("Tutorial"))
             {
                 Visible = false;
@@ -43,6 +50,7 @@ namespace GetAcross {
 			// anything you write to the Console will show up in the 
 			// output window of the development server
 			Console.WriteLine("Game is started: " + RoomId + "\nLevel Key: " + levelKey);
+
             /*
 			// This is how you setup a timer
 			AddTimer(delegate {
@@ -70,14 +78,13 @@ namespace GetAcross {
 		public override void UserJoined(Player player)  {
 			// this is how you send a player a message
             //Send the player their player Number.
+            Console.WriteLine("start session time : " + startSessionTime.ToString(DateTimeFormat));
+            playerConnectUserId = player.ConnectUserId;
             if (numPlayers < players.Length)
             {             
                 player.Send("init", player.Id, player.ConnectUserId, levelKey);
                 players[numPlayers] = player;
                 Console.WriteLine("New Player " + player.Id);
-                player.AP = 20;
-                player.positionX = 0;
-                player.positionY = 0;
                 player.characterClass = "Novice";
                 numPlayers++;
                 // this is how you broadcast a message to all players connected to the game
@@ -91,10 +98,19 @@ namespace GetAcross {
                         {
                             // player is not a part of this quest; add them to it
                             result.Set("username", player.ConnectUserId);
+                            player.positionX = player.positionY = 0;
                         }
 
+                        // load player's last position
+                        else
+                        {
+                            player.positionX = result.GetInt("positionX");
+                            player.positionY = result.GetInt("positionY");
+                        }
+                        
                         result.Set("positionX", player.positionX);
                         result.Set("positionY", player.positionY);
+                        result.Set("AP", player.AP);
                         result.Save();
                     }
                 );
@@ -119,6 +135,21 @@ namespace GetAcross {
 		// This method is called when a player leaves the game
 		public override void UserLeft(Player player) {
 			Broadcast("UserLeft", player.Id);
+            endSessionTime = DateTime.Now;
+            Console.WriteLine("User session end!  Set time: " + endSessionTime.ToString(DateTimeFormat));
+            
+            // update player's end session time in the Quest database
+            PlayerIO.BigDB.LoadOrCreate("Quests", player.ConnectUserId,
+                delegate(DatabaseObject result)
+                {
+                    // if player exists in Quests database
+                    if (result.Contains("username"))
+                    {
+                        result.Set("lastSessionEndTime", endSessionTime.ToString(DateTimeFormat));
+                        result.Save();
+                    }
+                }
+            );
 		}
 
 		// This method is called when a player sends a message into the server code
@@ -137,6 +168,8 @@ namespace GetAcross {
                         joinGame(player);
                         break;
                     }
+
+                // player has moved up, down, left, or right
                 case "move":
                     {
                         int messageX = message.GetInt(0);
@@ -186,9 +219,50 @@ namespace GetAcross {
                         }
                         else
                         {
-                            player.Send("playerInfo", players[player.Id - 1].positionX, players[player.Id - 1].positionY);
+                            int startX = 0;
+                            int startY = 0;
+                            int startAP = 20;
+
+                            // find player's previous position
+                            // set player sprite to that position
+                            PlayerIO.BigDB.LoadOrCreate("Quests", player.ConnectUserId,
+                                delegate(DatabaseObject result)
+                                {
+                                    if (!result.Contains("username"))
+                                    {
+                                        // player is not a part of this quest; add them to it
+                                        result.Set("username", playerConnectUserId);
+                                        startX = startY = 0;
+                                        result.Set("positionX", startX);
+                                        result.Set("positionY", startY);
+                                        result.Set("AP", 20);
+                                        result.Save();
+
+                                        player.Send("playerInfo", players[player.Id - 1].positionX, players[player.Id - 1].positionY, playerConnectUserId, startAP);
+                                    }
+
+                                    // load player's last position and AP amount
+                                    else
+                                    {
+                                        startX = result.GetInt("positionX");
+                                        startY = result.GetInt("positionY");
+                                        startAP = result.GetInt("AP");
+                                        
+                                        // figure out how much AP player should have based on how long they've been away
+                                        lastSessionEndTime = DateTime.ParseExact(result.GetString("lastSessionEndTime"), DateTimeFormat, null);
+                                        Console.WriteLine("last session end time : " + lastSessionEndTime.ToString(DateTimeFormat));
+                                        int minutesPassedSinceLastPlay = (startSessionTime - lastSessionEndTime).Minutes;
+                                        startAP += minutesPassedSinceLastPlay / 3;
+                                        Console.WriteLine("minutes passed: " + minutesPassedSinceLastPlay + ", amount of AP to add: " + (minutesPassedSinceLastPlay / 3) + ", starting AP: " + startAP);
+                                        if (startAP > 20) startAP = 20;
+
+                                        player.Send("playerInfo", players[player.Id - 1].positionX, players[player.Id - 1].positionY, playerConnectUserId, startAP);
+                                    }
+                                }
+                            );
                         }
                         break;
+                        
                     }
                 case "MapTileChanged":
                     {
@@ -201,7 +275,6 @@ namespace GetAcross {
                     }
                 case "win":
                     {
-
                         PlayerIO.BigDB.Load("StaticMaps", levelKey,
                             delegate(DatabaseObject result)
                             {
@@ -213,6 +286,14 @@ namespace GetAcross {
                                 if (levelKey == "Tutorial_1")
                                 {
                                     player.PlayerObject.Set("tutorial", 2);
+                                }
+                                else if (levelKey == "Tutorial_2")
+                                {
+                                    player.PlayerObject.Set("tutorial", 3);
+                                }
+                                else if (levelKey == "Tutorial_3")
+                                {
+                                    player.PlayerObject.Set("tutorial", 4);
                                 }
 
                                 player.PlayerObject.Set("xp", player.PlayerObject.GetInt("xp", 0) + gainedxp);
@@ -226,6 +307,9 @@ namespace GetAcross {
                                 Console.WriteLine(error.ToString());
                             });
                         
+                        // quest is finished; remove object from table
+                        PlayerIO.BigDB.DeleteKeys("Quests", player.ConnectUserId, null);
+
                         break;
                     }
 			}
