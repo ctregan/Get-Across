@@ -71,29 +71,29 @@ package
 		private var win:Boolean = false; //This variable will indicate if a user has won or not
 		
 		// constants/offset numbers
-		private var _mapOffsetX:int = 100; 	// left border of map
-		private var _mapOffsetY:int = 40;	// top border of map
+		private var _mapOffsetX:int = 204; 	// left border of map
+		private var _mapOffsetY:int = 46;	// top border of map
 		private var _apBoxOffsetX:int = 290;
 		private var _apBoxOffsetY:int = 5;
 		private var _timerOffsetX:int = 330;
 		private var _timerOffsetY:int = 5;
-		private var _positionInfoOffsetX:int = 450;
-		private var _positionInfoOffsetY:int = 330;
-		private var _terrainMessageBoxOffsetX:int = 450;
-		private var _terrainMessageBoxOffsetY:int = 300;
-		private var _errorMessageOffsetX: int = 450;
-		private var _errorMessageOffsetY: int = 370;
-		private var _goalsBoxOffsetX:int = 450;
-		private var _goalsBoxOffsetY:int = 15;
-		private var _cardBoxOffsetX:int = 450;
-		private var _cardBoxOffsetY:int = 100;
+		private var _positionInfoOffsetX:int = 480;
+		private var _positionInfoOffsetY:int = 368;
+		private var _terrainMessageBoxOffsetX:int = 210;
+		private var _terrainMessageBoxOffsetY:int = 368;
+		private var _errorMessageOffsetX: int = 600;
+		private var _errorMessageOffsetY: int = 368;
+		private var _goalsBoxOffsetX:int = 540;
+		private var _goalsBoxOffsetY:int = 70;
+		private var _cardBoxOffsetX:int = 31;
+		private var _cardBoxOffsetY:int = 75;
 		private var _tileSize:int = 32;
 		private var _lvlTextOffsetX:int = 5;
 		private var _lvlTextOffsetY:int = 5;
 		private var _experienceTextOffsetX:int = 70;
 		private var _experienceTextOffsetY:int = 5;
-		private var _resoruceTextOffsetX:int = 450;
-		private var _resourceTextOffsetY:int = 300;
+		private var _resoruceTextOffsetX:int = 540;
+		private var _resourceTextOffsetY:int = 250;
 		
 		private static var myClient:Client;
 		private static var playerName:String;
@@ -148,12 +148,14 @@ package
 							myPlayer = new Player(playerStartX, playerStartY, _mapOffsetX, _mapOffsetY, _tileSize, startAP);
 							playersArray[imPlayer - 1] = myPlayer;
 							lyrSprites.add(myPlayer);
+							trace("loaded, xy " + playerStartX + " " + playerStartY);
 						}
 						else
 						{
 							myPlayer = new Player(playerStartX, playerStartY, _mapOffsetX, _mapOffsetY, _tileSize, startAP);
 							playersArray[imPlayer - 1] = myPlayer;
 							lyrSprites.add(myPlayer);
+							trace("fresh, xy " + playerStartX + " " + playerStartY);
 						}
 					});
 					
@@ -386,7 +388,7 @@ package
 			goals.frameHeight = 75;			
 			errorMessage = new FlxText(_errorMessageOffsetX, _errorMessageOffsetY, 120, "Errors Appear Here", true);
 			location = new FlxText(_positionInfoOffsetX, _positionInfoOffsetY, 100, "(0,0)", true);
-			mouseLocation = new FlxText(_terrainMessageBoxOffsetX, _terrainMessageBoxOffsetY, 150, "(0,0)", true);
+			mouseLocation = new FlxText(_terrainMessageBoxOffsetX, _terrainMessageBoxOffsetY, 260, "(0,0)", true);
 			secCounter = new FlxText(_timerOffsetX, _timerOffsetY, 100, "15 Sec until AP", true);			
 			abilities = new FlxText(_cardBoxOffsetX, _cardBoxOffsetY, 100, "Abilities:\n", true);
 			abilitiesBox = new Box().fill(0xFFFFFF, 0.8, 0)

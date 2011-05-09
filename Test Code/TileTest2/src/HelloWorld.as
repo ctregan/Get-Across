@@ -2,7 +2,7 @@ package
 {
 	import org.flixel.*;
 	
-	[SWF(width="600", height="400", backgroundColor="#FFFFFF")] //Set the size and color of the Flash file
+	[SWF(width="700", height="400", backgroundColor="#FFFFFF")] //Set the size and color of the Flash file
 
 	/**
 	 * ...
@@ -13,7 +13,7 @@ package
 		
 		public function HelloWorld() 
 		{
-			super(600, 400, LoginState,1);
+			super(700, 400, LoginState,1);
 		}
 	}
 
