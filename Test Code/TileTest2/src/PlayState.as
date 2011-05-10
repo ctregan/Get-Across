@@ -350,8 +350,6 @@ package
 			}
 		}
 		
-		
-		
 		//Add all flixel elements to the board, essentially drawing the game.
 		private function boardSetup(map_data:String):void 
 		{
