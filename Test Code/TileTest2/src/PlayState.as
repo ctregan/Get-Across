@@ -60,6 +60,7 @@ package
         public static var lyrSprites:FlxGroup;
         public static var lyrHUD:FlxGroup;
 		public static var lyrBackground:FlxGroup;
+		public static var lyrBattle:FlxGroup;
 		
 		private static var abilitySelected:Boolean = false; //Indicates whether an ability is activated
 		private static var activeAbility:Ability; //Which ability is currently chosen
@@ -125,11 +126,13 @@ package
 					try {
 						//monsterArray = new Array[ob.MonsterCount];
 						var monsters:Array = ob.Monsters
-						for (var z:String in monsters) {
-							//var myMonsterObject:DatabaseObject = monsters[z]
-							var myMonsterSprite:Monster = new Monster(monsters[z].Type, monsters[z].xTile, monsters[z].yTile, _mapOffsetX, _mapOffsetY, _tileSize);
-							monsterArray.push(myMonsterSprite);
-							lyrSprites.add(myMonsterSprite);
+						for (var z in monsters) {
+							//Dont add a monster that is dead
+							if(monsters[z].AP > 0){
+								var myMonsterSprite:Monster = new Monster(monsters[z].Type, monsters[z].AP, z, monsters[z].xTile, monsters[z].yTile, _mapOffsetX, _mapOffsetY, _tileSize);
+								monsterArray.push(myMonsterSprite);
+								lyrSprites.add(myMonsterSprite);
+							}
 						}
 					}catch (e:Error) {
 						trace("Monster Loading Error: " + e);
@@ -216,6 +219,11 @@ package
 				connection.disconnect();
 				FlxG.state = new QuestCompleteState(xp, coin, client);
 			})
+			//A monster has been hurt and need their AP updated
+			connection.addMessageHandler("MonsterAPChange", function (m:Message, newAP:int, monsterIndex:int ):void 
+			{
+				monsterArray[monsterIndex].updateAP(newAP);
+			}
 			
 			
 		}
@@ -279,11 +287,15 @@ package
 					} else {
 						mouseLocation.text = "";
 					}
-					
+					//Only show the battle hud if the player is in combat
+					lyrBattle.visible = myPlayer.inBattle;
+					 //Detect Monster collision, if a monster is overlapping your player then you are now in a fight
 					for (var monster in monsterArray) {
 						FlxU.overlap(monsterArray[monster], myPlayer, function() {
 							myPlayer.inBattle = true;
+							myPlayer.combatant = monsterArray[monster]
 							errorMessage.text = "BATTLE!";
+							lyrBattle.visible = true;
 						})
 					}
 				}
@@ -375,6 +387,7 @@ package
             lyrSprites = new FlxGroup; //Character Sprites exist here
             lyrHUD = new FlxGroup; //HUD elements exist here
 			lyrBackground = new FlxGroup;
+			lyrBattle = new FlxGroup;
 			myMouse = FlxG.mouse;
 			
 			//Tile Map
@@ -391,7 +404,30 @@ package
 			lvl = new FlxText(_lvlTextOffsetX, _lvlTextOffsetY, 100, "Lvl:1", true);
 			experience = new FlxText(_experienceTextOffsetX, _experienceTextOffsetY, 100, "Exp:0", true);
 			
-			//Bottom HUD
+			//Battle HUD
+			//Weak Attack Button
+			lyrBattle.add(new FlxButton(10, 10, function() { 
+				if (myPlayer.inBattle) {
+					myPlayer.combatant.attack(1,myPlayer, connection);
+				}
+			}))
+			lyrBattle.add(new FlxText(12, 12, 100, "Weak Attack"));
+			//Medium Attack Button
+			lyrBattle.add(new FlxButton(10, 40, function() { 
+				if (myPlayer.inBattle) {
+					myPlayer.combatant.attack(2,myPlayer, connection);
+				}
+			}))
+			lyrBattle.add(new FlxText(12, 42, 100, "Medium Attack"));
+			//Strong Attack Button
+			lyrBattle.add(new FlxButton(10, 70, function() { 
+				if (myPlayer.inBattle) {
+					myPlayer.combatant.attack(3,myPlayer, connection);
+				}
+			}))
+			lyrBattle.add(new FlxText(12, 72, 100, "Strong Attack"));
+			//Initially the battle hud is invisible, it will be visible when a user enters combat
+			lyrBattle.visible = false;
 			
 			
 			//Right Side HUD
@@ -423,12 +459,15 @@ package
 			lyrHUD.add(apInfo);
 			lyrHUD.add(mouseLocation);
 			lyrBackground.add(background);
-		
+			
+			
 			this.add(lyrBackground);
 			this.add(lyrStage);
             this.add(lyrSprites);
             this.add(lyrHUD);
+			this.add(lyrBattle);
 			this.addChild(abilitiesBox);
+			
 			
 			connected = true;
 			connection.send("playerInfo");

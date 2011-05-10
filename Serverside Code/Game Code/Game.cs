@@ -312,6 +312,20 @@ namespace GetAcross {
 
                         break;
                     }
+                case "QuestMapChange":
+                    {
+                        //NADINE TO DO - This message will recieve one string that is the newly updated map, need to sav
+                        //to the player's associated quest object
+                        break;
+                    }
+                case "MonsterAPChange":
+                    {
+                        int newAp = message.GetInt(0);
+                        int monsterIndex = message.GetInt(1);
+                        //CHARLIE TO DO - Make this data reflected in the database too.
+                        Broadcast("MonsterAPChange", newAp, monsterIndex);
+                        break;
+                    }
 			}
 		}
 
