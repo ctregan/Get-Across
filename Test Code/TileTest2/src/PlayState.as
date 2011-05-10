@@ -36,6 +36,8 @@ package
 		private var apInfo:FlxText; //Text field to reflect the numner of AP left
 		private var myPlayer:Player;
 		private var playersArray:Array = []; //Array of all players on board
+		private var monsterArray:Array = [];
+		
 		private var myMouse:FlxMouse; //Mouse
 		private var errorMessage:FlxText; //Text Field to reflect any errors
 		private var secCounter:FlxText; //Text field to reflect time left until next AP
@@ -120,11 +122,13 @@ package
 					var values:Array = ob.tileValues; //Recieve Tile Array from database to be turned into string with line breaks between each line
 					boardSetup(values.join("\n"));
 					//Load Monster
-					try{
+					try {
+						//monsterArray = new Array[ob.MonsterCount];
 						var monsters:Array = ob.Monsters
 						for (var z:String in monsters) {
 							//var myMonsterObject:DatabaseObject = monsters[z]
 							var myMonsterSprite:Monster = new Monster(monsters[z].Type, monsters[z].xTile, monsters[z].yTile, _mapOffsetX, _mapOffsetY, _tileSize);
+							monsterArray.push(myMonsterSprite);
 							lyrSprites.add(myMonsterSprite);
 						}
 					}catch (e:Error) {
@@ -229,21 +233,21 @@ package
 				//Update HUD Information
 				secCounter.text = counter.toPrecision(3) + " seconds until more AP";
 				//Player moves only one character, detect keys presses here
-				if (myPlayer != null && !win) {
+				if (myPlayer != null && !win ) {
 					if (myPlayer.AP <= 0 && FlxG.keys.justPressed("A")) {
 						incrementAP();
 						myPlayer.AP++;
 					}
-					if (FlxG.keys.justPressed("DOWN") && !myPlayer.isMoving) {
+					if (FlxG.keys.justPressed("DOWN") && !myPlayer.isMoving && !myPlayer.inBattle) {
 						myPlayer.facing = FlxSprite.DOWN;
 						win = myPlayer.movePlayer(0, 1, _tileSize, connection);
-					}else if (FlxG.keys.justPressed("UP") && !myPlayer.isMoving) {
+					}else if (FlxG.keys.justPressed("UP") && !myPlayer.isMoving && !myPlayer.inBattle) {
 						myPlayer.facing = FlxSprite.UP;
 						win = myPlayer.movePlayer(0, -1, _tileSize, connection);
-					}else if (FlxG.keys.justPressed("RIGHT") && !myPlayer.isMoving) {
+					}else if (FlxG.keys.justPressed("RIGHT") && !myPlayer.isMoving && !myPlayer.inBattle) {
 						myPlayer.facing = FlxSprite.RIGHT;
 						win = myPlayer.movePlayer(1, 0, _tileSize, connection);
-					}else if (FlxG.keys.justPressed("LEFT") && !myPlayer.isMoving) {
+					}else if (FlxG.keys.justPressed("LEFT") && !myPlayer.isMoving && !myPlayer.inBattle) {
 						myPlayer.facing = FlxSprite.LEFT;
 						win = myPlayer.movePlayer( -1, 0, _tileSize, connection);
 					}else if (myMouse.justPressed() &&  mouseWithinTileMap() && abilitySelected) {
@@ -273,8 +277,16 @@ package
 					} else {
 						mouseLocation.text = "";
 					}
+					
+					for (var monster in monsterArray) {
+						FlxU.overlap(monsterArray[monster], myPlayer, function() {
+							myPlayer.inBattle = true;
+							errorMessage.text = "BATTLE!";
+						})
+					}
 				}
 				
+			
 				super.update();
 			}
 		}

@@ -25,6 +25,7 @@ package
 		public var errorMessage:String;
 		public var xPos:Number; //X Tile Position
 		public var yPos:Number; //Y Tile Position
+		public var inBattle:Boolean = false;
 		public var xTilePixel:Number; //The X tile location in pixels for the player's current tile
 		public var yTilePixel:Number; //The Y tile location in pixels for the player's current tile
 		private var _move_speed:int = 400;
