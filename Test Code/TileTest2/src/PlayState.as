@@ -2,6 +2,7 @@ package
 {
 	import org.flixel.*
 	import org.flixel.data.FlxMouse;
+	import org.flixel.data.FlxPanel;
 	import playerio.*
 	import sample.ui.Alert;
 	import sample.ui.components.AbilityButton;
@@ -36,6 +37,8 @@ package
 		private var apInfo:FlxText; //Text field to reflect the numner of AP left
 		private var myPlayer:Player;
 		private var playersArray:Array = []; //Array of all players on board
+		private var monsterArray:Array = [];
+		
 		private var myMouse:FlxMouse; //Mouse
 		private var errorMessage:FlxText; //Text Field to reflect any errors
 		private var secCounter:FlxText; //Text field to reflect time left until next AP
@@ -58,6 +61,7 @@ package
         public static var lyrSprites:FlxGroup;
         public static var lyrHUD:FlxGroup;
 		public static var lyrBackground:FlxGroup;
+		public static var lyrBattle:FlxGroup;
 		
 		private static var abilitySelected:Boolean = false; //Indicates whether an ability is activated
 		private static var activeAbility:Ability; //Which ability is currently chosen
@@ -122,12 +126,16 @@ package
 					var values:Array = ob.tileValues; //Recieve Tile Array from database to be turned into string with line breaks between each line
 					boardSetup(values.join("\n"));
 					//Load Monster
-					try{
+					try {
+						//monsterArray = new Array[ob.MonsterCount];
 						var monsters:Array = ob.Monsters
-						for (var z:String in monsters) {
-							//var myMonsterObject:DatabaseObject = monsters[z]
-							var myMonsterSprite:Monster = new Monster(monsters[z].Type, monsters[z].xTile, monsters[z].yTile, _mapOffsetX, _mapOffsetY, _tileSize);
-							lyrSprites.add(myMonsterSprite);
+						for (var z in monsters) {
+							//Dont add a monster that is dead
+							if(monsters[z].AP > 0){
+								var myMonsterSprite:Monster = new Monster(monsters[z].Type, monsters[z].AP, z, monsters[z].xTile, monsters[z].yTile, _mapOffsetX, _mapOffsetY, _tileSize);
+								monsterArray.push(myMonsterSprite);
+								lyrSprites.add(myMonsterSprite);
+							}
 						}
 					}catch (e:Error) {
 						trace("Monster Loading Error: " + e);
@@ -213,7 +221,11 @@ package
 				connection.disconnect();
 				FlxG.state = new QuestCompleteState(xp, coin, client);
 			})
-			
+			//A monster has been hurt and need their AP updated
+			connection.addMessageHandler("MonsterAPChange", function (m:Message, userID:int, newAP:int, monsterIndex:int ):void 
+			{
+				monsterArray[monsterIndex]._ap = newAP;
+			})
 			
 		}
 		
@@ -231,21 +243,22 @@ package
 				//Update HUD Information
 				secCounter.text = counter.toPrecision(3) + " seconds until more AP";
 				//Player moves only one character, detect keys presses here
+
 				if (myPlayer != null && !win) {
 					if (myPlayer.AP <= 20 && FlxG.keys.justPressed("A")) {
 						myPlayer.AP++;
 						myConnection.send("playerAP", myPlayer.AP);
 					}
-					if (FlxG.keys.justPressed("DOWN") && !myPlayer.isMoving) {
+					if (FlxG.keys.justPressed("DOWN") && !myPlayer.isMoving && !myPlayer.inBattle) {
 						myPlayer.facing = FlxSprite.DOWN;
 						win = myPlayer.movePlayer(0, 1, _tileSize, connection);
-					}else if (FlxG.keys.justPressed("UP") && !myPlayer.isMoving) {
+					}else if (FlxG.keys.justPressed("UP") && !myPlayer.isMoving && !myPlayer.inBattle) {
 						myPlayer.facing = FlxSprite.UP;
 						win = myPlayer.movePlayer(0, -1, _tileSize, connection);
-					}else if (FlxG.keys.justPressed("RIGHT") && !myPlayer.isMoving) {
+					}else if (FlxG.keys.justPressed("RIGHT") && !myPlayer.isMoving && !myPlayer.inBattle) {
 						myPlayer.facing = FlxSprite.RIGHT;
 						win = myPlayer.movePlayer(1, 0, _tileSize, connection);
-					}else if (FlxG.keys.justPressed("LEFT") && !myPlayer.isMoving) {
+					}else if (FlxG.keys.justPressed("LEFT") && !myPlayer.isMoving && !myPlayer.inBattle) {
 						myPlayer.facing = FlxSprite.LEFT;
 						win = myPlayer.movePlayer( -1, 0, _tileSize, connection);
 					}else if (myMouse.justPressed() &&  mouseWithinTileMap() && abilitySelected) {
@@ -275,8 +288,20 @@ package
 					} else {
 						mouseLocation.text = "";
 					}
+					//Only show the battle hud if the player is in combat
+					lyrBattle.visible = myPlayer.inBattle;
+					 //Detect Monster collision, if a monster is overlapping your player then you are now in a fight
+					for (var monster in monsterArray) {
+						FlxU.overlap(monsterArray[monster], myPlayer, function() {
+							myPlayer.inBattle = true;
+							myPlayer.combatant = monsterArray[monster]
+							errorMessage.text = "BATTLE!";
+							lyrBattle.visible = true;
+						})
+					}
 				}
 				
+			
 				super.update();
 			}
 		}
@@ -362,6 +387,7 @@ package
             lyrSprites = new FlxGroup; //Character Sprites exist here
             lyrHUD = new FlxGroup; //HUD elements exist here
 			lyrBackground = new FlxGroup;
+			lyrBattle = new FlxGroup;
 			myMouse = FlxG.mouse;
 			
 			//Tile Map
@@ -378,7 +404,33 @@ package
 			lvl = new FlxText(_lvlTextOffsetX, _lvlTextOffsetY, 100, "Lvl:1", true);
 			experience = new FlxText(_experienceTextOffsetX, _experienceTextOffsetY, 100, "Exp:0", true);
 			
-			//Bottom HUD
+			//Battle HUD
+			//Background
+			
+			//Weak Attack Button
+			lyrBattle.add(new FlxButton(22, 284, function() { 
+				if (myPlayer.inBattle) {
+					myPlayer.combatant.attack(1,myPlayer, connection);
+				}
+			}))
+			lyrBattle.add(new FlxText(24, 286, 100, "Weak Attack"));
+			//Medium Attack Button
+			lyrBattle.add(new FlxButton(22, 314, function() { 
+				if (myPlayer.inBattle) {
+					myPlayer.combatant.attack(2,myPlayer, connection);
+				}
+			}))
+			
+			lyrBattle.add(new FlxText(24, 316, 100, "Medium Attack"));
+			//Strong Attack Button
+			lyrBattle.add(new FlxButton(22, 344, function() { 
+				if (myPlayer.inBattle) {
+					myPlayer.combatant.attack(3,myPlayer, connection);
+				}
+			}))
+			lyrBattle.add(new FlxText(24, 346, 100, "Strong Attack"));
+			//Initially the battle hud is invisible, it will be visible when a user enters combat
+			lyrBattle.visible = false;
 			
 			
 			//Right Side HUD
@@ -410,12 +462,15 @@ package
 			lyrHUD.add(apInfo);
 			lyrHUD.add(mouseLocation);
 			lyrBackground.add(background);
-		
+			
+			
 			this.add(lyrBackground);
 			this.add(lyrStage);
             this.add(lyrSprites);
             this.add(lyrHUD);
+			this.add(lyrBattle);
 			this.addChild(abilitiesBox);
+			
 			
 			connected = true;
 			connection.send("playerInfo");

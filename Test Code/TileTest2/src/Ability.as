@@ -67,6 +67,7 @@ package
 			if (_effect == "Terrain" && PlayState.myMap.getTile(tileX,tileY) == _fromTile) {
 				PlayState.myMap.setTile(tileX, tileY, _toTile)
 				connection.send("MapTileChanged", tileX, tileY, _toTile);
+				connection.send("QuestMapUpdate", PlayState.myMap.toString());
 			}
 		}
 	}
