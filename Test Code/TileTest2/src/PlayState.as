@@ -2,6 +2,7 @@ package
 {
 	import org.flixel.*
 	import org.flixel.data.FlxMouse;
+	import org.flixel.data.FlxPanel;
 	import playerio.*
 	import sample.ui.Alert;
 	import sample.ui.components.AbilityButton;
@@ -221,11 +222,10 @@ package
 				FlxG.state = new QuestCompleteState(xp, coin, client);
 			})
 			//A monster has been hurt and need their AP updated
-			connection.addMessageHandler("MonsterAPChange", function (m:Message, newAP:int, monsterIndex:int ):void 
+			connection.addMessageHandler("MonsterAPChange", function (m:Message, userID:int, newAP:int, monsterIndex:int ):void 
 			{
-				monsterArray[monsterIndex].updateAP(newAP);
-			}
-			
+				monsterArray[monsterIndex]._ap = newAP;
+			})
 			
 		}
 		
@@ -243,14 +243,9 @@ package
 				//Update HUD Information
 				secCounter.text = counter.toPrecision(3) + " seconds until more AP";
 				//Player moves only one character, detect keys presses here
-<<<<<<< HEAD
-				if (myPlayer != null && !win ) {
-					if (myPlayer.AP <= 0 && FlxG.keys.justPressed("A")) {
-						incrementAP();
-=======
+
 				if (myPlayer != null && !win) {
 					if (myPlayer.AP <= 20 && FlxG.keys.justPressed("A")) {
->>>>>>> f4f58b1c64f804ed2761efc1235c94438afe90ee
 						myPlayer.AP++;
 						myConnection.send("playerAP", myPlayer.AP);
 					}
@@ -410,27 +405,30 @@ package
 			experience = new FlxText(_experienceTextOffsetX, _experienceTextOffsetY, 100, "Exp:0", true);
 			
 			//Battle HUD
+			//Background
+			
 			//Weak Attack Button
-			lyrBattle.add(new FlxButton(10, 10, function() { 
+			lyrBattle.add(new FlxButton(22, 284, function() { 
 				if (myPlayer.inBattle) {
 					myPlayer.combatant.attack(1,myPlayer, connection);
 				}
 			}))
-			lyrBattle.add(new FlxText(12, 12, 100, "Weak Attack"));
+			lyrBattle.add(new FlxText(24, 286, 100, "Weak Attack"));
 			//Medium Attack Button
-			lyrBattle.add(new FlxButton(10, 40, function() { 
+			lyrBattle.add(new FlxButton(22, 314, function() { 
 				if (myPlayer.inBattle) {
 					myPlayer.combatant.attack(2,myPlayer, connection);
 				}
 			}))
-			lyrBattle.add(new FlxText(12, 42, 100, "Medium Attack"));
+			
+			lyrBattle.add(new FlxText(24, 316, 100, "Medium Attack"));
 			//Strong Attack Button
-			lyrBattle.add(new FlxButton(10, 70, function() { 
+			lyrBattle.add(new FlxButton(22, 344, function() { 
 				if (myPlayer.inBattle) {
 					myPlayer.combatant.attack(3,myPlayer, connection);
 				}
 			}))
-			lyrBattle.add(new FlxText(12, 72, 100, "Strong Attack"));
+			lyrBattle.add(new FlxText(24, 346, 100, "Strong Attack"));
 			//Initially the battle hud is invisible, it will be visible when a user enters combat
 			lyrBattle.visible = false;
 			

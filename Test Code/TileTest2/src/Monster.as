@@ -9,7 +9,7 @@ package
 	public class Monster extends FlxSprite
 	{
 		[Embed(source = "data/Monster_Weak.png")] public var monster_weak:Class;
-		private var _ap:int
+		public var _ap:int
 		private var _xTile:int
 		private var _yTile:int
 		private var _monsterIndex:int //The Index of the Monster within the level's database table.
@@ -43,10 +43,6 @@ package
 			}
 		}
 		
-		public function updateAP(ap:int):void 
-		{
-			_ap = ap;
-		}
 		//Attempts to attack monster and does damage based on "type"
 		/*
 		 * 1 = Weak Attack (1-2 AP)
@@ -67,7 +63,7 @@ package
 				this.kill();
 				player.inBattle = false;
 			}
-			connection.send("MonsterAPChange", _monsterIndex, _ap)
+			connection.send("MonsterAPChange",  _ap, _monsterIndex)
 		}
 		
 	}
