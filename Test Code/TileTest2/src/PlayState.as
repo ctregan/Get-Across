@@ -333,6 +333,7 @@ package
 				}
 			});
 		}
+
 		//Returns whether an ability has been selected to be used by the player
 		public static function getAbilitySelected():Boolean 
 		{
