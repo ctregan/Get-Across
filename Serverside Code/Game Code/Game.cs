@@ -46,7 +46,7 @@ namespace GetAcross {
 
             if (levelKey.Contains("Tutorial"))
             {
-                Visible = false;
+               // Visible = false;
             }
 			// anything you write to the Console will show up in the 
 			// output window of the development server
@@ -331,7 +331,7 @@ namespace GetAcross {
                         int newAp = message.GetInt(0);
                         int monsterIndex = message.GetInt(1);
                         //CHARLIE TO DO - Make this data reflected in the database too.
-                        Broadcast("MonsterAPChange", newAp, monsterIndex);
+                        Broadcast("MonsterAPChange", player.Id, newAp, monsterIndex);
                         break;
                     }
 			}
