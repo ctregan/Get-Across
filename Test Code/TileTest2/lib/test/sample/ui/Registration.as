@@ -3,19 +3,28 @@ package sample.ui{
 	import flash.display.Stage
 	import flash.events.Event
 	import flash.text.TextFormatAlign
+	import org.flixel.FlxGroup;
+	import org.flixel.FlxRect;
 	import org.flixel.FlxState
 	import playerio.*
 	import flash.events.MouseEvent
 	
 	import sample.ui.components.*
+	
 	public class Registration extends Sprite{
 		private var _stage:FlxState
-		private var accountCreateBox:Box;
+		//private var accountCreateBox:Box;
+		
+		private var accountCreateBox:FlxRect;
 		//Error messages
 		private var pwdError:Label
 		private var usernameError:Label
 		private var emailError:Label
 		private var errorMessage:Label //Gerneral Error Message
+		
+		private var inputBoxGroup:FlxGroup;
+		// members inside the input box group
+		
 		//Text inputs to be accessed directly
 		private var passwordInput:Input
 		private var usernameInput:Input
@@ -30,10 +39,14 @@ package sample.ui{
 			pwdError = new Label("",12, TextFormatAlign.RIGHT, 0xff0000)
 			usernameError = new Label("", 12, TextFormatAlign.RIGHT,  0xff0000)
 			emailError = new Label("", 12, TextFormatAlign.RIGHT, 0xff0000)
+			
+			inputBoxGroup = new FlxGroup();
+			
 			//Text inputs to be accessed directly
-			passwordInput = new Input("", 12, TextFormatAlign.LEFT,  true)
-			usernameInput = new Input("", 12, TextFormatAlign.LEFT)
-			emailInput = new Input("", 12, TextFormatAlign.LEFT)
+			passwordInput = new TextInput(0, 10, 100);// ("", 12, TextFormatAlign.LEFT,  true)
+			usernameInput = new TextInput(0, 40, 100);//new Input("", 12, TextFormatAlign.LEFT)
+			emailInput = new TextInput(0, 80, 100);// new Input("", 12, TextFormatAlign.LEFT)
+			
 			passwordInput.height = 20;
 			usernameInput.height = 20;
 			emailInput.height = 20;

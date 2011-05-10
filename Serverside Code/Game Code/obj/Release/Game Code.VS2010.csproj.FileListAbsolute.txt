@@ -1,0 +1,7 @@
+C:\Users\Ji\Documents\School\CSE481_GamesCapstone\Get-Across-Recent\Serverside Code\Game Code\bin\Release\GetAcross.dll
+C:\Users\Ji\Documents\School\CSE481_GamesCapstone\Get-Across-Recent\Serverside Code\Game Code\bin\Release\GetAcross.pdb
+C:\Users\Ji\Documents\School\CSE481_GamesCapstone\Get-Across-Recent\Serverside Code\Game Code\bin\Release\Player.IO GameLibrary.dll
+C:\Users\Ji\Documents\School\CSE481_GamesCapstone\Get-Across-Recent\Serverside Code\Game Code\bin\Release\Player.IO GameLibrary.xml
+C:\Users\Ji\Documents\School\CSE481_GamesCapstone\Get-Across-Recent\Serverside Code\Game Code\obj\Release\ResolveAssemblyReference.cache
+C:\Users\Ji\Documents\School\CSE481_GamesCapstone\Get-Across-Recent\Serverside Code\Game Code\obj\Release\GetAcross.dll
+C:\Users\Ji\Documents\School\CSE481_GamesCapstone\Get-Across-Recent\Serverside Code\Game Code\obj\Release\GetAcross.pdb

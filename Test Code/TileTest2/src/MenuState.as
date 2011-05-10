@@ -52,7 +52,7 @@ package
 							new TextButton("Random Map", randomMap)
 						).spacing(30)
 					)))
-			addChild(mainMenu);
+			//addChild(mainMenu);
 
 		}
 		
@@ -70,6 +70,7 @@ package
 		private function newGame():void
 		{
 			var alert:Alert = new Alert(this, "This Feature has not yet been implemented")
+			
 		}
 		
 		//Callback function for when Random Map Button is pressed
@@ -81,7 +82,7 @@ package
 		//Callback function for LOBBY, once it has connected to a game
 		private function handleJoin(connection:Connection):void 
 		{
-			FlxG.state = new PlayState(connection, myClient)
+			FlxG.switchState(new PlayState(connection, myClient));
 		}
 		
 		//Callback function for LOBBY, if it has encountered an error

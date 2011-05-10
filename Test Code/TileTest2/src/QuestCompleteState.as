@@ -1,7 +1,9 @@
 package  
 {
+	import org.flixel.FlxSprite;
 	import org.flixel.FlxState;
 	import org.flixel.FlxG;
+	import org.flixel.FlxText;
 	import playerio.*
 	import sample.ui.components.*
 	import sample.ui.*
@@ -24,7 +26,10 @@ package
 			super()
 			characterInfo = new Label("",12, TextFormatAlign.CENTER)
 			client.bigDB.loadMyPlayerObject(loadPlayerSuccess)
-			mainMenu = new Box().fill(0xFFFFFF, 0.8, 0)
+			var mMenu:FlxSprite = new FlxSprite();
+			var label:FlxText = new FlxText(0, 0, 100, "label");// (0, 0, 100);
+			
+			/*mainMenu = new Box().fill(0xFFFFFF, 0.8, 0)
 			mainMenu.add(new Box().fill(0x00000, .5, 15).margin(10, 10, 10, 10).minSize(FlxG.width, FlxG.height).add(
 				new Box().fill(0xffffff,1,5).margin(10,10,10,10).minSize(300,0).add(
 						new Rows(
@@ -34,14 +39,15 @@ package
 							new Label ("Coin Gained: " + coin, 15, TextFormatAlign.LEFT, 0x0000FF),
 							new TextButton("Continue", continueButton)
 						).spacing(30)
-					)))
-			addChild(mainMenu);
+					)))*/
+			
+			//addChild(mainMenu);
 		}
 		
 		//Callback function for the continue button
 		private function continueButton():void
 		{
-			FlxG.state = new MenuState(_client);
+			FlxG.switchState(new MenuState(_client));
 		}
 		
 		//Callback function called when Player data object has been successfully loaded

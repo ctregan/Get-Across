@@ -4,10 +4,11 @@ package
 	import flash.text.TextField;
 	import flash.ui.Mouse;
 	import flash.ui.MouseCursor;
-	import org.flixel.data.FlxPanel;
+	//import org.flixel.data.FlxPanel;
 	import org.flixel.FlxButton;
 	import org.flixel.FlxGroup;
 	import org.flixel.FlxObject;
+	import org.flixel.FlxRect;
 	import org.flixel.FlxState;
 	import org.flixel.FlxText;
 	import org.flixel.FlxG;
@@ -24,37 +25,46 @@ package
 	 */
 	public class LoginState extends FlxState
 	{
-		private var loginBox:Box;
-		private var mainMenu:Box;
-		private var accountCreateBox:Box;
+		//private var loginBox:FlxRect;
+		//private var mainMenu:FlxObject;
+		//private var loginBox:Box;
+		//private var mainMenu:Box;
+		//private var accountCreateBox:FlxRect;
+		//private var accountCreateBox:Box;
 		private var loginObj:Login;
-		private var registrationObj:Registration;
-		private var testMouse:Mouse;
+		//private var registrationObj:Registration;
+		//private var testMouse:Mouse;
+		private var title:FlxText;
+		private var loginButton:FlxButton;
+		private var registrationButton:FlxButton;
+		
+		
+		
+		override public function create():void 
+		{
+			// create buttons
+			title = new FlxText(0, 0, 50, "GetAcross", true);
+			title.size = 32;
+			title.alignment = "center";
+			add(title);
 			
-		public function LoginState() 
-		{
-			super();
-			mainMenu = new Box().fill(0xFFFFFF, 0.8, 0)
-			mainMenu.add(new Box().fill(0x00000, .5, 15).margin(10, 10, 10, 10).minSize(FlxG.width, FlxG.height).add(
-				new Box().fill(0xffffff,1,5).margin(10,10,10,10).minSize(300,0).add(
-						new Rows(
-							new Label("Get Across", 30, TextFormatAlign.CENTER),
-							new TextButton("Login", openLogin),
-							new TextButton("Create Account", openAccountCreate)
-						).spacing(30)
-					)))
-			this.addChildAt(mainMenu, 0)
+			loginButton = new FlxButton(0, 50, "Login", onLogin, null, null);
+			add(loginButton);
+			
+			registrationButton = new FlxButton(0, 100, "Registration", onRegistration, null, null);
+			add(registrationButton);
+
+			FlxG.mouse.show();
 		}
-		//Create a login box over the main menu
-		private function openLogin():void 
-		{
+		
+		private function onLogin():void {
 			loginObj = new Login(this);
 			loginObj.Show();
 		}
-		//Creates an account create box over the main menu
-		private function openAccountCreate():void {
-			registrationObj = new Registration(this);
-			registrationObj.Show();
+		
+		private function onRegistration(): void {
+			//registrationObj = new Registration(this);
+			//registrationObj.Show();
 		}
 		
 		

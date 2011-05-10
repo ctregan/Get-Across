@@ -1,7 +1,8 @@
 package  
 {
 	import org.flixel.*
-	import org.flixel.data.FlxMouse;
+	//import org.flixel.data.FlxMouse;
+	import org.flixel.system.input.*
 	import playerio.*
 	import sample.ui.Alert;
 	import sample.ui.components.AbilityButton;
@@ -13,6 +14,8 @@ package
 	import sample.ui.Prompt
 	import sample.ui.Chat
 	import flash.text.TextFormatAlign
+	
+
 	/**
 	 * ...
 	 * @author Charlie Regan
@@ -36,7 +39,8 @@ package
 		private var apInfo:FlxText; //Text field to reflect the numner of AP left
 		private var myPlayer:Player;
 		private var playersArray:Array = []; //Array of all players on board
-		private var myMouse:FlxMouse; //Mouse
+		//private var myMouse:FlxMouse; //Mouse
+		private var myMouse:Mouse;
 		private var errorMessage:FlxText; //Text Field to reflect any errors
 		private var secCounter:FlxText; //Text field to reflect time left until next AP
 		private var location:FlxText; //(x,x) graph information of where your player is.
@@ -98,6 +102,8 @@ package
 		private static var myClient:Client;
 		private static var playerName:String;
 		
+		private static var cam:FlxCamera;
+		
 		public function PlayState(connection:Connection, client:Client):void
 		{
 			super();
@@ -148,7 +154,7 @@ package
 							myPlayer = new Player(playerStartX, playerStartY, _mapOffsetX, _mapOffsetY, _tileSize, startAP);
 							playersArray[imPlayer - 1] = myPlayer;
 							lyrSprites.add(myPlayer);
-							trace("loaded, xy " + playerStartX + " " + playerStartY);
+							trace("loaded, xy " + results.positionX + " " + results.positionY);
 						}
 						else
 						{
@@ -210,7 +216,7 @@ package
 			//A player has reached the end, victory!
 			connection.addMessageHandler("win", function(m:Message, userID:int, xp:int, coin:int) {
 				connection.disconnect();
-				FlxG.state = new QuestCompleteState(xp, coin, client);
+				FlxG.switchState(new QuestCompleteState(xp, coin, client));
 			})
 			
 			
@@ -367,9 +373,9 @@ package
 			
 			//Tile Map
 			myMap = new FlxTilemap();
-			myMap.drawIndex = 0;
+			myMap._drawIndex = 0;
 			myMap.loadMap(map_data, data_tiles, _tileSize, _tileSize);
-			myMap.collideIndex = 1;
+			myMap._collideIndex = 1;
 			myMap.x = _mapOffsetX;
 			myMap.y = _mapOffsetY;			
 			lyrStage.add(myMap);
@@ -416,7 +422,7 @@ package
 			this.add(lyrStage);
             this.add(lyrSprites);
             this.add(lyrHUD);
-			this.addChild(abilitiesBox);
+			//this.addChild(abilitiesBox);
 			
 			connected = true;
 			connection.send("playerInfo");
