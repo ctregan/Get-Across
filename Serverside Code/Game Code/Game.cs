@@ -31,6 +31,7 @@ namespace GetAcross {
         private Tile[,] field;
         private String levelKey;
         private String playerConnectUserId;
+        private int playerAP;   // server's variable to keep track of clientside player AP amount
         DateTime startSessionTime, endSessionTime, lastSessionEndTime;
         String DateTimeFormat = "MM/dd/yyyy HH:mm:ss";
 
@@ -137,7 +138,7 @@ namespace GetAcross {
 			Broadcast("UserLeft", player.Id);
             endSessionTime = DateTime.Now;
             Console.WriteLine("User session end!  Set time: " + endSessionTime.ToString(DateTimeFormat));
-            
+            Console.WriteLine("User's last AP amount: " + playerAP);
             // update player's end session time in the Quest database
             PlayerIO.BigDB.LoadOrCreate("Quests", player.ConnectUserId,
                 delegate(DatabaseObject result)
@@ -146,6 +147,7 @@ namespace GetAcross {
                     if (result.Contains("username"))
                     {
                         result.Set("lastSessionEndTime", endSessionTime.ToString(DateTimeFormat));
+                        result.Set("AP", playerAP);
                         result.Save();
                     }
                 }
@@ -221,7 +223,7 @@ namespace GetAcross {
                         {
                             int startX = 0;
                             int startY = 0;
-                            int startAP = 20;
+                            int startAP = playerAP = 20;
 
                             // find player's previous position
                             // set player sprite to that position
@@ -256,6 +258,7 @@ namespace GetAcross {
                                         Console.WriteLine("minutes passed: " + minutesPassedSinceLastPlay + ", amount of AP to add: " + (minutesPassedSinceLastPlay / 3) + ", starting AP: " + startAP);
                                         if (startAP > 20) startAP = 20;
 
+                                        playerAP = startAP;
                                         player.Send("playerInfo", players[player.Id - 1].positionX, players[player.Id - 1].positionY, playerConnectUserId, startAP);
                                     }
                                 }
@@ -273,12 +276,17 @@ namespace GetAcross {
                         Broadcast("MapTileChanged", player.Id, xTile, yTile, newTileType);
                         break;
                     }
+                case "playerAP":
+                    {
+                        playerAP = message.GetInt(0);
+                        Console.WriteLine("server: got player AP! " + playerAP);
+                        break;
+                    }
                 case "win":
                     {
                         PlayerIO.BigDB.Load("StaticMaps", levelKey,
                             delegate(DatabaseObject result)
                             {
-
                                 int gainedxp = result.GetInt("XP", 0); //How much XP the Level was worth
                                 int gainedcoin = result.GetInt("Coin", 0); //How mucg coin the level was worth
 

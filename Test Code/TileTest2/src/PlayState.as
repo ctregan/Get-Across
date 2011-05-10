@@ -96,7 +96,9 @@ package
 		private var _resourceTextOffsetY:int = 250;
 		
 		private static var myClient:Client;
+		private static var myConnection:Connection;
 		private static var playerName:String;
+		private var _APcounterMax:int = 10;	// seconds to pass until player gets AP incremented
 		
 		public function PlayState(connection:Connection, client:Client):void
 		{
@@ -110,7 +112,7 @@ package
 			
 			this.client = client;
 			myClient = client;
-			this.connection = connection;
+			this.connection = myConnection = connection;
 			
 			//Connection successful, load board and player
 			connection.addMessageHandler("init", function(m:Message, iAm:int, name:String, level:String) {
@@ -136,7 +138,6 @@ package
 			//Recieve Info from server about your saved character
 			connection.addMessageHandler("playerInfo", function(m:Message, posX:int, posY:int, name:String, startAP:int) {
 				if (myPlayer == null) {
-					trace("playerInfo!  given AP? " + startAP);
 					playerName = name;
 					// add player to screen --
 					// if player has previous position saved in database, place player there
@@ -223,18 +224,17 @@ package
 				if (counter <= 0)
 				{
 					// After 180 seconds has passed, the timer will reset.
-					//myPlayer.AP++;
-					counter = 180;
-					incrementAP();
+					counter = _APcounterMax;
 					myPlayer.AP++;
+					myConnection.send("playerAP", myPlayer.AP);
 				}
 				//Update HUD Information
 				secCounter.text = counter.toPrecision(3) + " seconds until more AP";
 				//Player moves only one character, detect keys presses here
 				if (myPlayer != null && !win) {
-					if (myPlayer.AP <= 0 && FlxG.keys.justPressed("A")) {
-						incrementAP();
+					if (myPlayer.AP <= 20 && FlxG.keys.justPressed("A")) {
 						myPlayer.AP++;
+						myConnection.send("playerAP", myPlayer.AP);
 					}
 					if (FlxG.keys.justPressed("DOWN") && !myPlayer.isMoving) {
 						myPlayer.facing = FlxSprite.DOWN;
@@ -354,7 +354,7 @@ package
 		//Add all flixel elements to the board, essentially drawing the game.
 		private function boardSetup(map_data:String):void 
 		{
-			counter = 180; // 1ap gained every 3 minutes
+			counter = _APcounterMax; // 1ap gained every 3 minutes
 			//Add chat to game
 			//var chat:Chat = new Chat(FlxG.stage, connection);
 			//Different Layers
@@ -456,8 +456,7 @@ package
 			trace("send join")
 			connection.send("join");
 			infoBox.Show("waiting");
-		}		
-
+		}
 		
 		private function handleMessages(m:Message){
 			trace("Recived the message", m)
