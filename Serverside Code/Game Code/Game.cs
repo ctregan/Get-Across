@@ -306,9 +306,15 @@ namespace GetAcross {
                             PlayerIO.BigDB.LoadOrCreate("NewQuests", questID,
                                 delegate(DatabaseObject result)
                                 {
-                                    DatabaseObject playersInQuest = (DatabaseObject) result.GetValue("players");
-                                    //DatabaseObject thisPlayer = (DatabaseObject) playersInQuest.GetValue(player.ConnectUserId);
-                                    Console.WriteLine("playerinfo...this player: " + thisPlayer.ToString());
+                                    if (result.Contains("players"))
+                                    {
+                                        DatabaseObject playersInQuest = (DatabaseObject)result.GetValue("players");
+                                        if (playersInQuest.Contains(player.ConnectUserId))
+                                        {
+                                            DatabaseObject thisPlayer = (DatabaseObject)playersInQuest.GetValue(player.ConnectUserId);
+                                            Console.WriteLine("playerinfo...this player: " + thisPlayer.ToString());
+                                        }
+                                    }
                                 }
                             );
 
@@ -339,15 +345,17 @@ namespace GetAcross {
                                         startAP = result.GetInt("AP");
                                         
                                         // figure out how much AP player should have based on how long they've been away
-                                        lastSessionEndTime = DateTime.ParseExact(result.GetString("lastSessionEndTime"), DateTimeFormat, null);
-                                        Console.WriteLine("last session end time : " + lastSessionEndTime.ToString(DateTimeFormat));
-                                        int minutesPassedSinceLastPlay = (startSessionTime - lastSessionEndTime).Minutes;
-                                        startAP += minutesPassedSinceLastPlay / 3;
-                                        Console.WriteLine("minutes passed: " + minutesPassedSinceLastPlay + ", amount of AP to add: " + (minutesPassedSinceLastPlay / 3) + ", starting AP: " + startAP);
-                                        if (startAP > 20) startAP = 20;
-
+                                        if (result.Contains("lastSessionEndTime"))
+                                        {
+                                            lastSessionEndTime = DateTime.ParseExact(result.GetString("lastSessionEndTime"), DateTimeFormat, null);
+                                            Console.WriteLine("last session end time : " + lastSessionEndTime.ToString(DateTimeFormat));
+                                            int minutesPassedSinceLastPlay = (startSessionTime - lastSessionEndTime).Minutes;
+                                            startAP += minutesPassedSinceLastPlay / 3;
+                                            Console.WriteLine("minutes passed: " + minutesPassedSinceLastPlay + ", amount of AP to add: " + (minutesPassedSinceLastPlay / 3) + ", starting AP: " + startAP);
+                                            if (startAP > 20) startAP = 20;
+                                        }
                                         playerAP = startAP;
-                                        player.Send("playerInfo", players[player.Id - 1].positionX, players[player.Id - 1].positionY, playerConnectUserId, startAP);
+                                            player.Send("playerInfo", players[player.Id - 1].positionX, players[player.Id - 1].positionY, playerConnectUserId, startAP);
                                     }
                                 }
                             );
