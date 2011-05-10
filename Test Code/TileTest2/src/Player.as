@@ -90,8 +90,8 @@ package
 				myTimer.start();
 			}
 			
-			// update AP count in Quests database
-			PlayState.updateAP(AP);
+			// sends AP this player has to the server
+			connection.send("playerAP", AP);
 			
 			return false;
 		}
@@ -106,7 +106,7 @@ package
 		//Sees if the desired move for the player is valid.
 		private function checkMove(proposedX:Number, proposedY:Number):Boolean {
 			if (PlayState.myMap.getTile(proposedX, proposedY) == WATER_TILE ) {
-				errorMessage = "Invalid Move, cant cross water";
+				errorMessage = "Invalid Move, can't cross water";
 				return false;
 			}else if (AP < findCost(proposedX, proposedY)) {
 				errorMessage = "Invalid Move, insufficient AP";
