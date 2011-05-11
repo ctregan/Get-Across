@@ -123,7 +123,7 @@ package
 				playerAP = startAP;
 				trace("init: starting ap: " + playerAP);
 				//boardSetup(level);
-				client.bigDB.load("StaticMaps", level, function(ob:DatabaseObject):void {
+				client.bigDB.load("NewQuests", level, function(ob:DatabaseObject):void {
 					//Recieve Tile Array from database to be turned into string with line breaks between each line
 					var mapString:String = ob.tileValues;
 					mapString = mapString.split("|").join("\n")
@@ -202,7 +202,7 @@ package
 			})
 			//A tile has changed and needs to be updated locally
 			connection.addMessageHandler("MapTileChanged", function(m:Message, userID:int, posX:int, posY:int, newTileType:int) {
-				setTileIdentity(posX, posY, newTileType);
+				setTileIdentity( posX, posY, newTileType);
 				//myMap.setTile(posX, posY, newTileType, true);
 			})
 			//A player has reached the end, victory!

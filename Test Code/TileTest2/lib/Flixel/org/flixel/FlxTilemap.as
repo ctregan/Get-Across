@@ -60,6 +60,7 @@ package org.flixel
 		 * Read-only variable, do NOT recommend changing after the map is loaded!
 		 */
 		public var totalTiles:uint;
+		
 		/**
 		 * Rendering helper.
 		 */
@@ -76,6 +77,7 @@ package org.flixel
 		protected var _callbacks:Array;
 		protected var _screenRows:uint;
 		protected var _screenCols:uint;
+		
 		
 		/**
 		 * The tilemap constructor just initializes some basic variables.
@@ -261,6 +263,8 @@ package org.flixel
 			}
 		}
 		
+	
+		
 		/**
 		 * Internal function that actually renders the tilemap.  Called by render().
 		 */
@@ -445,7 +449,6 @@ package org.flixel
 		{
 			return getTileByIndex(Y * widthInTiles + X);
 		}
-		
 		/**
 		 * Get the value of a tile in the tilemap by index.
 		 * 
@@ -475,6 +478,23 @@ package org.flixel
 			return setTileByIndex(Y * widthInTiles + X,Tile,UpdateGraphics);
 		}
 		
+		/*
+		 * Returns the tile map values in a string form, similar to how they were recieved
+		 */
+		public function getMapData():String 
+		{
+			var returnString:String  = "";
+			for (var i:int = 0; i < _screenRows; i++) {
+					for (var z:int = 0; z < _screenCols; z++) {
+							if (z == _screenCols - 1) {
+								returnString = returnString.concat(_data[(i * _screenCols) + z] + "|");
+							}else{
+								returnString = returnString.concat(_data[(i * _screenCols) + z] + ",");
+							}
+					}
+			}
+			return returnString;
+		}
 		/**
 		 * Change the data and graphic of a tile in the tilemap.
 		 * 

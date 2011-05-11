@@ -117,32 +117,45 @@ namespace GetAcross {
                             Console.WriteLine("questPlayers contents: " + questPlayers.ToString());
 
                             //Add Static Map to Quest, to be updated later
-                            /*PlayerIO.BigDB.Load("StaticMaps", levelKey, 
+                            PlayerIO.BigDB.Load("StaticMaps", levelKey, 
                                 delegate(DatabaseObject staticMap)
                                 {
-                                    questPlayers.Set("tileValues", staticMap.GetArray("tileValues"));
-                                });*/
-                            
-                            // add this quest object to Quests db
-                            PlayerIO.BigDB.CreateObject("NewQuests", null, newQuest,
-                                delegate(DatabaseObject addedQuest)
-                                {
-                                    questID = addedQuest.Key;
-                                    Console.WriteLine("made new questID!  new questID is: " + questID);
-                                    // save new quest object's ID to this player to link them to the quest
-                                    PlayerIO.BigDB.Load("PlayerObjects", player.ConnectUserId,
-                                        delegate(DatabaseObject thisPlayer)
+                                    newQuest.Set("tileValues", staticMap.GetString("tileValues"));
+                                    newQuest.Set("MonsterCount", staticMap.GetInt("MonsterCount"));
+                                    DatabaseArray monsters = staticMap.GetArray("Monsters");
+                                    DatabaseArray newMonsters = new DatabaseArray();
+                                    for (int i = 1; i <= monsters.Count; i++)
+                                    {
+                                        DatabaseObject monster = new DatabaseObject();
+                                        monster.Set("Type", monsters.GetObject(i - 1).GetString("Type"));
+                                        monster.Set("xTile", monsters.GetObject(i - 1).GetInt("xTile"));
+                                        monster.Set("yTile", monsters.GetObject(i - 1).GetInt("yTile"));
+                                        monster.Set("AP", monsters.GetObject(i - 1).GetInt("AP"));
+                                        newMonsters.Add(monster);
+                                    }
+                                    newQuest.Set("Monsters", newMonsters);
+                                    Console.WriteLine("Quest Tile Values Set " + newQuest.ToString());
+                                    // add this quest object to Quests db
+                                    PlayerIO.BigDB.CreateObject("NewQuests", null, newQuest,
+                                        delegate(DatabaseObject addedQuest)
                                         {
-                                            thisPlayer.Set("questID", addedQuest.Key);
-                                            thisPlayer.Save();
+                                            questID = addedQuest.Key;
+                                            Console.WriteLine("made new questID!  new questID is: " + questID);
+                                            // save new quest object's ID to this player to link them to the quest
+                                            PlayerIO.BigDB.Load("PlayerObjects", player.ConnectUserId,
+                                                delegate(DatabaseObject thisPlayer)
+                                                {
+                                                    thisPlayer.Set("questID", addedQuest.Key);
+                                                    thisPlayer.Save();
+                                                }
+                                            );
+                                            levelKey = addedQuest.Key;
+                                            // tell client to initialize (board, monsters, player object & player sprite) with max AP amount
+                                            player.Send("init", player.Id, player.ConnectUserId, levelKey, 20);
                                         }
                                     );
-
-                                    // tell client to initialize (board, monsters, player object & player sprite) with max AP amount
-                                    player.Send("init", player.Id, player.ConnectUserId, levelKey, 20);
-                                }
-                            );
-
+                                });
+                                   
                             // save positions in the serverside
                             player.positionX = player.positionY = 0;
                             player.AP = 20;
@@ -152,7 +165,7 @@ namespace GetAcross {
                         else
                         {
                             questID = result.GetString("questID");
-
+                            levelKey = questID;
                             // obtain player's last position and save to serverside
                             PlayerIO.BigDB.Load("NewQuests", questID,
                                 delegate(DatabaseObject questObject)
@@ -326,10 +339,19 @@ namespace GetAcross {
 
                         break;
                     }
-                case "QuestMapChange":
+                case "QuestMapUpdate":
                     {
                         //NADINE TO DO - This message will recieve one string that is the newly updated map, need to sav
                         //to the player's associated quest object
+                        player.GetPlayerObject(
+                            delegate(DatabaseObject updatedPlayerObject){
+                                PlayerIO.BigDB.Load("NewQuests", levelKey,
+                                     delegate(DatabaseObject dbo)
+                                        {
+                                            dbo.Set("tileValues", message.GetString(0));
+                                            dbo.Save();
+                                        });
+                            });
                         break;
                     }
                 case "MonsterAPChange":
