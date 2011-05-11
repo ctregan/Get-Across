@@ -119,7 +119,6 @@ package org.flixel
 		 */
 		protected var _startingIndex:uint;
 		
-		
 		/**
 		 * The tilemap constructor just initializes some basic variables.
 		 */
@@ -191,15 +190,10 @@ package org.flixel
 		 * 
 		 * @return	A pointer this instance of FlxTilemap, for chaining as usual :)
 		 */
-		
-		public var _drawIndex:uint;
-		public var _collideIndex:uint;
 		public function loadMap(MapData:String, TileGraphic:Class, TileWidth:uint=0, TileHeight:uint=0, AutoTile:uint=OFF, StartingIndex:uint=0, DrawIndex:uint=1, CollideIndex:uint=1):FlxTilemap
 		{
 			auto = AutoTile;
 			_startingIndex = StartingIndex;
-			_drawIndex = DrawIndex;
-			_collideIndex = CollideIndex;
 
 			//Figure out the map dimensions based on the data string
 			var columns:Array;
@@ -384,8 +378,6 @@ package org.flixel
 			Buffer.x = screenXInTiles*_tileWidth;
 			Buffer.y = screenYInTiles*_tileHeight;
 		}
-		
-	
 		
 		/**
 		 * Draws the tilemap buffers to the cameras and handles flickering.
@@ -924,6 +916,7 @@ package org.flixel
 		{
 			return _data[Y * widthInTiles + X] as uint;
 		}
+		
 		/**
 		 * Get the value of a tile in the tilemap by index.
 		 * 
@@ -1014,23 +1007,6 @@ package org.flixel
 			return setTileByIndex(Y * widthInTiles + X,Tile,UpdateGraphics);
 		}
 		
-		/*
-		 * Returns the tile map values in a string form, similar to how they were recieved
-		 */
-		public function getMapData():String 
-		{
-			var returnString:String  = "";
-			for (var i:int = 0; i < _screenRows; i++) {
-					for (var z:int = 0; z < _screenCols; z++) {
-							if (z == _screenCols - 1) {
-								returnString = returnString.concat(_data[(i * _screenCols) + z] + "|");
-							}else{
-								returnString = returnString.concat(_data[(i * _screenCols) + z] + ",");
-							}
-					}
-			}
-			return returnString;
-		}
 		/**
 		 * Change the data and graphic of a tile in the tilemap.
 		 * 

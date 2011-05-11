@@ -18,10 +18,10 @@ package
 			_tileSize = tileSize
 			_range = range
 			if(img == "bacon"){
-				super(xPixel, yPixel, bacon)
+				super(xPixel, yPixel, bacon);
 			}
 			else if (img == "flower") {
-				super(xPixel, yPixel, flower)
+				//super(xPixel, yPixel, flower);
 			}
 			
 			var myTimer:Timer = new Timer(1000);

@@ -15,8 +15,10 @@ package
 		private var characterInfo:Label //Will Hold Player Info Loaded from DB
 		private var mainMenu:Box
 		private var myClient:Client;
-		private var tutorialButton:TextButton;
+		//private var tutorialButton:TextButton;
 		private var tutorialLevel:int = 0;
+		
+		private var tutorialButton:FlxButton;
 		
 		public function MenuState(client:Client) 
 		{
@@ -28,17 +30,34 @@ package
 		//Callback function called when Player data object has been successfully loaded
 		private function loadPlayerSuccess(ob:DatabaseObject):void 
 		{
-			characterInfo = new Label("Level: " + ob.level + "	Class: " + ob.role + "	Coin: " + ob.coin, 12, TextFormatAlign.CENTER);
+			//characterInfo = new Label("Level: " + ob.level + "	Class: " + ob.role + "	Coin: " + ob.coin, 12, TextFormatAlign.CENTER);
 			tutorialLevel = ob.tutorial;
 			if (tutorialLevel == 1) {
 				tutorialLevel = 1;
-				tutorialButton = new TextButton("Start Tutorial", startTutorial);
+				//tutorialButton = new TextButton("Start Tutorial", startTutorial);
+				tutorialButton = new FlxButton(0, 0, "Start Tutorial", startTutorial);
 			}else if (tutorialLevel > 1 && tutorialLevel < 10) {
-				tutorialButton = new TextButton("Continue Tutorial", startTutorial);
+				//tutorialButton = new TextButton("Continue Tutorial", startTutorial);
+				tutorialButton = new FlxButton(0, 0, "Continue Tutorial", startTutorial);
 			}else {
-				tutorialButton = new TextButton("Continue Tutorial", startTutorial);
-				tutorialButton.enabled = false;
+				tutorialButton = new FlxButton(0, 0, "Continue Tutorial", startTutorial);
+				
+				//tutorialButton = new TextButton("Continue Tutorial", startTutorial);
+				//tutorialButton.enabled = false;
 			}
+			add(tutorialButton);
+			
+			var mainMenuTitle:FlxText = new FlxText(0, 50, 100, "Main Menu");
+			add(mainMenuTitle);
+			
+			var characterInfo:FlxText = new FlxText(100, 100, 100, "Player Info");
+			
+			var newGameButton:FlxButton = new FlxButton(20, 50, "New Game", newGame);
+			add(newGameButton);
+			
+			var randomMapButton: FlxButton = new FlxButton(20, 100, "Random Map", randomMap);
+			add(randomMapButton);
+			/*
 			mainMenu = new Box().fill(0xFFFFFF, 0.8, 0)
 			mainMenu.add(new Box().fill(0x00000, .5, 15).margin(10, 10, 10, 10).minSize(FlxG.width, FlxG.height).add(
 				new Box().fill(0xffffff,1,5).margin(10,10,10,10).minSize(300,0).add(
@@ -50,7 +69,9 @@ package
 							new TextButton("Random Map", randomMap)
 						).spacing(30)
 					)))
-			addChild(mainMenu);
+					*/
+					
+			//addChild(mainMenu);
 		}
 		
 		//Callback function for when Start Tutorial Button is Pressed
@@ -79,7 +100,7 @@ package
 		//Callback function for LOBBY, once it has connected to a game
 		private function handleJoin(connection:Connection):void 
 		{
-			FlxG.state = new PlayState(connection, myClient)
+			FlxG.switchState(new PlayState(connection, myClient));
 		}
 		
 		//Callback function for LOBBY, if it has encountered an error
