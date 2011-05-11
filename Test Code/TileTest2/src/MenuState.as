@@ -20,12 +20,9 @@ package
 		
 		public function MenuState(client:Client) 
 		{
-			trace("making menu state");
 			myClient = client
 			super()
 			client.bigDB.loadMyPlayerObject(loadPlayerSuccess)
-			
-			
 		}
 		
 		//Callback function called when Player data object has been successfully loaded
@@ -53,14 +50,14 @@ package
 							new TextButton("Random Map", randomMap)
 						).spacing(30)
 					)))
-			//addChild(mainMenu);
-
+			addChild(mainMenu);
 		}
 		
 		//Callback function for when Start Tutorial Button is Pressed
 		private function startTutorial():void
 		{
 			var lobby:Lobby = new Lobby(myClient, "GetAcross", "Tutorial_" + tutorialLevel, handleJoin, handleError)
+			//FlxG.state = new QuestLobby(myClient);
 			
 			//Show lobby (parsing true hides the cancel button)
 			//this.Hide(null);
@@ -71,7 +68,6 @@ package
 		private function newGame():void
 		{
 			var alert:Alert = new Alert(this, "This Feature has not yet been implemented")
-			
 		}
 		
 		//Callback function for when Random Map Button is pressed
@@ -83,7 +79,7 @@ package
 		//Callback function for LOBBY, once it has connected to a game
 		private function handleJoin(connection:Connection):void 
 		{
-			FlxG.switchState(new PlayState(connection, myClient));
+			FlxG.state = new PlayState(connection, myClient)
 		}
 		
 		//Callback function for LOBBY, if it has encountered an error

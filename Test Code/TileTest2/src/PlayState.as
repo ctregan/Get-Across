@@ -1,8 +1,8 @@
 package  
 {
 	import org.flixel.*
-	//import org.flixel.data.FlxMouse;
-	import org.flixel.system.input.*
+	import org.flixel.data.FlxMouse;
+	import org.flixel.data.FlxPanel;
 	import playerio.*
 	import sample.ui.Alert;
 	import sample.ui.components.AbilityButton;
@@ -14,8 +14,6 @@ package
 	import sample.ui.Prompt
 	import sample.ui.Chat
 	import flash.text.TextFormatAlign
-	
-
 	/**
 	 * ...
 	 * @author Charlie Regan
@@ -30,17 +28,15 @@ package
 		private const WATER_TILE:int = 4;
 		private const WIN_TILE:int = 5;
 		
-		
-		
-		
 		//[Embed(source = "data/map_data.txt", mimeType = "application/octet-stream")] public var data_map:Class; //Tile Map array
 		[Embed(source = "data/testTileSet2_32.png")] public var data_tiles:Class; //Tile Set Image
 		[Embed(source = "data/Cursor.png")] public var cursor_img:Class; //Mouse Cursor
 		private var apInfo:FlxText; //Text field to reflect the numner of AP left
 		private var myPlayer:Player;
 		private var playersArray:Array = []; //Array of all players on board
-		//private var myMouse:FlxMouse; //Mouse
-		private var myMouse:Mouse;
+		private var monsterArray:Array = [];
+		
+		private var myMouse:FlxMouse; //Mouse
 		private var errorMessage:FlxText; //Text Field to reflect any errors
 		private var secCounter:FlxText; //Text field to reflect time left until next AP
 		private var location:FlxText; //(x,x) graph information of where your player is.
@@ -62,6 +58,8 @@ package
         public static var lyrSprites:FlxGroup;
         public static var lyrHUD:FlxGroup;
 		public static var lyrBackground:FlxGroup;
+		public static var lyrBattle:FlxGroup;
+		public static var lyrMonster:FlxGroup;
 		
 		private static var abilitySelected:Boolean = false; //Indicates whether an ability is activated
 		private static var activeAbility:Ability; //Which ability is currently chosen
@@ -75,8 +73,8 @@ package
 		private var win:Boolean = false; //This variable will indicate if a user has won or not
 		
 		// constants/offset numbers
-		private var _mapOffsetX:int = 204; 	// left border of map
-		private var _mapOffsetY:int = 46;	// top border of map
+		public var _mapOffsetX:int = 204; 	// left border of map
+		public var _mapOffsetY:int = 46;	// top border of map
 		private var _apBoxOffsetX:int = 290;
 		private var _apBoxOffsetY:int = 5;
 		private var _timerOffsetX:int = 330;
@@ -100,9 +98,10 @@ package
 		private var _resourceTextOffsetY:int = 250;
 		
 		private static var myClient:Client;
+		private static var myConnection:Connection;
 		private static var playerName:String;
-		
-		private static var cam:FlxCamera;
+		private static var playerAP:int;
+		private var _APcounterMax:int = 10;	// seconds to pass until player gets AP incremented
 		
 		public function PlayState(connection:Connection, client:Client):void
 		{
@@ -113,76 +112,116 @@ package
 			//addChild(infoBox);
 			
 			infoBox.Show("waiting");						
-			
+
 			this.client = client;
 			myClient = client;
-			this.connection = connection;
+			this.connection = myConnection = connection;
 			
 			//Connection successful, load board and player
-			connection.addMessageHandler("init", function(m:Message, iAm:int, name:String, level:String) {
+			connection.addMessageHandler("init", function(m:Message, iAm:int, name:String, level:String, startAP:int) {
 				imPlayer = iAm;
+				playerAP = startAP;
+				trace("init: starting ap: " + playerAP);
 				//boardSetup(level);
-				client.bigDB.load("StaticMaps", level, function(ob:DatabaseObject):void {
-					var values:Array = ob.tileValues; //Recieve Tile Array from database to be turned into string with line breaks between each line
-					boardSetup(values.join("\n"));
-					//Load Monster
-					try{
-						var monsters:Array = ob.Monsters
-						for (var z:String in monsters) {
-							//var myMonsterObject:DatabaseObject = monsters[z]
-							var myMonsterSprite:Monster = new Monster(monsters[z].Type, monsters[z].xTile, monsters[z].yTile, _mapOffsetX, _mapOffsetY, _tileSize);
-							lyrSprites.add(myMonsterSprite);
+				client.bigDB.load("NewQuests", level, function(ob:DatabaseObject):void {
+					//Recieve Tile Array from database to be turned into string with line breaks between each line
+					if (ob != null)
+					{
+						trace("loading data from NewQuests...\n" + ob.toString());
+						var mapString:String = ob.tileValues;
+						mapString = mapString.split("|").join("\n")
+						boardSetup(mapString, name);
+						//Load Monster
+						try {
+							//monsterArray = new Array[ob.MonsterCount];
+							var monsters:Array = ob.Monsters
+							for (var z in monsters) {
+								//Dont add a monster that is dead
+								if(monsters[z].AP > 0){
+									var myMonsterSprite:Monster = new Monster(monsters[z].Type, monsters[z].AP, z, monsters[z].xTile, monsters[z].yTile, _mapOffsetX, _mapOffsetY, _tileSize);
+									monsterArray.push(myMonsterSprite);
+									lyrMonster.add(myMonsterSprite);
+								}
+							}
+						}catch (e:Error) {
+							trace("Monster Loading Error: " + e);
 						}
-					}catch (e:Error) {
-						trace("Monster Loading Error: " + e);
+						
+						// once the board is load, show tutorial data
+						/*var mainMenu:Box = new Box().fill(0xFFFFFF, 0.8, 0)
+						mainMenu.add(new Box().fill(0x00000, .5, 15).margin(10, 10, 10, 10).minSize(100, 100).add(
+							new Box().fill(0xffffff,1,5).margin(10,10,10,10).minSize(300,0).add(
+									new Rows(
+										new Label("Welcome!", 30, TextFormatAlign.CENTER)
+									).spacing(30)
+								)))
+						addChild(mainMenu);*/
 					}
 					
+					// if object is null, then player's quest ended before they returned to it...return them to the menu screen
+					else 
+					{
+						//todo: add message explaining maybe what XP/coins were won
+						// remove questID associated with this player
+						client.bigDB.load("PlayerObjects", name,
+							function(thisPlayer:DatabaseObject):void
+							{
+								thisPlayer.questID = "noQuest";
+								thisPlayer.save();
+							}
+						);
+						
+						// create new menu for player to navigate back to main screen
+						var button:TextButton = new TextButton("Start a new quest!",
+							function ():void 
+							{
+								FlxG.state = new MenuState(client);
+							}
+						);
+						var menu:Box = new Box().fill(0xFFFFFF, 0.8, 0)
+						menu.add(new Box().fill(0x00000, .5, 15).margin(10, 10, 10, 10).minSize(FlxG.width, FlxG.height).add(
+							new Box().fill(0xffffff,1,5).margin(10,10,10,10).minSize(300,0).add(
+									new Rows(
+										new Label("This quest is already finished!", 30, TextFormatAlign.CENTER),
+										button
+									).spacing(30)
+								)
+							)
+						);
+						addChild(menu);
+					}
 				});
 			})
+			
+			
 			//Recieve Info from server about your saved character
-			connection.addMessageHandler("playerInfo", function(m:Message, posX:int, posY:int, name:String, startAP:int) {
+			connection.addMessageHandler("playerInfo", function(m:Message, posX:int, posY:int, name:String) {
 				if (myPlayer == null) {
-					trace("playerInfo!  given AP? " + startAP);
 					playerName = name;
 					// add player to screen --
-					// if player has previous position saved in database, place player there
-					client.bigDB.load("Quests", name, function(results:DatabaseObject):void {
-						// player has previous position on this map
-						if (results != null) {
-							playerStartX = results.positionX;
-							playerStartY = results.positionY;
-							myPlayer = new Player(playerStartX, playerStartY, _mapOffsetX, _mapOffsetY, _tileSize, startAP);
-							playersArray[imPlayer - 1] = myPlayer;
-							lyrSprites.add(myPlayer);
-							trace("loaded, xy " + results.positionX + " " + results.positionY);
-						}
-						else
-						{
-							myPlayer = new Player(playerStartX, playerStartY, _mapOffsetX, _mapOffsetY, _tileSize, startAP);
-							playersArray[imPlayer - 1] = myPlayer;
-							lyrSprites.add(myPlayer);
-							trace("fresh, xy " + playerStartX + " " + playerStartY);
-						}
-					});
-					
+					trace("create player sprite: " + posX + " " + posY);
+					trace("playerInfo: AP to start with: " + playerAP);
+					myPlayer = new Player(posX, posY, _mapOffsetX, _mapOffsetY, _tileSize, playerAP);
+					playersArray[imPlayer - 1] = myPlayer;
+					lyrSprites.add(myPlayer);
+
 					//Load Abilities for Player From Database
 					client.bigDB.loadMyPlayerObject(function(db:DatabaseObject) {
 						try {
 							var abilityArray:Array = db.abilities
 							if (abilityArray != null || abilityArray.length > 0) {
 								client.bigDB.loadKeys("Abilities", db.abilities, function(dbarr:Array) {
-									var abilityButtonBox:Box = new Box().fill(0xffffff, 1, 5).margin(10, 10, 10, 10);
-									abilityButtonBox.add(new Label("Abilities", 15, TextFormatAlign.CENTER));
+									var yButtonPlacementModifier:int = 0;
 									for (var z:String in dbarr) {
-										var test:DatabaseObject = dbarr[z]
-										var myAbility:Ability = new Ability(_tileSize, myPlayer, test.Range, test.Cost, test.Effect.Type, test.Effect.From, test.Effect.To);
+										var test:DatabaseObject = dbarr[z];
+										var myAbility:Ability = new Ability(_tileSize, _mapOffsetX, _mapOffsetY, myPlayer, test);
 										myAbility.visible = false;
 										lyrStage.add(myAbility);
 										trace("Loaded Ability " + test.Name + "\n");
-										abilityButtonBox.add(new AbilityButton(myAbility, test.Name))
-										abilities.text = abilities.text + test.Name + "\n"
+										lyrHUD.add(new AbilityButton(_cardBoxOffsetX, _cardBoxOffsetY + yButtonPlacementModifier, myAbility));
+										lyrHUD.add(new FlxText(_cardBoxOffsetX + 2, _cardBoxOffsetY + yButtonPlacementModifier + 2, 100, test.Name));
+										yButtonPlacementModifier += 30;
 									}
-									abilitiesBox.add(new Box().fill(0x00000, .5, 15).margin(10, 10, 10, 10).minSize(130, 130).add(abilityButtonBox))
 								})
 							}
 						} catch (e:Error) {
@@ -194,12 +233,13 @@ package
 				//FlxG.follow(myPlayer);
 				//FlxG.followBounds(0, 0, myMap.width, myMap.height);
 			})
+			
 			//New user has joined, make their character
 			connection.addMessageHandler("UserJoined", function(m:Message, userID:int, posX:int, posY:int) {
 				if (userID != imPlayer) {
 					// create other player; AP doesn't matter, so default to 20
-					playersArray[userID-1] = (new Player(posX, posY, _mapOffsetX, _mapOffsetY, _tileSize, 20));
-					lyrSprites.add(playersArray[userID-1]);
+					playersArray[userID-1] = new Player(posX, posY, _mapOffsetX, _mapOffsetY, _tileSize, 20);
+					if (playersArray[userID-1] != null && lyrSprites != null) lyrSprites.add(playersArray[userID-1]);
 				}
 			})
 			//Player has moved and we hear about it
@@ -210,15 +250,19 @@ package
 			})
 			//A tile has changed and needs to be updated locally
 			connection.addMessageHandler("MapTileChanged", function(m:Message, userID:int, posX:int, posY:int, newTileType:int) {
-				setTileIdentity(posX, posY, newTileType);
+				setTileIdentity( posX, posY, newTileType);
 				//myMap.setTile(posX, posY, newTileType, true);
 			})
 			//A player has reached the end, victory!
 			connection.addMessageHandler("win", function(m:Message, userID:int, xp:int, coin:int) {
 				connection.disconnect();
-				FlxG.switchState(new QuestCompleteState(xp, coin, client));
+				FlxG.state = new QuestCompleteState(xp, coin, client);
 			})
-			
+			//A monster has been hurt and need their AP updated
+			connection.addMessageHandler("MonsterAPChange", function (m:Message, userID:int, newAP:int, monsterIndex:int ):void 
+			{
+				monsterArray[monsterIndex]._ap = newAP;
+			})
 			
 		}
 		
@@ -229,29 +273,29 @@ package
 				if (counter <= 0)
 				{
 					// After 180 seconds has passed, the timer will reset.
-					//myPlayer.AP++;
-					counter = 180;
-					incrementAP();
+					counter = _APcounterMax;
 					myPlayer.AP++;
+					myConnection.send("playerAP", myPlayer.AP);
 				}
 				//Update HUD Information
 				secCounter.text = counter.toPrecision(3) + " seconds until more AP";
 				//Player moves only one character, detect keys presses here
+
 				if (myPlayer != null && !win) {
-					if (myPlayer.AP <= 0 && FlxG.keys.justPressed("A")) {
-						incrementAP();
+					if (myPlayer.AP <= 20 && FlxG.keys.justPressed("A")) {
 						myPlayer.AP++;
+						myConnection.send("playerAP", myPlayer.AP);
 					}
-					if (FlxG.keys.justPressed("DOWN") && !myPlayer.isMoving) {
+					if (FlxG.keys.justPressed("DOWN") && !myPlayer.isMoving && !myPlayer.inBattle) {
 						myPlayer.facing = FlxSprite.DOWN;
 						win = myPlayer.movePlayer(0, 1, _tileSize, connection);
-					}else if (FlxG.keys.justPressed("UP") && !myPlayer.isMoving) {
+					}else if (FlxG.keys.justPressed("UP") && !myPlayer.isMoving && !myPlayer.inBattle) {
 						myPlayer.facing = FlxSprite.UP;
 						win = myPlayer.movePlayer(0, -1, _tileSize, connection);
-					}else if (FlxG.keys.justPressed("RIGHT") && !myPlayer.isMoving) {
+					}else if (FlxG.keys.justPressed("RIGHT") && !myPlayer.isMoving && !myPlayer.inBattle) {
 						myPlayer.facing = FlxSprite.RIGHT;
 						win = myPlayer.movePlayer(1, 0, _tileSize, connection);
-					}else if (FlxG.keys.justPressed("LEFT") && !myPlayer.isMoving) {
+					}else if (FlxG.keys.justPressed("LEFT") && !myPlayer.isMoving && !myPlayer.inBattle) {
 						myPlayer.facing = FlxSprite.LEFT;
 						win = myPlayer.movePlayer( -1, 0, _tileSize, connection);
 					}else if (myMouse.justPressed() &&  mouseWithinTileMap() && abilitySelected) {
@@ -263,10 +307,6 @@ package
 						if (checkActiveAbilityRange(selectedXTile, selectedYTile)) {
 							activeAbility.cast(selectedXTile, selectedYTile , connection);
 						}
-						//new InGamePrompt(this, "Are you sure?", function(){ 
-						//	myMap.setTile(myMouse.x / 32, myMouse.y / 32, 5, true);
-						//	connection.send("MapTileChanged", (myMouse.x - (myMouse.x % 32)) / 32, (myMouse.y - (myMouse.y % 32)) / 32, 5); //Test Code, will turn any clicked tile into a star
-						//})
 					}else if(!myPlayer.isMoving) {
 						myPlayer.play("idle" + myPlayer.facing);
 					}
@@ -281,8 +321,18 @@ package
 					} else {
 						mouseLocation.text = "";
 					}
+					//Only show the battle hud if the player is in combat
+					lyrBattle.visible = myPlayer.inBattle;
+					 //Detect Monster collision, if a monster is overlapping your player then you are now in a fight
+					for (var monster in monsterArray) {
+						FlxU.overlap(monsterArray[monster], myPlayer, function() {
+							myPlayer.inBattle = true;
+							myPlayer.combatant = monsterArray[monster]
+							errorMessage.text = "BATTLE!";
+							lyrBattle.visible = true;
+						})
+					}
 				}
-				
 				super.update();
 			}
 		}
@@ -328,17 +378,6 @@ package
 			});
 		}
 		
-		// increment AP value for this player in the Quests database
-		public static function incrementAP():void
-		{
-			myClient.bigDB.load("Quests", playerName, function(results:DatabaseObject):void {
-				// make sure player exists in Quests
-				if (results != null) {
-					results.AP += 1;
-					results.save();
-				}
-			});
-		}
 		//Returns whether an ability has been selected to be used by the player
 		public static function getAbilitySelected():Boolean 
 		{
@@ -356,12 +395,10 @@ package
 			}
 		}
 		
-		
-		
 		//Add all flixel elements to the board, essentially drawing the game.
-		private function boardSetup(map_data:String):void 
+		private function boardSetup(map_data:String, playerName:String):void 
 		{
-			counter = 180; // 1ap gained every 3 minutes
+			counter = _APcounterMax; // 1ap gained every 3 minutes
 			//Add chat to game
 			//var chat:Chat = new Chat(FlxG.stage, connection);
 			//Different Layers
@@ -369,13 +406,15 @@ package
             lyrSprites = new FlxGroup; //Character Sprites exist here
             lyrHUD = new FlxGroup; //HUD elements exist here
 			lyrBackground = new FlxGroup;
+			lyrBattle = new FlxGroup;
+			lyrMonster = new FlxGroup;
 			myMouse = FlxG.mouse;
 			
 			//Tile Map
 			myMap = new FlxTilemap();
-			myMap._drawIndex = 0;
+			myMap.drawIndex = 0;
 			myMap.loadMap(map_data, data_tiles, _tileSize, _tileSize);
-			myMap._collideIndex = 1;
+			myMap.collideIndex = 1;
 			myMap.x = _mapOffsetX;
 			myMap.y = _mapOffsetY;			
 			lyrStage.add(myMap);
@@ -385,7 +424,33 @@ package
 			lvl = new FlxText(_lvlTextOffsetX, _lvlTextOffsetY, 100, "Lvl:1", true);
 			experience = new FlxText(_experienceTextOffsetX, _experienceTextOffsetY, 100, "Exp:0", true);
 			
-			//Bottom HUD
+			//Battle HUD
+			//Background
+			
+			//Weak Attack Button
+			lyrBattle.add(new FlxButton(22, 284, function() { 
+				if (myPlayer.inBattle) {
+					myPlayer.combatant.attack(1,myPlayer, connection);
+				}
+			}))
+			lyrBattle.add(new FlxText(24, 286, 100, "Weak Attack"));
+			//Medium Attack Button
+			lyrBattle.add(new FlxButton(22, 314, function() { 
+				if (myPlayer.inBattle) {
+					myPlayer.combatant.attack(2,myPlayer, connection);
+				}
+			}))
+			
+			lyrBattle.add(new FlxText(24, 316, 100, "Medium Attack"));
+			//Strong Attack Button
+			lyrBattle.add(new FlxButton(22, 344, function() { 
+				if (myPlayer.inBattle) {
+					myPlayer.combatant.attack(3,myPlayer, connection);
+				}
+			}))
+			lyrBattle.add(new FlxText(24, 346, 100, "Strong Attack"));
+			//Initially the battle hud is invisible, it will be visible when a user enters combat
+			lyrBattle.visible = false;
 			
 			
 			//Right Side HUD
@@ -397,11 +462,6 @@ package
 			mouseLocation = new FlxText(_terrainMessageBoxOffsetX, _terrainMessageBoxOffsetY, 260, "(0,0)", true);
 			secCounter = new FlxText(_timerOffsetX, _timerOffsetY, 100, "15 Sec until AP", true);			
 			abilities = new FlxText(_cardBoxOffsetX, _cardBoxOffsetY, 100, "Abilities:\n", true);
-			abilitiesBox = new Box().fill(0xFFFFFF, 0.8, 0)
-			abilitiesBox.x = _cardBoxOffsetX;
-			abilitiesBox.y = _cardBoxOffsetY;
-			abilitiesBox.minSize(150, 150);
-			
 
 			// background
 			background = new Background();
@@ -417,14 +477,18 @@ package
 			lyrHUD.add(apInfo);
 			lyrHUD.add(mouseLocation);
 			lyrBackground.add(background);
-		
+			
+			lyrSprites.add(lyrMonster);
 			this.add(lyrBackground);
 			this.add(lyrStage);
             this.add(lyrSprites);
             this.add(lyrHUD);
-			//this.addChild(abilitiesBox);
+			this.add(lyrBattle);
 			
 			connected = true;
+			
+			// ask server for data about this player
+			// server will send back data so client can create this player's sprite
 			connection.send("playerInfo");
 		}
 		
@@ -434,11 +498,9 @@ package
 			if (myMap.x < myMouse.x + _mapOffsetX 
 				&& myMouse.x < (myMap.x + myMap.width + _mapOffsetX) 
 				&& myMap.y < myMouse.y +_mapOffsetY
-				&& myMouse.y < (myMap.y + myMap.height + _mapOffsetY)) {
-				errorMessage.text = "In the Box"	
+				&& myMouse.y < (myMap.y + myMap.height + _mapOffsetY)) {	
 				return true;
 			}
-			errorMessage.text = "Out of the box"
 			return false;
 		}
 		
@@ -463,8 +525,7 @@ package
 			trace("send join")
 			connection.send("join");
 			infoBox.Show("waiting");
-		}		
-
+		}
 		
 		private function handleMessages(m:Message){
 			trace("Recived the message", m)

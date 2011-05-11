@@ -4,6 +4,7 @@ package
 	import org.flixel.FlxSprite;
 	import org.flixel.FlxState;
 	import playerio.Connection;
+	import playerio.DatabaseObject;
 	/**
 	 * ...
 	 * @author Charlie Regan
@@ -16,20 +17,21 @@ package
 		private var _cost:int;
 		private var _effect:String;
 		private var _caster:Player;
-		private var _fromTile:int;
-		private var _toTile:int;
 		private var _tileSize:int;
+		private var _xOffset:int;
+		private var _yOffset:int;
+		private var _object:DatabaseObject;
 			
-		public function Ability(tileSize:int, caster:Player, range:int, cost:int, effect:String, fromTile:int, toTile:int) 
+		public function Ability(tileSize:int, xOffset:int, yOffset:int, caster:Player, object:DatabaseObject) 
 		{
-			_tileSize = tileSize
-			_range = range;
-			_cost = cost;
-			_effect = effect;
+			_tileSize = tileSize;
+			_xOffset = xOffset;
+			_yOffset = yOffset;
+			_range = object.Range;
+			_cost = object.cost;
+			_object = object;
 			_caster = caster;
 			
-			_fromTile = fromTile;
-			_toTile = toTile;
 			var img:Class = range1
 			if (_range == 1) {
 				img = range1;
@@ -37,7 +39,7 @@ package
 			}else if (_range == 2) {
 				img = range2;
 			}
-			super(_caster.x - (tileSize * range) , _caster.y - (tileSize * range), img); //need to make sure position image on the center of the players tile
+			super(_caster.x - (tileSize * _range) , _caster.y - (tileSize * _range), img); //need to make sure position image on the center of the players tile
 			
 			trace("Ability X: " + this.x + " Y:" + this.y);
 			
@@ -45,8 +47,8 @@ package
 		
 		override public function update():void 
 		{
-			this.x = _caster.x - _tileSize
-			this.y = _caster.y - _tileSize
+			this.x = _caster.x - _tileSize;
+			this.y = _caster.y - _tileSize;
 			super.update();
 		}
 		
@@ -64,9 +66,12 @@ package
 		
 		public function cast(tileX:int, tileY:int, connection:Connection) 
 		{
-			if (_effect == "Terrain" && PlayState.myMap.getTile(tileX,tileY) == _fromTile) {
-				PlayState.myMap.setTile(tileX, tileY, _toTile)
-				connection.send("MapTileChanged", tileX, tileY, _toTile);
+			if (_object.Effect.Type == "Terrain" && PlayState.myMap.getTile(tileX,tileY) == _object.Effect.From) {
+				PlayState.myMap.setTile(tileX, tileY, _object.Effect.To)
+				connection.send("MapTileChanged", tileX, tileY, _object.Effect.To);
+				connection.send("QuestMapUpdate", PlayState.myMap.getMapData());
+			}else if (_object.Effect.Type == "Sprite") {
+				PlayState.lyrSprites.add(new EffectSprite((tileX * _tileSize ) + _xOffset, (tileY * _tileSize) + _yOffset, _object.Effect.Image, _object.Effect.Range, _tileSize));
 			}
 		}
 	}

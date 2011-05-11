@@ -119,6 +119,7 @@ package org.flixel
 		 */
 		protected var _startingIndex:uint;
 		
+		
 		/**
 		 * The tilemap constructor just initializes some basic variables.
 		 */
@@ -383,6 +384,8 @@ package org.flixel
 			Buffer.x = screenXInTiles*_tileWidth;
 			Buffer.y = screenYInTiles*_tileHeight;
 		}
+		
+	
 		
 		/**
 		 * Draws the tilemap buffers to the cameras and handles flickering.
@@ -921,7 +924,6 @@ package org.flixel
 		{
 			return _data[Y * widthInTiles + X] as uint;
 		}
-		
 		/**
 		 * Get the value of a tile in the tilemap by index.
 		 * 
@@ -1012,6 +1014,23 @@ package org.flixel
 			return setTileByIndex(Y * widthInTiles + X,Tile,UpdateGraphics);
 		}
 		
+		/*
+		 * Returns the tile map values in a string form, similar to how they were recieved
+		 */
+		public function getMapData():String 
+		{
+			var returnString:String  = "";
+			for (var i:int = 0; i < _screenRows; i++) {
+					for (var z:int = 0; z < _screenCols; z++) {
+							if (z == _screenCols - 1) {
+								returnString = returnString.concat(_data[(i * _screenCols) + z] + "|");
+							}else{
+								returnString = returnString.concat(_data[(i * _screenCols) + z] + ",");
+							}
+					}
+			}
+			return returnString;
+		}
 		/**
 		 * Change the data and graphic of a tile in the tilemap.
 		 * 

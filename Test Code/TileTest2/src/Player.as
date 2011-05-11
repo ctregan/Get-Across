@@ -28,6 +28,8 @@ package
 		public var errorMessage:String;
 		public var xPos:Number; //X Tile Position
 		public var yPos:Number; //Y Tile Position
+		public var inBattle:Boolean = false;
+		public var combatant:Monster;
 		public var xTilePixel:Number; //The X tile location in pixels for the player's current tile
 		public var yTilePixel:Number; //The Y tile location in pixels for the player's current tile
 		private var _move_speed:int = 400;
@@ -81,15 +83,15 @@ package
 				if (PlayState.myMap.getTile(xPos, yPos) == WIN_TILE) {
 					return true;
 				}
-				var myTimer:Timer = new Timer(1000);
+				var myTimer:Timer = new Timer(500);
 				myTimer.addEventListener(TimerEvent.TIMER, function(event:TimerEvent):void {
 					isMoving = false;
 				})
 				myTimer.start();
 			}
 			
-			// update AP count in Quests database
-			PlayState.updateAP(AP);
+			// sends AP this player has to the server
+			connection.send("playerAP", AP);
 			
 			return false;
 		}
@@ -104,7 +106,7 @@ package
 		//Sees if the desired move for the player is valid.
 		private function checkMove(proposedX:Number, proposedY:Number):Boolean {
 			if (PlayState.myMap.getTile(proposedX, proposedY) == WATER_TILE ) {
-				errorMessage = "Invalid Move, cant cross water";
+				errorMessage = "Invalid Move, can't cross water";
 				return false;
 			}else if (AP < findCost(proposedX, proposedY)) {
 				errorMessage = "Invalid Move, insufficient AP";
