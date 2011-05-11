@@ -28,9 +28,6 @@ package
 		private const WATER_TILE:int = 4;
 		private const WIN_TILE:int = 5;
 		
-		
-		
-		
 		//[Embed(source = "data/map_data.txt", mimeType = "application/octet-stream")] public var data_map:Class; //Tile Map array
 		[Embed(source = "data/testTileSet2_32.png")] public var data_tiles:Class; //Tile Set Image
 		[Embed(source = "data/Cursor.png")] public var cursor_img:Class; //Mouse Cursor
@@ -62,6 +59,7 @@ package
         public static var lyrHUD:FlxGroup;
 		public static var lyrBackground:FlxGroup;
 		public static var lyrBattle:FlxGroup;
+		public static var lyrMonster:FlxGroup;
 		
 		private static var abilitySelected:Boolean = false; //Indicates whether an ability is activated
 		private static var activeAbility:Ability; //Which ability is currently chosen
@@ -75,8 +73,8 @@ package
 		private var win:Boolean = false; //This variable will indicate if a user has won or not
 		
 		// constants/offset numbers
-		private var _mapOffsetX:int = 204; 	// left border of map
-		private var _mapOffsetY:int = 46;	// top border of map
+		public var _mapOffsetX:int = 204; 	// left border of map
+		public var _mapOffsetY:int = 46;	// top border of map
 		private var _apBoxOffsetX:int = 290;
 		private var _apBoxOffsetY:int = 5;
 		private var _timerOffsetX:int = 330;
@@ -134,7 +132,7 @@ package
 							if(monsters[z].AP > 0){
 								var myMonsterSprite:Monster = new Monster(monsters[z].Type, monsters[z].AP, z, monsters[z].xTile, monsters[z].yTile, _mapOffsetX, _mapOffsetY, _tileSize);
 								monsterArray.push(myMonsterSprite);
-								lyrSprites.add(myMonsterSprite);
+								lyrMonster.add(myMonsterSprite);
 							}
 						}
 					}catch (e:Error) {
@@ -174,18 +172,17 @@ package
 							var abilityArray:Array = db.abilities
 							if (abilityArray != null || abilityArray.length > 0) {
 								client.bigDB.loadKeys("Abilities", db.abilities, function(dbarr:Array) {
-									var abilityButtonBox:Box = new Box().fill(0xffffff, 1, 5).margin(10, 10, 10, 10);
-									abilityButtonBox.add(new Label("Abilities", 15, TextFormatAlign.CENTER));
+									var yButtonPlacementModifier:int = 0;
 									for (var z:String in dbarr) {
 										var test:DatabaseObject = dbarr[z]
-										var myAbility:Ability = new Ability(_tileSize, myPlayer, test.Range, test.Cost, test.Effect.Type, test.Effect.From, test.Effect.To);
+										var myAbility:Ability = new Ability(_tileSize, _mapOffsetX, _mapOffsetY, myPlayer, test);
 										myAbility.visible = false;
 										lyrStage.add(myAbility);
 										trace("Loaded Ability " + test.Name + "\n");
-										abilityButtonBox.add(new AbilityButton(myAbility, test.Name))
-										abilities.text = abilities.text + test.Name + "\n"
+										lyrHUD.add(new AbilityButton(_cardBoxOffsetX, _cardBoxOffsetY + yButtonPlacementModifier, myAbility))
+										lyrHUD.add(new FlxText(_cardBoxOffsetX + 2, _cardBoxOffsetY + yButtonPlacementModifier + 2, 100, test.Name))
+										yButtonPlacementModifier += 30
 									}
-									abilitiesBox.add(new Box().fill(0x00000, .5, 15).margin(10, 10, 10, 10).minSize(130, 130).add(abilityButtonBox))
 								})
 							}
 						} catch (e:Error) {
@@ -197,6 +194,7 @@ package
 				//FlxG.follow(myPlayer);
 				//FlxG.followBounds(0, 0, myMap.width, myMap.height);
 			})
+			
 			//New user has joined, make their character
 			connection.addMessageHandler("UserJoined", function(m:Message, userID:int, posX:int, posY:int) {
 				if (userID != imPlayer) {
@@ -270,10 +268,6 @@ package
 						if (checkActiveAbilityRange(selectedXTile, selectedYTile)) {
 							activeAbility.cast(selectedXTile, selectedYTile , connection);
 						}
-						//new InGamePrompt(this, "Are you sure?", function(){ 
-						//	myMap.setTile(myMouse.x / 32, myMouse.y / 32, 5, true);
-						//	connection.send("MapTileChanged", (myMouse.x - (myMouse.x % 32)) / 32, (myMouse.y - (myMouse.y % 32)) / 32, 5); //Test Code, will turn any clicked tile into a star
-						//})
 					}else if(!myPlayer.isMoving) {
 						myPlayer.play("idle" + myPlayer.facing);
 					}
@@ -388,6 +382,7 @@ package
             lyrHUD = new FlxGroup; //HUD elements exist here
 			lyrBackground = new FlxGroup;
 			lyrBattle = new FlxGroup;
+			lyrMonster = new FlxGroup;
 			myMouse = FlxG.mouse;
 			
 			//Tile Map
@@ -442,11 +437,6 @@ package
 			mouseLocation = new FlxText(_terrainMessageBoxOffsetX, _terrainMessageBoxOffsetY, 260, "(0,0)", true);
 			secCounter = new FlxText(_timerOffsetX, _timerOffsetY, 100, "15 Sec until AP", true);			
 			abilities = new FlxText(_cardBoxOffsetX, _cardBoxOffsetY, 100, "Abilities:\n", true);
-			abilitiesBox = new Box().fill(0xFFFFFF, 0.8, 0)
-			abilitiesBox.x = _cardBoxOffsetX;
-			abilitiesBox.y = _cardBoxOffsetY;
-			abilitiesBox.minSize(150, 150);
-			
 
 			// background
 			background = new Background();
@@ -463,14 +453,12 @@ package
 			lyrHUD.add(mouseLocation);
 			lyrBackground.add(background);
 			
-			
+			lyrSprites.add(lyrMonster);
 			this.add(lyrBackground);
 			this.add(lyrStage);
             this.add(lyrSprites);
             this.add(lyrHUD);
 			this.add(lyrBattle);
-			this.addChild(abilitiesBox);
-			
 			
 			connected = true;
 			connection.send("playerInfo");
@@ -482,11 +470,9 @@ package
 			if (myMap.x < myMouse.x + _mapOffsetX 
 				&& myMouse.x < (myMap.x + myMap.width + _mapOffsetX) 
 				&& myMap.y < myMouse.y +_mapOffsetY
-				&& myMouse.y < (myMap.y + myMap.height + _mapOffsetY)) {
-				errorMessage.text = "In the Box"	
+				&& myMouse.y < (myMap.y + myMap.height + _mapOffsetY)) {	
 				return true;
 			}
-			errorMessage.text = "Out of the box"
 			return false;
 		}
 		

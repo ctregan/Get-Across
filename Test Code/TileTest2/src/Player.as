@@ -83,7 +83,7 @@ package
 				if (PlayState.myMap.getTile(xPos, yPos) == WIN_TILE) {
 					return true;
 				}
-				var myTimer:Timer = new Timer(1000);
+				var myTimer:Timer = new Timer(500);
 				myTimer.addEventListener(TimerEvent.TIMER, function(event:TimerEvent):void {
 					isMoving = false;
 				})
