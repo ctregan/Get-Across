@@ -125,27 +125,63 @@ package
 				//boardSetup(level);
 				client.bigDB.load("NewQuests", level, function(ob:DatabaseObject):void {
 					//Recieve Tile Array from database to be turned into string with line breaks between each line
-					var mapString:String = ob.tileValues;
-					mapString = mapString.split("|").join("\n")
-					boardSetup(mapString, name);
-					//Load Monster
-					try {
-						//monsterArray = new Array[ob.MonsterCount];
-						var monsters:Array = ob.Monsters
-						for (var z in monsters) {
-							//Dont add a monster that is dead
-							if(monsters[z].AP > 0){
-								var myMonsterSprite:Monster = new Monster(monsters[z].Type, monsters[z].AP, z, monsters[z].xTile, monsters[z].yTile, _mapOffsetX, _mapOffsetY, _tileSize);
-								monsterArray.push(myMonsterSprite);
-								lyrMonster.add(myMonsterSprite);
+					if (ob != null)
+					{
+						trace("loading data from NewQuests...\n" + ob.toString());
+						var mapString:String = ob.tileValues;
+						mapString = mapString.split("|").join("\n")
+						boardSetup(mapString, name);
+						//Load Monster
+						try {
+							//monsterArray = new Array[ob.MonsterCount];
+							var monsters:Array = ob.Monsters
+							for (var z in monsters) {
+								//Dont add a monster that is dead
+								if(monsters[z].AP > 0){
+									var myMonsterSprite:Monster = new Monster(monsters[z].Type, monsters[z].AP, z, monsters[z].xTile, monsters[z].yTile, _mapOffsetX, _mapOffsetY, _tileSize);
+									monsterArray.push(myMonsterSprite);
+									lyrMonster.add(myMonsterSprite);
+								}
 							}
+						}catch (e:Error) {
+							trace("Monster Loading Error: " + e);
 						}
-					}catch (e:Error) {
-						trace("Monster Loading Error: " + e);
 					}
 					
+					// if object is null, then player's quest ended before they returned to it...return them to the menu screen
+					else 
+					{
+						//todo: add message explaining that the quest was finished, and maybe what XP/coins were won
+						// remove questID associated with this player
+						/*client.bigDB.load("PlayerObject", name, function(thisPlayer:DatabaseObject):void
+							{
+								thisPlayer.questID = "noQuest";
+							}
+						);*/
+						
+						// create new menu for player to navigate back to main screen
+						var button:TextButton = new TextButton("Start a new quest!",
+							function ()
+							{
+								FlxG.state = new MenuState(client);
+							}
+						);
+						var menu:Box = new Box().fill(0xFFFFFF, 0.8, 0)
+						menu.add(new Box().fill(0x00000, .5, 15).margin(10, 10, 10, 10).minSize(FlxG.width, FlxG.height).add(
+							new Box().fill(0xffffff,1,5).margin(10,10,10,10).minSize(300,0).add(
+									new Rows(
+										new Label("This quest is already finished!", 30, TextFormatAlign.CENTER),
+										button
+									).spacing(30)
+								)
+							)
+						);
+						addChild(menu);
+					}
 				});
 			})
+			
+			
 			//Recieve Info from server about your saved character
 			connection.addMessageHandler("playerInfo", function(m:Message, posX:int, posY:int, name:String) {
 				if (myPlayer == null) {
