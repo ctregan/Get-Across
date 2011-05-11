@@ -112,7 +112,7 @@ package
 			//addChild(infoBox);
 			
 			infoBox.Show("waiting");						
-			
+
 			this.client = client;
 			myClient = client;
 			this.connection = myConnection = connection;
@@ -124,8 +124,10 @@ package
 				trace("init: starting ap: " + playerAP);
 				//boardSetup(level);
 				client.bigDB.load("StaticMaps", level, function(ob:DatabaseObject):void {
-					var values:Array = ob.tileValues; //Recieve Tile Array from database to be turned into string with line breaks between each line
-					boardSetup(values.join("\n"), name);
+					//Recieve Tile Array from database to be turned into string with line breaks between each line
+					var mapString:String = ob.tileValues;
+					mapString = mapString.split("|").join("\n")
+					boardSetup(mapString, name);
 					//Load Monster
 					try {
 						//monsterArray = new Array[ob.MonsterCount];
@@ -283,8 +285,6 @@ package
 						})
 					}
 				}
-				
-			
 				super.update();
 			}
 		}

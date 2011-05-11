@@ -116,6 +116,13 @@ namespace GetAcross {
                             newQuest.Set("players", questPlayers);
                             Console.WriteLine("questPlayers contents: " + questPlayers.ToString());
 
+                            //Add Static Map to Quest, to be updated later
+                            /*PlayerIO.BigDB.Load("StaticMaps", levelKey, 
+                                delegate(DatabaseObject staticMap)
+                                {
+                                    questPlayers.Set("tileValues", staticMap.GetArray("tileValues"));
+                                });*/
+                            
                             // add this quest object to Quests db
                             PlayerIO.BigDB.CreateObject("NewQuests", null, newQuest,
                                 delegate(DatabaseObject addedQuest)
@@ -231,19 +238,6 @@ namespace GetAcross {
 		// This method is called when a player sends a message into the server code
 		public override void GotMessage(Player player, Message message) {
 			switch(message.Type) {
-				// This is how you would set a players name when they send in their name in a 
-				// "MyNameIs" message
-
-                case "MyNameIs":
-                    {
-                        player.Name = message.GetString(0);
-                        break;
-                    }
-                case "join":
-                    {
-                        joinGame(player);
-                        break;
-                    }
 
                 // player has moved up, down, left, or right
                 case "move":
@@ -252,24 +246,10 @@ namespace GetAcross {
                         int messageY = message.GetInt(1);
                         int xDistance = Math.Abs(messageX - player.positionX);
                         int yDistance = Math.Abs(messageY - player.positionY);
-                        /*if ((xDistance > 1 || yDistance > 1) || (xDistance == 0 && yDistance == 0))
-                        {
-                            player.Send("invalidMove");
-                            break;
-                        }
-                        else if (field[messageX, messageY].cost > player.AP)
-                        {
-                            player.Send("insufficientAP");
-                            break;
-                        }
-                        else
-                        {*/
                         player.positionX = player.positionX + messageX;
                         player.positionY = player.positionY + messageY;
                         Console.WriteLine("Player " + player.Id + " is moving to (" + player.positionX + ", " + player.positionY + ")"); //debug 
                         Broadcast("PlayerMove", player.Id, messageX, messageY);
-                            //player.AP = player.AP - field[messageX, messageY].cost;
-                        //}
                         break;
                     }
 
@@ -361,11 +341,6 @@ namespace GetAcross {
                         break;
                     }
 			}
-		}
-
-        private void joinGame(Player user) {
-            
-
 		}
 
 		Point debugPoint;
