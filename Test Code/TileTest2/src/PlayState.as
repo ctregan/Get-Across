@@ -153,11 +153,13 @@ package
 					{
 						//todo: add message explaining that the quest was finished, and maybe what XP/coins were won
 						// remove questID associated with this player
-						/*client.bigDB.load("PlayerObject", name, function(thisPlayer:DatabaseObject):void
+						client.bigDB.load("PlayerObjects", name,
+							function(thisPlayer:DatabaseObject):void
 							{
 								thisPlayer.questID = "noQuest";
+								thisPlayer.save();
 							}
-						);*/
+						);
 						
 						// create new menu for player to navigate back to main screen
 						var button:TextButton = new TextButton("Start a new quest!",
