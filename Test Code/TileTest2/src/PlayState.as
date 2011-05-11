@@ -146,6 +146,16 @@ package
 						}catch (e:Error) {
 							trace("Monster Loading Error: " + e);
 						}
+						
+						// once the board is load, show tutorial data
+						/*var mainMenu:Box = new Box().fill(0xFFFFFF, 0.8, 0)
+						mainMenu.add(new Box().fill(0x00000, .5, 15).margin(10, 10, 10, 10).minSize(100, 100).add(
+							new Box().fill(0xffffff,1,5).margin(10,10,10,10).minSize(300,0).add(
+									new Rows(
+										new Label("Welcome!", 30, TextFormatAlign.CENTER)
+									).spacing(30)
+								)))
+						addChild(mainMenu);*/
 					}
 					
 					// if object is null, then player's quest ended before they returned to it...return them to the menu screen
@@ -163,7 +173,7 @@ package
 						
 						// create new menu for player to navigate back to main screen
 						var button:TextButton = new TextButton("Start a new quest!",
-							function ()
+							function ():void 
 							{
 								FlxG.state = new MenuState(client);
 							}
@@ -203,14 +213,14 @@ package
 								client.bigDB.loadKeys("Abilities", db.abilities, function(dbarr:Array) {
 									var yButtonPlacementModifier:int = 0;
 									for (var z:String in dbarr) {
-										var test:DatabaseObject = dbarr[z]
+										var test:DatabaseObject = dbarr[z];
 										var myAbility:Ability = new Ability(_tileSize, _mapOffsetX, _mapOffsetY, myPlayer, test);
 										myAbility.visible = false;
 										lyrStage.add(myAbility);
 										trace("Loaded Ability " + test.Name + "\n");
-										lyrHUD.add(new AbilityButton(_cardBoxOffsetX, _cardBoxOffsetY + yButtonPlacementModifier, myAbility))
-										lyrHUD.add(new FlxText(_cardBoxOffsetX + 2, _cardBoxOffsetY + yButtonPlacementModifier + 2, 100, test.Name))
-										yButtonPlacementModifier += 30
+										lyrHUD.add(new AbilityButton(_cardBoxOffsetX, _cardBoxOffsetY + yButtonPlacementModifier, myAbility));
+										lyrHUD.add(new FlxText(_cardBoxOffsetX + 2, _cardBoxOffsetY + yButtonPlacementModifier + 2, 100, test.Name));
+										yButtonPlacementModifier += 30;
 									}
 								})
 							}
@@ -368,18 +378,6 @@ package
 			});
 		}
 		
-		// increment AP value for this player in the Quests database
-		public static function incrementAP():void
-		{
-			myClient.bigDB.load("Quests", playerName, function(results:DatabaseObject):void {
-				// make sure player exists in Quests
-				if (results != null) {
-					results.AP += 1;
-					results.save();
-				}
-			});
-		}
-
 		//Returns whether an ability has been selected to be used by the player
 		public static function getAbilitySelected():Boolean 
 		{

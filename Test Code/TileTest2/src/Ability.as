@@ -29,7 +29,7 @@ package
 			_yOffset = yOffset;
 			_range = object.Range;
 			_cost = object.cost;
-			_object = object
+			_object = object;
 			_caster = caster;
 			
 			var img:Class = range1
@@ -47,8 +47,8 @@ package
 		
 		override public function update():void 
 		{
-			this.x = _caster.x - _tileSize
-			this.y = _caster.y - _tileSize
+			this.x = _caster.x - _tileSize;
+			this.y = _caster.y - _tileSize;
 			super.update();
 		}
 		

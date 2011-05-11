@@ -12,12 +12,16 @@ package
 		private var _range:int
 		private var _tileSize:int
 		[Embed(source = "data/bacon.png")] private var bacon:Class;
+		[Embed(source = "data/bacon.png")] private var flower:Class;
 		public function EffectSprite(xPixel:int, yPixel:int, img:String, range:int, tileSize:int) 
 		{
 			_tileSize = tileSize
 			_range = range
 			if(img == "bacon"){
 				super(xPixel, yPixel, bacon)
+			}
+			else if (img == "flower") {
+				super(xPixel, yPixel, flower)
 			}
 			
 			var myTimer:Timer = new Timer(1000);
