@@ -151,7 +151,7 @@ package
 					// if object is null, then player's quest ended before they returned to it...return them to the menu screen
 					else 
 					{
-						//todo: add message explaining that the quest was finished, and maybe what XP/coins were won
+						//todo: add message explaining maybe what XP/coins were won
 						// remove questID associated with this player
 						client.bigDB.load("PlayerObjects", name,
 							function(thisPlayer:DatabaseObject):void

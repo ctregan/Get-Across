@@ -8,7 +8,7 @@ package
 	 */
 	public class Monster extends FlxSprite
 	{
-		[Embed(source = "data/Monster_Weak.png")] public var monster_weak:Class;
+		[Embed(source = "data/monster1.png")] public var monster_weak:Class;
 		public var _ap:int
 		private var _xTile:int
 		private var _yTile:int

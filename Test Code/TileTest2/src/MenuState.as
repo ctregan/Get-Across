@@ -51,15 +51,13 @@ package
 						).spacing(30)
 					)))
 			addChild(mainMenu);
-			
-			
-
 		}
 		
 		//Callback function for when Start Tutorial Button is Pressed
 		private function startTutorial():void
 		{
 			var lobby:Lobby = new Lobby(myClient, "GetAcross", "Tutorial_" + tutorialLevel, handleJoin, handleError)
+			//FlxG.state = new QuestLobby(myClient);
 			
 			//Show lobby (parsing true hides the cancel button)
 			//this.Hide(null);
