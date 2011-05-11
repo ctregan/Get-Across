@@ -100,6 +100,7 @@ package
 		private static var myClient:Client;
 		private static var myConnection:Connection;
 		private static var playerName:String;
+		private static var playerAP:int;
 		private var _APcounterMax:int = 10;	// seconds to pass until player gets AP incremented
 		
 		public function PlayState(connection:Connection, client:Client):void
@@ -117,12 +118,14 @@ package
 			this.connection = myConnection = connection;
 			
 			//Connection successful, load board and player
-			connection.addMessageHandler("init", function(m:Message, iAm:int, name:String, level:String) {
+			connection.addMessageHandler("init", function(m:Message, iAm:int, name:String, level:String, startAP:int) {
 				imPlayer = iAm;
+				playerAP = startAP;
+				trace("init: starting ap: " + playerAP);
 				//boardSetup(level);
 				client.bigDB.load("StaticMaps", level, function(ob:DatabaseObject):void {
 					var values:Array = ob.tileValues; //Recieve Tile Array from database to be turned into string with line breaks between each line
-					boardSetup(values.join("\n"));
+					boardSetup(values.join("\n"), name);
 					//Load Monster
 					try {
 						//monsterArray = new Array[ob.MonsterCount];
@@ -142,30 +145,16 @@ package
 				});
 			})
 			//Recieve Info from server about your saved character
-			connection.addMessageHandler("playerInfo", function(m:Message, posX:int, posY:int, name:String, startAP:int) {
+			connection.addMessageHandler("playerInfo", function(m:Message, posX:int, posY:int, name:String) {
 				if (myPlayer == null) {
 					playerName = name;
 					// add player to screen --
-					// if player has previous position saved in database, place player there
-					client.bigDB.load("Quests", name, function(results:DatabaseObject):void {
-						// player has previous position on this map
-						if (results != null) {
-							playerStartX = results.positionX;
-							playerStartY = results.positionY;
-							myPlayer = new Player(playerStartX, playerStartY, _mapOffsetX, _mapOffsetY, _tileSize, startAP);
-							playersArray[imPlayer - 1] = myPlayer;
-							lyrSprites.add(myPlayer);
-							trace("loaded, xy " + playerStartX + " " + playerStartY);
-						}
-						else
-						{
-							myPlayer = new Player(playerStartX, playerStartY, _mapOffsetX, _mapOffsetY, _tileSize, startAP);
-							playersArray[imPlayer - 1] = myPlayer;
-							lyrSprites.add(myPlayer);
-							trace("fresh, xy " + playerStartX + " " + playerStartY);
-						}
-					});
-					
+					trace("create player sprite: " + posX + " " + posY);
+					trace("playerInfo: AP to start with: " + playerAP);
+					myPlayer = new Player(posX, posY, _mapOffsetX, _mapOffsetY, _tileSize, playerAP);
+					playersArray[imPlayer - 1] = myPlayer;
+					lyrSprites.add(myPlayer);
+
 					//Load Abilities for Player From Database
 					client.bigDB.loadMyPlayerObject(function(db:DatabaseObject) {
 						try {
@@ -199,8 +188,8 @@ package
 			connection.addMessageHandler("UserJoined", function(m:Message, userID:int, posX:int, posY:int) {
 				if (userID != imPlayer) {
 					// create other player; AP doesn't matter, so default to 20
-					playersArray[userID-1] = (new Player(posX, posY, _mapOffsetX, _mapOffsetY, _tileSize, 20));
-					lyrSprites.add(playersArray[userID-1]);
+					playersArray[userID-1] = new Player(posX, posY, _mapOffsetX, _mapOffsetY, _tileSize, 20);
+					if (playersArray[userID-1] != null && lyrSprites != null) lyrSprites.add(playersArray[userID-1]);
 				}
 			})
 			//Player has moved and we hear about it
@@ -371,7 +360,7 @@ package
 		}
 		
 		//Add all flixel elements to the board, essentially drawing the game.
-		private function boardSetup(map_data:String):void 
+		private function boardSetup(map_data:String, playerName:String):void 
 		{
 			counter = _APcounterMax; // 1ap gained every 3 minutes
 			//Add chat to game
@@ -461,6 +450,9 @@ package
 			this.add(lyrBattle);
 			
 			connected = true;
+			
+			// ask server for data about this player
+			// server will send back data so client can create this player's sprite
 			connection.send("playerInfo");
 		}
 		
