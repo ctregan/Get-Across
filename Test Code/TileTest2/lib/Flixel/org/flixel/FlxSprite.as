@@ -464,7 +464,8 @@ package org.flixel
 				_point.x = x - int(camera.scroll.x*scrollFactor.x) - offset.x;
 				_point.y = y - int(camera.scroll.y*scrollFactor.y) - offset.y;
 				_point.x += (_point.x > 0)?0.0000001:-0.0000001;
-				_point.y += (_point.y > 0)?0.0000001:-0.0000001;
+				_point.y += (_point.y > 0)?0.0000001: -0.0000001;
+				
 				if(((angle == 0) || (_bakedRotation > 0)) && (scale.x == 1) && (scale.y == 1) && (blend == null))
 				{	//Simple render
 					_flashPoint.x = _point.x;
@@ -835,10 +836,23 @@ package org.flixel
 		{
 			if(Camera == null)
 				Camera = FlxG.camera;
-			getScreenXY(_point,Camera);
+			getScreenXY(_point, Camera);
+			if (!_point) {
+				trace("Point doesn't exist");
+			} 
+			if (!offset){
+				trace("offset doesn't exist");
+			}
+			if (!offset)
+			{
+				offset = new FlxPoint(0, 0);
+			}
 			_point.x = _point.x - offset.x;
 			_point.y = _point.y - offset.y;
 
+			if (!angle) angle = 0;
+			if (!_bakedRotation) _bakedRotation = 0;
+			if (!scale) scale = new FlxPoint(1, 1);
 			if(((angle == 0) || (_bakedRotation > 0)) && (scale.x == 1) && (scale.y == 1))
 				return ((_point.x + frameWidth > 0) && (_point.x < Camera.width) && (_point.y + frameHeight > 0) && (_point.y < Camera.height));
 			

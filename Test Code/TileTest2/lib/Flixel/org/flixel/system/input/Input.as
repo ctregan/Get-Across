@@ -157,7 +157,10 @@ package org.flixel.system.input
 			while(i < _total)
 			{
 				var o:Object = _map[i++];
-				if((o != null) || (o.current > 0))
+				if (o == null) {
+				
+					
+				} else if((o != null) || (o.current > 0))
 					return true;
 			}
 			return false;

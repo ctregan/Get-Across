@@ -3,6 +3,7 @@ package org.flixel
 	import flash.display.BitmapData;
 	import flash.text.TextField;
 	import flash.text.TextFormat;
+	import sample.ui.components.Input;
 	
 	/**
 	 * Extends <code>FlxSprite</code> to support rendering text.
@@ -15,10 +16,15 @@ package org.flixel
 	 */
 	public class FlxText extends FlxSprite
 	{
+		public var isInput = false;
+		
+		
 		/**
 		 * Internal reference to a Flash <code>TextField</code> object.
 		 */
 		protected var _textField:TextField;
+		
+		public var _input:Input;
 		/**
 		 * Whether the actual text field needs to be regenerated and stamped again.
 		 * This is NOT the same thing as <code>FlxSprite.dirty</code>.
@@ -60,7 +66,24 @@ package org.flixel
 				_textField.height = 1;
 			else
 				_textField.height = 10;
-			
+
+				
+			_input = new Input(Text);
+			_input.width = Width;
+			_input.embedFonts = EmbeddedFont;
+			_input.selectable = false;
+			_input.sharpness = 100;
+			_input.multiline = true;
+			_input.wordWrap = true;
+			_input.text = Text;
+			var format:TextFormat = new TextFormat("system",8,0xffffff);
+			_input.defaultTextFormat = format;
+			_input.setTextFormat(format);
+			if(Text.length <= 0)
+				_input.height = 1;
+			else
+				_input.height = 10;
+							
 			_regen = true;
 			_shadow = 0;
 			allowCollisions = NONE;
@@ -73,6 +96,7 @@ package org.flixel
 		override public function destroy():void
 		{
 			_textField = null;
+			_input = null;
 			super.destroy();
 		}
 		
@@ -99,6 +123,8 @@ package org.flixel
 			format.align = Alignment;
 			_textField.defaultTextFormat = format;
 			_textField.setTextFormat(format);
+			_input.defaultTextFormat = format;
+			_input.setTextFormat(format);
 			_shadow = ShadowColor;
 			_regen = true;
 			calcFrame();
@@ -120,6 +146,7 @@ package org.flixel
 		{
 			var ot:String = _textField.text;
 			_textField.text = Text;
+			_input.text = Text;
 			if(_textField.text != ot)
 			{
 				_regen = true;
@@ -270,13 +297,20 @@ package org.flixel
 				if(_shadow > 0)
 				{
 					_textField.setTextFormat(new TextFormat(formatAdjusted.font,formatAdjusted.size,_shadow,null,null,null,null,null,formatAdjusted.align));				
-					_matrix.translate(1,1);
-					_pixels.draw(_textField,_matrix,_colorTransform);
+					_matrix.translate(1, 1);
+					if (isInput)
+						_pixels.draw(_input, _matrix, _colorTransform);
+					else 
+						_pixels.draw(_textField, _matrix, _colorTransform);
 					_matrix.translate(-1,-1);
 					_textField.setTextFormat(new TextFormat(formatAdjusted.font,formatAdjusted.size,formatAdjusted.color,null,null,null,null,null,formatAdjusted.align));
 				}
 				//Actually draw the text onto the buffer
-				_pixels.draw(_textField,_matrix,_colorTransform);
+				if (isInput)
+					_pixels.draw(_input, _matrix, _colorTransform);
+				else 
+					_pixels.draw(_textField, _matrix, _colorTransform);
+				_matrix.translate(-1,-1);
 				_textField.setTextFormat(new TextFormat(format.font,format.size,format.color,null,null,null,null,null,format.align));
 			}
 			

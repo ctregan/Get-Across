@@ -20,6 +20,7 @@ package
 		
 		public function MenuState(client:Client) 
 		{
+			trace("making menu state");
 			myClient = client
 			super()
 			client.bigDB.loadMyPlayerObject(loadPlayerSuccess)

@@ -9,10 +9,10 @@ package sample.ui.components
 	 */
 	public class TextInput extends FlxText 
 	{
-		public function TextInput(x:int, y:int, width:int) 
+		public function TextInput(x:int, y:int, width:int, s:String = "") 
 		{
 			super(x, y, width, "", true);
-			this.text = TextFieldType.INPUT;
+			this.text = s;
 		}
 		
 		public function clear() {

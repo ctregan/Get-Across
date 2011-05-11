@@ -43,23 +43,24 @@ package
 		override public function create():void 
 		{
 			// create buttons
-			title = new FlxText(0, 0, 50, "GetAcross", true);
+			title = new FlxText(100, 50, 500, "GetAcross", true);
 			title.size = 32;
+			//title.font = "Arial";
 			title.alignment = "center";
 			add(title);
 			
-			loginButton = new FlxButton(0, 50, "Login", onLogin, null, null);
+			loginButton = new FlxButton(300, 200, "Login", onLogin, null, null);
 			add(loginButton);
 			
-			registrationButton = new FlxButton(0, 100, "Registration", onRegistration, null, null);
+			registrationButton = new FlxButton(300, 250, "Registration", onRegistration, null, null);
 			add(registrationButton);
 
 			FlxG.mouse.show();
 		}
 		
 		private function onLogin():void {
-			loginObj = new Login(this);
-			loginObj.Show();
+			FlxG.switchState(new Login(this));
+			//loginObj.Show();
 		}
 		
 		private function onRegistration(): void {
