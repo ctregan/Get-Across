@@ -31,12 +31,12 @@ namespace GetAcross {
         private Tile[,] field;
         private String levelKey;
         private String playerConnectUserId;
-        private int playerAP;   // server's variable to keep track of clientside player AP amount
+        //private int player.AP;       // server's variable to keep track of clientside player AP amount
         private String questID;    // id of the quest player is in
         DateTime startSessionTime, endSessionTime, lastSessionEndTime;
         String DateTimeFormat = "MM/dd/yyyy HH:mm:ss";
 
-		// This method is called when an instance of your the game is created
+		// This method is called when an instance of your game is created
 		public override void GameStarted() {
             players = new Player[2];
             field = new Tile[10,10];
@@ -80,11 +80,9 @@ namespace GetAcross {
 		public override void UserJoined(Player player)  {
 			// this is how you send a player a message
             //Send the player their player Number.
-            Console.WriteLine("start session time : " + startSessionTime.ToString(DateTimeFormat));
             playerConnectUserId = player.ConnectUserId;
             if (numPlayers < players.Length)
             {             
-                player.Send("init", player.Id, player.ConnectUserId, levelKey);
                 players[numPlayers] = player;
                 Console.WriteLine("New Player " + player.Id);
                 player.characterClass = "Novice";
@@ -98,7 +96,7 @@ namespace GetAcross {
                     {
                         // if player does not have a questID associated with it
                         // create new object in Quests db
-                        if (!result.Contains("questID"))
+                        if (!result.Contains("questID") || result.GetString("questID") == "noQuest")
                         {
                             // create new quest object
                             DatabaseObject newQuest = new DatabaseObject();
@@ -123,7 +121,7 @@ namespace GetAcross {
                                 delegate(DatabaseObject addedQuest)
                                 {
                                     questID = addedQuest.Key;
-                                    Console.WriteLine("the saved questID is: " + questID);
+                                    Console.WriteLine("made new questID!  new questID is: " + questID);
                                     // save new quest object's ID to this player to link them to the quest
                                     PlayerIO.BigDB.Load("PlayerObjects", player.ConnectUserId,
                                         delegate(DatabaseObject thisPlayer)
@@ -132,48 +130,59 @@ namespace GetAcross {
                                             thisPlayer.Save();
                                         }
                                     );
+
+                                    // tell client to initialize (board, monsters, player object & player sprite) with max AP amount
+                                    player.Send("init", player.Id, player.ConnectUserId, levelKey, 20);
                                 }
                             );
+
+                            // save positions in the serverside
+                            player.positionX = player.positionY = 0;
+                            player.AP = 20;
                         }
 
                         // else, this player has a questID saved
                         else
                         {
                             questID = result.GetString("questID");
-                            Console.WriteLine("the saved questID is: " + questID);
-                        }
-                    }
-                );
 
-                // connect player to a Quest object
-                PlayerIO.BigDB.LoadOrCreate("Quests", player.ConnectUserId,
-                    delegate(DatabaseObject result)
-                    {
-                        if (!result.Contains("username"))
-                        {
-                            // player is not a part of this quest; add them to it
-                            result.Set("username", player.ConnectUserId);
-                            player.positionX = player.positionY = 0;
-                        }
+                            // obtain player's last position and save to serverside
+                            PlayerIO.BigDB.Load("NewQuests", questID,
+                                delegate(DatabaseObject questObject)
+                                {
+                                    if (questObject != null)
+                                    {
+                                        // extract players playing this quest
+                                        DatabaseObject playersInQuest = questObject.GetObject("players");
+                                        DatabaseObject thisPlayer = playersInQuest.GetObject(player.ConnectUserId);
+                                        player.positionX = thisPlayer.GetInt("positionX");
+                                        player.positionY = thisPlayer.GetInt("positionY");
+                                        int startAP = thisPlayer.GetInt("AP");
+                                        if (thisPlayer.Contains("lastSessionEndTime"))
+                                        {
+                                            // figure out how much AP player should have based on how long they've been away
+                                            lastSessionEndTime = thisPlayer.GetDateTime("lastSessionEndTime");
+                                            //Console.WriteLine("last session end time : " + lastSessionEndTime.ToString(DateTimeFormat));
+                                            int minutesPassedSinceLastPlay = (startSessionTime - lastSessionEndTime).Minutes;
+                                            startAP += minutesPassedSinceLastPlay / 3;
+                                            //Console.WriteLine("minutes passed: " + minutesPassedSinceLastPlay + ", amount of AP to add: " + (minutesPassedSinceLastPlay / 3) + ", starting AP: " + startAP);
+                                            if (startAP > 20) startAP = 20;
+                                            player.AP = startAP;
+                                        }
+                                        else player.AP = 20;
+                                    }
 
-                        // load player's last position
-                        else
-                        {
-                            player.positionX = result.GetInt("positionX");
-                            player.positionY = result.GetInt("positionY");
+                                    // tell client to initialize (board, monsters, player object & player sprite)
+                                    player.Send("init", player.Id, player.ConnectUserId, levelKey, player.AP);
+                                }
+                            );
                         }
-                        
-                        result.Set("positionX", player.positionX);
-                        result.Set("positionY", player.positionY);
-                        result.Set("AP", player.AP);
-                        result.Save();
                     }
                 );
 
                 //Update them on who is already in the game
                 foreach (Player x in players)
                 {
-                    
                     if (x!= null && x != player)
                     {
                         Console.WriteLine("Sending Player " + player.Id + " Player " + x.Id + " Position (" + x.positionX + ", " + x.positionY + ")"); //debug
@@ -185,46 +194,34 @@ namespace GetAcross {
             {
                 player.Send("full");
             }
+
+            Console.WriteLine("userJoined is done");
 		}
 
 		// This method is called when a player leaves the game
 		public override void UserLeft(Player player) {
 			Broadcast("UserLeft", player.Id);
             endSessionTime = DateTime.Now;
-            Console.WriteLine("User session end!  Set time: " + endSessionTime.ToString(DateTimeFormat));
-            //Console.WriteLine("User's last AP amount: " + playerAP);
-            //Console.WriteLine("questID: " + questID);
+            Console.WriteLine("User session end!  Set end session time: " + endSessionTime.ToString(DateTimeFormat));
             //update player's end session time in the newQuest database
-            PlayerIO.BigDB.LoadOrCreate("NewQuests", questID,
+            PlayerIO.BigDB.Load("NewQuests", questID,
                 delegate(DatabaseObject result)
                 {
-                    if (result != null)
+                    // if result is not null and contains something, save it into Quests db
+                    if (result != null && result.Contains("players"))
                     {
-                        Console.WriteLine("result: " + result.ToString());
-                        DatabaseObject players = (DatabaseObject) result.GetValue("players");
-                        DatabaseObject thisPlayer = (DatabaseObject) players.GetValue(playerConnectUserId);
-                        Console.WriteLine("players: " + players.ToString());
-                        Console.WriteLine("this player: " + thisPlayer.ToString());
+                        Console.WriteLine("UserLeft result: " + result.ToString());
+                        DatabaseObject players = result.GetObject("players");
+                        if (players != null && players.Contains(playerConnectUserId))
+                        {
+                            DatabaseObject thisPlayer = players.GetObject(playerConnectUserId);
 
-                        thisPlayer.Set("lastSessionEndTime", endSessionTime);
-                        thisPlayer.Set("AP", playerAP);
-                        thisPlayer.Set("positionX", player.positionX);
-                        thisPlayer.Set("positionY", player.positionY);
+                            thisPlayer.Set("lastSessionEndTime", endSessionTime);
+                            thisPlayer.Set("AP", player.AP);
+                            thisPlayer.Set("positionX", player.positionX);
+                            thisPlayer.Set("positionY", player.positionY);
+                        }
 
-                        result.Save();
-                    }
-                }
-            );
-
-            // update player's end session time in the Quest database
-            PlayerIO.BigDB.LoadOrCreate("Quests", player.ConnectUserId,
-                delegate(DatabaseObject result)
-                {
-                    // if player exists in Quests database
-                    if (result.Contains("username"))
-                    {
-                        result.Set("lastSessionEndTime", endSessionTime.ToString(DateTimeFormat));
-                        result.Set("AP", playerAP);
                         result.Save();
                     }
                 }
@@ -273,96 +270,19 @@ namespace GetAcross {
                         Broadcast("PlayerMove", player.Id, messageX, messageY);
                             //player.AP = player.AP - field[messageX, messageY].cost;
                         //}
-
-                        // update Quest db on new player position
-                        PlayerIO.BigDB.Load("Quests", player.ConnectUserId,
-                            delegate(DatabaseObject result)
-                            {
-                                if (result != null)
-                                {
-                                    // player is not a part of this quest; add them to it
-                                    result.Set("positionX", player.positionX);
-                                    result.Set("positionY", player.positionY);
-                                    result.Save();
-                                }
-                            }
-                        );
-
                         break;
                     }
 
+                // client is asking for data about player to draw on the screen
                 case "playerInfo":
                     {
                         if (players[player.Id-1] == null)
-                        {
                             player.Send("noSuchPlayer");
-                        }
                         else
-                        {
-                            int startX = 0;
-                            int startY = 0;
-                            int startAP = playerAP = 20;
-
-                            PlayerIO.BigDB.LoadOrCreate("NewQuests", questID,
-                                delegate(DatabaseObject result)
-                                {
-                                    if (result.Contains("players"))
-                                    {
-                                        DatabaseObject playersInQuest = (DatabaseObject)result.GetValue("players");
-                                        if (playersInQuest.Contains(player.ConnectUserId))
-                                        {
-                                            DatabaseObject thisPlayer = (DatabaseObject)playersInQuest.GetValue(player.ConnectUserId);
-                                            Console.WriteLine("playerinfo...this player: " + thisPlayer.ToString());
-                                        }
-                                    }
-                                }
-                            );
-
-
-                            // find player's previous position
-                            // set player sprite to that position
-                            PlayerIO.BigDB.LoadOrCreate("Quests", player.ConnectUserId,
-                                delegate(DatabaseObject result)
-                                {
-                                    if (!result.Contains("username"))
-                                    {
-                                        // player is not a part of this quest; add them to it
-                                        result.Set("username", playerConnectUserId);
-                                        startX = startY = 0;
-                                        result.Set("positionX", startX);
-                                        result.Set("positionY", startY);
-                                        result.Set("AP", 20);
-                                        result.Save();
-
-                                        player.Send("playerInfo", players[player.Id - 1].positionX, players[player.Id - 1].positionY, playerConnectUserId, startAP);
-                                    }
-
-                                    // load player's last position and AP amount
-                                    else
-                                    {
-                                        startX = result.GetInt("positionX");
-                                        startY = result.GetInt("positionY");
-                                        startAP = result.GetInt("AP");
-                                        
-                                        // figure out how much AP player should have based on how long they've been away
-                                        if (result.Contains("lastSessionEndTime"))
-                                        {
-                                            lastSessionEndTime = DateTime.ParseExact(result.GetString("lastSessionEndTime"), DateTimeFormat, null);
-                                            Console.WriteLine("last session end time : " + lastSessionEndTime.ToString(DateTimeFormat));
-                                            int minutesPassedSinceLastPlay = (startSessionTime - lastSessionEndTime).Minutes;
-                                            startAP += minutesPassedSinceLastPlay / 3;
-                                            Console.WriteLine("minutes passed: " + minutesPassedSinceLastPlay + ", amount of AP to add: " + (minutesPassedSinceLastPlay / 3) + ", starting AP: " + startAP);
-                                            if (startAP > 20) startAP = 20;
-                                        }
-                                        playerAP = startAP;
-                                            player.Send("playerInfo", players[player.Id - 1].positionX, players[player.Id - 1].positionY, playerConnectUserId, startAP);
-                                    }
-                                }
-                            );
-                        }
+                            player.Send("playerInfo", players[player.Id - 1].positionX, players[player.Id - 1].positionY, playerConnectUserId);
                         break;
-                        
                     }
+
                 case "MapTileChanged":
                     {
                         int xTile = message.GetInt(0);
@@ -372,10 +292,11 @@ namespace GetAcross {
                         Broadcast("MapTileChanged", player.Id, xTile, yTile, newTileType);
                         break;
                     }
+
                 case "playerAP":
                     {
-                        playerAP = message.GetInt(0);
-                        Console.WriteLine("server: got player AP! " + playerAP);
+                        player.AP = message.GetInt(0);
+                        Console.WriteLine("server: got player AP! " + player.AP);
                         break;
                     }
                 case "win":
@@ -411,8 +332,17 @@ namespace GetAcross {
                                 Console.WriteLine(error.ToString());
                             });
                         
-                        // quest is finished; remove object from table
-                        PlayerIO.BigDB.DeleteKeys("Quests", player.ConnectUserId, null);
+                        // quest is finished; remove this quest from the table
+                        // todo: what happens if another player is playing this quest?
+                        PlayerIO.BigDB.DeleteKeys("NewQuests", questID, null);
+                        Console.WriteLine("deleted newquest key");
+                        PlayerIO.BigDB.Load("PlayerObjects", player.ConnectUserId,
+                            delegate(DatabaseObject thisPlayer)
+                            {
+                                thisPlayer.Set("questID", "noQuest");
+                                thisPlayer.Save();
+                            }
+                        );
 
                         break;
                     }
@@ -475,7 +405,5 @@ namespace GetAcross {
 		public void SetDebugPoint(int x, int y) {
 			debugPoint = new Point(x,y);
 		}
-
-
 	}
 }
