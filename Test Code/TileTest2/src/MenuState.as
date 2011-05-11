@@ -23,8 +23,6 @@ package
 			myClient = client
 			super()
 			client.bigDB.loadMyPlayerObject(loadPlayerSuccess)
-			
-			
 		}
 		
 		//Callback function called when Player data object has been successfully loaded
