@@ -3,28 +3,20 @@ package sample.ui{
 	import flash.display.Stage
 	import flash.events.Event
 	import flash.text.TextFormatAlign
-	import org.flixel.FlxGroup;
-	import org.flixel.FlxRect;
 	import org.flixel.FlxState
 	import playerio.*
 	import flash.events.MouseEvent
+	import org.flixel.FlxG
 	
 	import sample.ui.components.*
-	
 	public class Registration extends Sprite{
 		private var _stage:FlxState
-		//private var accountCreateBox:Box;
-		
-		private var accountCreateBox:FlxRect;
+		private var accountCreateBox:Box;
 		//Error messages
 		private var pwdError:Label
 		private var usernameError:Label
 		private var emailError:Label
 		private var errorMessage:Label //Gerneral Error Message
-		
-		private var inputBoxGroup:FlxGroup;
-		// members inside the input box group
-		
 		//Text inputs to be accessed directly
 		private var passwordInput:Input
 		private var usernameInput:Input
@@ -39,14 +31,10 @@ package sample.ui{
 			pwdError = new Label("",12, TextFormatAlign.RIGHT, 0xff0000)
 			usernameError = new Label("", 12, TextFormatAlign.RIGHT,  0xff0000)
 			emailError = new Label("", 12, TextFormatAlign.RIGHT, 0xff0000)
-			
-			inputBoxGroup = new FlxGroup();
-			
 			//Text inputs to be accessed directly
-			passwordInput = new TextInput(0, 10, 100);// ("", 12, TextFormatAlign.LEFT,  true)
-			usernameInput = new TextInput(0, 40, 100);//new Input("", 12, TextFormatAlign.LEFT)
-			emailInput = new TextInput(0, 80, 100);// new Input("", 12, TextFormatAlign.LEFT)
-			
+			passwordInput = new Input("", 12, TextFormatAlign.LEFT,  true)
+			usernameInput = new Input("", 12, TextFormatAlign.LEFT)
+			emailInput = new Input("", 12, TextFormatAlign.LEFT)
 			passwordInput.height = 20;
 			usernameInput.height = 20;
 			emailInput.height = 20;
@@ -102,35 +90,35 @@ package sample.ui{
 		}
 		
 		public function Show(e:Event = null):void{
-			_stage.addChild(this);
-			_stage.addEventListener(Event.RESIZE, realign)
+			FlxG.stage.addChild(this);
+			FlxG.stage.addEventListener(Event.RESIZE, realign)
 			realign()
 		}
 		
 		public function Hide(e:Event = null):void{
- 			_stage.removeChild(this);
-			_stage.removeEventListener(Event.RESIZE, realign)
+ 			FlxG.stage.removeChild(this);
+			FlxG.stage.removeEventListener(Event.RESIZE, realign)
 		}
 		
 		private function realign(e:Event = null){
 			
 			accountCreateBox.reset();
-			accountCreateBox.width = _stage.width
-			accountCreateBox.height = _stage.height
+			accountCreateBox.width = FlxG.stage.width
+			accountCreateBox.height = FlxG.stage.height
 			
 		}
 		
 		//Attempt to create a logn account using simple Resistration through playerIO
 		private function createAccount(password:String, username:String, email:String):void 
 		{
-			PlayerIO.quickConnect.simpleRegister(_stage.stage,
+			PlayerIO.quickConnect.simpleRegister(FlxG.stage,
 				"get-across-ynrpgn4egdtvzlz3wg8w", 
 				username, 
 				password, 
-				email,
+				email, 
 				"", 
-				"",
-				{role:"Novice", level:1, ap:20, xp:0, coin:0, tutorial:1}, 
+				"", 
+				null, 
 				"", 
 				registrationComplete, 
 				getRegistrationError);
@@ -160,11 +148,8 @@ package sample.ui{
 				ob.level = 1
 				ob.ap = 20
 				ob.xp = 0
-				ob.coin = 0
-				ob.tutorial = 1
 				ob.save()
 			})
-			
 			errorMessage.text = "Registration Successful. You May Now Log In."
 		}
 	}	
