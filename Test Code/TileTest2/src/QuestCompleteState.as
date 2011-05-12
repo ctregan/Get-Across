@@ -42,6 +42,7 @@ package
 		private function continueButton():void
 		{
 			FlxG.switchState(new MenuState(_client));
+			FlxG.stage.removeChild(mainMenu);
 		}
 		
 		//Callback function called when Player data object has been successfully loaded

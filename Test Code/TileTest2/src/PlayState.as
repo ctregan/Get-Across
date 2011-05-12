@@ -52,6 +52,7 @@ package
 		private var background:Background;
 		private var playerStartX: int = 0;	// starting x position of this player
 		private var playerStartY: int = 0;	// starting y position of this player
+		private var alert:Alert;
 		
 		public static var myMap:FlxTilemap; //The tile map where the tileset is drawn
 		public static var lyrStage:FlxGroup;
@@ -248,12 +249,24 @@ package
 			connection.addMessageHandler("win", function(m:Message, userID:int, xp:int, coin:int) {
 				connection.disconnect();
 				FlxG.switchState(new QuestCompleteState(xp, coin, client));
-				this.kill();
 			})
 			//A monster has been hurt and need their AP updated
 			connection.addMessageHandler("MonsterAPChange", function (m:Message, userID:int, newAP:int, monsterIndex:int ):void 
 			{
 				monsterArray[monsterIndex]._ap = newAP;
+			})
+			connection.addMessageHandler("AlertMessages", function(m:Message, levelKey:String):void
+			{
+				client.bigDB.load("StaticMaps", levelKey,
+					function(dbo:DatabaseObject) {
+						var messages:Array = dbo.Messages
+						for (var z in messages) {
+							//while (alert.unread) {
+							//}
+							alert.changeText(messages[z]);
+							FlxG.stage.addChild(alert);
+						}
+					})
 			})
 			
 		}
@@ -403,6 +416,7 @@ package
 		private function boardSetup(map_data:String, playerName:String):void 
 		{
 			counter = _APcounterMax; // 1ap gained every 3 minutes
+			alert = new Alert("");
 			//Add chat to game
 			//var chat:Chat = new Chat(FlxG.stage, connection);
 			//Different Layers

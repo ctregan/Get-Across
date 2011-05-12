@@ -67,13 +67,13 @@ package
 		//Callback function for when New Game Button is pressed
 		private function newGame():void
 		{
-			var alert:Alert = new Alert(this, "This Feature has not yet been implemented")
+			FlxG.stage.addChild(new Alert("This Feature has not yet been implemented"));
 		}
 		
 		//Callback function for when Random Map Button is pressed
 		private function randomMap():void
 		{
-			var alert:Alert = new Alert(this, "This Feature has not yet been implemented")
+			FlxG.stage.addChild(new Alert("This Feature has not yet been implemented"));
 		}
 		
 		//Callback function for LOBBY, once it has connected to a game
