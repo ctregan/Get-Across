@@ -19,7 +19,7 @@ package sample.ui.components{
 			_ability = ability;
 			_rangeShow = false;
 			//add(new FlxText(xPixel + 2, yPixel + 2, width - 2, text));
-			super(xPixel, yPixel, buttonClick );
+			super(xPixel, yPixel, "ability", buttonClick );
 		}
 		
 		private function buttonClick():void 

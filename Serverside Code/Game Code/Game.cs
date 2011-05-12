@@ -122,6 +122,13 @@ namespace GetAcross {
                                 {
                                     newQuest.Set("tileValues", staticMap.GetString("tileValues"));
                                     newQuest.Set("MonsterCount", staticMap.GetInt("MonsterCount"));
+                                    if (staticMap.Contains("Monsters"))
+                                    {
+                                        DatabaseArray monsters = staticMap.GetArray("Monsters");
+                                        DatabaseArray newMonsters = new DatabaseArray();
+                                        for (int i = 1; i <= monsters.Count; i++)
+                                    newQuest.Set("tileValues", staticMap.GetString("tileValues"));
+                                    newQuest.Set("MonsterCount", staticMap.GetInt("MonsterCount"));
                                     DatabaseArray monsters = staticMap.GetArray("Monsters");
                                     DatabaseArray newMonsters = new DatabaseArray();
                                     for (int i = 1; i <= monsters.Count; i++)
@@ -134,6 +141,33 @@ namespace GetAcross {
                                         newMonsters.Add(monster);
                                     }
                                     newQuest.Set("Monsters", newMonsters);
+                                    Console.WriteLine("Quest Tile Values Set " + newQuest.ToString());
+                                    // add this quest object to Quests db
+                                    PlayerIO.BigDB.CreateObject("NewQuests", null, newQuest,
+                                        delegate(DatabaseObject addedQuest)
+                                        {
+                                            DatabaseObject monster = new DatabaseObject();
+                                            monster.Set("Type", monsters.GetObject(i - 1).GetString("Type"));
+                                            monster.Set("xTile", monsters.GetObject(i - 1).GetInt("xTile"));
+                                            monster.Set("yTile", monsters.GetObject(i - 1).GetInt("yTile"));
+                                            monster.Set("AP", monsters.GetObject(i - 1).GetInt("AP"));
+                                            newMonsters.Add(monster);
+                                            questID = addedQuest.Key;
+                                            Console.WriteLine("made new questID!  new questID is: " + questID);
+                                            // save new quest object's ID to this player to link them to the quest
+                                            PlayerIO.BigDB.Load("PlayerObjects", player.ConnectUserId,
+                                                delegate(DatabaseObject thisPlayer)
+                                                {
+                                                    thisPlayer.Set("questID", addedQuest.Key);
+                                                    thisPlayer.Save();
+                                                }
+                                            );
+                                            levelKey = addedQuest.Key;
+                                            // tell client to initialize (board, monsters, player object & player sprite) with max AP amount
+                                            player.Send("init", player.Id, player.ConnectUserId, levelKey, 20);
+                                        }
+                                        newQuest.Set("Monsters", newMonsters);
+                                    }
                                     Console.WriteLine("Quest Tile Values Set " + newQuest.ToString());
                                     // add this quest object to Quests db
                                     PlayerIO.BigDB.CreateObject("NewQuests", null, newQuest,
@@ -297,19 +331,26 @@ namespace GetAcross {
                         PlayerIO.BigDB.Load("StaticMaps", levelKey,
                             delegate(DatabaseObject result)
                             {
-                                int gainedxp = result.GetInt("XP", 0); //How much XP the Level was worth
-                                int gainedcoin = result.GetInt("Coin", 0); //How mucg coin the level was worth
+                                // todo: change these based on what you got in the level
+                                int gainedxp = 100;
+                                int gainedcoin = 100;
+
+                                if (result != null)
+                                {
+                                    gainedxp = result.GetInt("XP", 0); //How much XP the Level was worth
+                                    gainedcoin = result.GetInt("Coin", 0); //How mucg coin the level was worth
+                                }
 
                                 //Check to see if player completed Tutorial level, in which case update their tutorial value
-                                if (levelKey == "Tutorial_1")
+                                if (player.PlayerObject.GetInt("tutorial") == 1)
                                 {
                                     player.PlayerObject.Set("tutorial", 2);
                                 }
-                                else if (levelKey == "Tutorial_2")
+                                else if (player.PlayerObject.GetInt("tutorial") == 2)
                                 {
                                     player.PlayerObject.Set("tutorial", 3);
                                 }
-                                else if (levelKey == "Tutorial_3")
+                                else if (player.PlayerObject.GetInt("tutorial") == 3)
                                 {
                                     player.PlayerObject.Set("tutorial", 4);
                                 }

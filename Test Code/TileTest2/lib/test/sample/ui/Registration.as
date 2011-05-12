@@ -8,6 +8,9 @@ package sample.ui{
 	import flash.events.MouseEvent
 	
 	import sample.ui.components.*
+	
+	import org.flixel.FlxG;
+	
 	public class Registration extends Sprite{
 		private var _stage:FlxState
 		private var accountCreateBox:Box;
@@ -89,28 +92,28 @@ package sample.ui{
 		}
 		
 		public function Show(e:Event = null):void{
-			_stage.addChild(this);
-			_stage.addEventListener(Event.RESIZE, realign)
+			FlxG.stage.addChild(this);
+			FlxG.stage.addEventListener(Event.RESIZE, realign)
 			realign()
 		}
 		
 		public function Hide(e:Event = null):void{
- 			_stage.removeChild(this);
-			_stage.removeEventListener(Event.RESIZE, realign)
+ 			FlxG.stage.removeChild(this);
+			FlxG.stage.removeEventListener(Event.RESIZE, realign)
 		}
 		
 		private function realign(e:Event = null){
 			
 			accountCreateBox.reset();
-			accountCreateBox.width = _stage.width
-			accountCreateBox.height = _stage.height
+			accountCreateBox.width = FlxG.stage.width
+			accountCreateBox.height = FlxG.stage.height
 			
 		}
 		
 		//Attempt to create a logn account using simple Resistration through playerIO
 		private function createAccount(password:String, username:String, email:String):void 
 		{
-			PlayerIO.quickConnect.simpleRegister(_stage.stage,
+			PlayerIO.quickConnect.simpleRegister(FlxG.stage,
 				"get-across-ynrpgn4egdtvzlz3wg8w", 
 				username, 
 				password, 

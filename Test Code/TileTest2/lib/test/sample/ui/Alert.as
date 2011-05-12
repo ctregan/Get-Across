@@ -12,6 +12,8 @@ package sample.ui{
 	import sample.ui.components.scroll.*
 	import playerio.*;
 	
+	import org.flixel.FlxG;
+	
 	public class Alert extends Box{
 		private var base:Box 
 		private var _stage:FlxState
@@ -31,20 +33,20 @@ package sample.ui{
 				)
 			)
 			
-			stage.addChild(this);
+			FlxG.stage.addChild(this);
 			
-			stage.addEventListener(Event.RESIZE, handleResize)
+			FlxG.stage.addEventListener(Event.RESIZE, handleResize)
 			handleResize()
 		}
 		
 		function accept():void{
-			_stage.removeEventListener(Event.RESIZE, handleResize)
-			_stage.removeChild(this);
+			FlxG.stage.removeEventListener(Event.RESIZE, handleResize)
+			FlxG.stage.removeChild(this);
 		}
 		
 		private function handleResize(e:Event = null){
-			this.width = _stage.width
-			this.height = _stage.height
+			this.width = FlxG.stage.width
+			this.height = FlxG.stage.height
 		}
 	}
 }

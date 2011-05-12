@@ -4,7 +4,7 @@ package
 	import flash.text.TextField;
 	import flash.ui.Mouse;
 	import flash.ui.MouseCursor;
-	import org.flixel.data.FlxPanel;
+	//import org.flixel.data.FlxPanel;
 	import org.flixel.FlxButton;
 	import org.flixel.FlxGroup;
 	import org.flixel.FlxObject;
@@ -43,7 +43,8 @@ package
 							new TextButton("Create Account", openAccountCreate)
 						).spacing(30)
 					)))
-			this.addChildAt(mainMenu, 0)
+					
+			FlxG.stage.addChild(mainMenu)
 		}
 		//Create a login box over the main menu
 		private function openLogin():void 

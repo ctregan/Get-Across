@@ -1,8 +1,8 @@
 package  
 {
 	import org.flixel.*
-	import org.flixel.data.FlxMouse;
-	import org.flixel.data.FlxPanel;
+	import org.flixel.system.input.*;// data.FlxMouse;
+	//import org.flixel.data.FlxPanel;
 	import playerio.*
 	import sample.ui.Alert;
 	import sample.ui.components.AbilityButton;
@@ -36,7 +36,7 @@ package
 		private var playersArray:Array = []; //Array of all players on board
 		private var monsterArray:Array = [];
 		
-		private var myMouse:FlxMouse; //Mouse
+		private var myMouse:Mouse; //Mouse
 		private var errorMessage:FlxText; //Text Field to reflect any errors
 		private var secCounter:FlxText; //Text field to reflect time left until next AP
 		private var location:FlxText; //(x,x) graph information of where your player is.
@@ -125,27 +125,65 @@ package
 				//boardSetup(level);
 				client.bigDB.load("NewQuests", level, function(ob:DatabaseObject):void {
 					//Recieve Tile Array from database to be turned into string with line breaks between each line
-					var mapString:String = ob.tileValues;
-					mapString = mapString.split("|").join("\n")
-					boardSetup(mapString, name);
-					//Load Monster
-					try {
-						//monsterArray = new Array[ob.MonsterCount];
-						var monsters:Array = ob.Monsters
-						for (var z in monsters) {
-							//Dont add a monster that is dead
-							if(monsters[z].AP > 0){
-								var myMonsterSprite:Monster = new Monster(monsters[z].Type, monsters[z].AP, z, monsters[z].xTile, monsters[z].yTile, _mapOffsetX, _mapOffsetY, _tileSize);
-								monsterArray.push(myMonsterSprite);
-								lyrMonster.add(myMonsterSprite);
+					if (ob != null)
+					{
+						trace("loading data from NewQuests...\n" + ob.toString());
+						var mapString:String = ob.tileValues;
+						mapString = mapString.split("|").join("\n")
+						boardSetup(mapString, name);
+						//Load Monster
+						try {
+							//monsterArray = new Array[ob.MonsterCount];
+							var monsters:Array = ob.Monsters
+							for (var z in monsters) {
+								//Dont add a monster that is dead
+								if(monsters[z].AP > 0){
+									var myMonsterSprite:Monster = new Monster(monsters[z].Type, monsters[z].AP, z, monsters[z].xTile, monsters[z].yTile, _mapOffsetX, _mapOffsetY, _tileSize);
+									monsterArray.push(myMonsterSprite);
+									lyrMonster.add(myMonsterSprite);
+								}
 							}
+						}catch (e:Error) {
+							trace("Monster Loading Error: " + e);
 						}
-					}catch (e:Error) {
-						trace("Monster Loading Error: " + e);
 					}
 					
+					// if object is null, then player's quest ended before they returned to it...return them to the menu screen
+					else 
+					{
+						//todo: add message explaining maybe what XP/coins were won
+						// remove questID associated with this player
+						client.bigDB.load("PlayerObjects", name,
+							function(thisPlayer:DatabaseObject):void
+							{
+								thisPlayer.questID = "noQuest";
+								thisPlayer.save();
+							}
+						);
+						
+						// create new menu for player to navigate back to main screen
+						var button:TextButton = new TextButton("Start a new quest!",
+							function ()
+							{
+								FlxG.switchState(new MenuState(client));
+							}
+						);
+						var menu:Box = new Box().fill(0xFFFFFF, 0.8, 0)
+						menu.add(new Box().fill(0x00000, .5, 15).margin(10, 10, 10, 10).minSize(FlxG.width, FlxG.height).add(
+							new Box().fill(0xffffff,1,5).margin(10,10,10,10).minSize(300,0).add(
+									new Rows(
+										new Label("This quest is already finished!", 30, TextFormatAlign.CENTER),
+										button
+									).spacing(30)
+								)
+							)
+						);
+						FlxG.stage.addChild(menu);
+					}
 				});
 			})
+			
+			
 			//Recieve Info from server about your saved character
 			connection.addMessageHandler("playerInfo", function(m:Message, posX:int, posY:int, name:String) {
 				if (myPlayer == null) {
@@ -208,7 +246,7 @@ package
 			//A player has reached the end, victory!
 			connection.addMessageHandler("win", function(m:Message, userID:int, xp:int, coin:int) {
 				connection.disconnect();
-				FlxG.state = new QuestCompleteState(xp, coin, client);
+				FlxG.switchState(new QuestCompleteState(xp, coin, client));
 			})
 			//A monster has been hurt and need their AP updated
 			connection.addMessageHandler("MonsterAPChange", function (m:Message, userID:int, newAP:int, monsterIndex:int ):void 
@@ -277,7 +315,7 @@ package
 					lyrBattle.visible = myPlayer.inBattle;
 					 //Detect Monster collision, if a monster is overlapping your player then you are now in a fight
 					for (var monster in monsterArray) {
-						FlxU.overlap(monsterArray[monster], myPlayer, function() {
+						FlxG.overlap(monsterArray[monster], myPlayer, function() {
 							myPlayer.inBattle = true;
 							myPlayer.combatant = monsterArray[monster]
 							errorMessage.text = "BATTLE!";
@@ -376,9 +414,9 @@ package
 			
 			//Tile Map
 			myMap = new FlxTilemap();
-			myMap.drawIndex = 0;
+			//myMap.drawIndex = 0;
 			myMap.loadMap(map_data, data_tiles, _tileSize, _tileSize);
-			myMap.collideIndex = 1;
+			//myMap.collideIndex = 1;
 			myMap.x = _mapOffsetX;
 			myMap.y = _mapOffsetY;			
 			lyrStage.add(myMap);
@@ -392,14 +430,14 @@ package
 			//Background
 			
 			//Weak Attack Button
-			lyrBattle.add(new FlxButton(22, 284, function() { 
+			lyrBattle.add(new FlxButton(22, 284, "text", function() { 
 				if (myPlayer.inBattle) {
 					myPlayer.combatant.attack(1,myPlayer, connection);
 				}
 			}))
 			lyrBattle.add(new FlxText(24, 286, 100, "Weak Attack"));
 			//Medium Attack Button
-			lyrBattle.add(new FlxButton(22, 314, function() { 
+			lyrBattle.add(new FlxButton(22, 314, "text", function() { 
 				if (myPlayer.inBattle) {
 					myPlayer.combatant.attack(2,myPlayer, connection);
 				}
@@ -407,7 +445,7 @@ package
 			
 			lyrBattle.add(new FlxText(24, 316, 100, "Medium Attack"));
 			//Strong Attack Button
-			lyrBattle.add(new FlxButton(22, 344, function() { 
+			lyrBattle.add(new FlxButton(22, 344, "text", function() { 
 				if (myPlayer.inBattle) {
 					myPlayer.combatant.attack(3,myPlayer, connection);
 				}

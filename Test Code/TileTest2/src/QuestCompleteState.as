@@ -35,13 +35,13 @@ package
 							new TextButton("Continue", continueButton)
 						).spacing(30)
 					)))
-			addChild(mainMenu);
+			FlxG.stage.addChild(mainMenu);
 		}
 		
 		//Callback function for the continue button
 		private function continueButton():void
 		{
-			FlxG.state = new MenuState(_client);
+			FlxG.switchState(new MenuState(_client));
 		}
 		
 		//Callback function called when Player data object has been successfully loaded
