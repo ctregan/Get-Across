@@ -52,7 +52,7 @@ package
 		private var background:Background;
 		private var playerStartX: int = 0;	// starting x position of this player
 		private var playerStartY: int = 0;	// starting y position of this player
-		private var alert:Alert;
+		private static var alert:Alert;
 		
 		public static var myMap:FlxTilemap; //The tile map where the tileset is drawn
 		public static var lyrStage:FlxGroup;
@@ -119,7 +119,7 @@ package
 			this.connection = myConnection = connection;
 			
 			//Connection successful, load board and player
-			connection.addMessageHandler("init", function(m:Message, iAm:int, name:String, level:String, startAP:int) {
+			connection.addMessageHandler("init", function(m:Message, iAm:int, name:String, level:String, startAP:int, levelKey:String) {
 				imPlayer = iAm;
 				playerAP = startAP;
 				trace("init: starting ap: " + playerAP);
@@ -131,7 +131,7 @@ package
 						trace("loading data from NewQuests...\n" + ob.toString());
 						var mapString:String = ob.tileValues;
 						mapString = mapString.split("|").join("\n")
-						boardSetup(mapString, name);
+						boardSetup(mapString, name, levelKey);
 						//Load Monster
 						try {
 							//monsterArray = new Array[ob.MonsterCount];
@@ -165,7 +165,7 @@ package
 						
 						// create new menu for player to navigate back to main screen
 						var button:TextButton = new TextButton("Start a new quest!",
-							function ()
+							function ():void
 							{
 								FlxG.switchState(new MenuState(client));
 							}
@@ -259,6 +259,7 @@ package
 			{
 				client.bigDB.load("StaticMaps", levelKey,
 					function(dbo:DatabaseObject) {
+						trace("message object: " + dbo.toString());
 						var messages:Array = dbo.Messages
 						for (var z in messages) {
 							//while (alert.unread) {
@@ -266,7 +267,8 @@ package
 							alert.changeText(messages[z]);
 							FlxG.stage.addChild(alert);
 						}
-					})
+					}
+				);
 			})
 			
 		}
@@ -413,7 +415,7 @@ package
 		}
 		
 		//Add all flixel elements to the board, essentially drawing the game.
-		private function boardSetup(map_data:String, playerName:String):void 
+		private function boardSetup(map_data:String, playerName:String, levelKey:String):void 
 		{
 			counter = _APcounterMax; // 1ap gained every 3 minutes
 			alert = new Alert("");
@@ -470,44 +472,63 @@ package
 			//Initially the battle hud is invisible, it will be visible when a user enters combat
 			lyrBattle.visible = false;
 			
-			
-			//Right Side HUD
-			resources = new FlxText(_resoruceTextOffsetX, _resourceTextOffsetY, 150, "Resources:", true);			
-			goals = new FlxText(_goalsBoxOffsetX, _goalsBoxOffsetY, 100, "Goals:\nReach the Red Star", true); 
-			goals.frameHeight = 75;			
-			errorMessage = new FlxText(_errorMessageOffsetX, _errorMessageOffsetY, 120, "Errors Appear Here", true);
-			location = new FlxText(_positionInfoOffsetX, _positionInfoOffsetY, 100, "(0,0)", true);
-			mouseLocation = new FlxText(_terrainMessageBoxOffsetX, _terrainMessageBoxOffsetY, 260, "(0,0)", true);
-			secCounter = new FlxText(_timerOffsetX, _timerOffsetY, 100, "15 Sec until AP", true);			
-			abilities = new FlxText(_cardBoxOffsetX, _cardBoxOffsetY, 100, "Abilities:\n", true);
+			client.bigDB.load("StaticMaps", levelKey,
+				function(dbo:DatabaseObject) {					
+					//render game background
+					//Right Side HUD
+					resources = new FlxText(_resoruceTextOffsetX, _resourceTextOffsetY, 150, "Resources:", true);			
+					goals = new FlxText(_goalsBoxOffsetX, _goalsBoxOffsetY, 100, "Goals:\nReach the Red Star", true); 
+					goals.frameHeight = 75;			
+					errorMessage = new FlxText(_errorMessageOffsetX, _errorMessageOffsetY, 120, "Errors Appear Here", true);
+					location = new FlxText(_positionInfoOffsetX, _positionInfoOffsetY, 100, "(0,0)", true);
+					mouseLocation = new FlxText(_terrainMessageBoxOffsetX, _terrainMessageBoxOffsetY, 260, "(0,0)", true);
+					secCounter = new FlxText(_timerOffsetX, _timerOffsetY, 100, "15 Sec until AP", true);			
+					abilities = new FlxText(_cardBoxOffsetX, _cardBoxOffsetY, 100, "Abilities:\n", true);
 
-			// background
-			background = new Background();
+					// background
+					background = new Background();
+					
+					lyrHUD.add(resources);
+					lyrHUD.add(lvl);
+					lyrHUD.add(experience);
+					lyrHUD.add(abilities);
+					lyrHUD.add(goals);
+					lyrHUD.add(secCounter);
+					lyrHUD.add(location);
+					lyrHUD.add(errorMessage);
+					lyrHUD.add(apInfo);
+					lyrHUD.add(mouseLocation);
+					lyrBackground.add(background);
+					
+					connected = true;
 			
-			lyrHUD.add(resources);
-			lyrHUD.add(lvl);
-			lyrHUD.add(experience);
-			lyrHUD.add(abilities);
-			lyrHUD.add(goals);
-			lyrHUD.add(secCounter);
-			lyrHUD.add(location);
-			lyrHUD.add(errorMessage);
-			lyrHUD.add(apInfo);
-			lyrHUD.add(mouseLocation);
-			lyrBackground.add(background);
+					// ask server for data about this player
+					// server will send back data so client can create this player's sprite
+					connection.send("playerInfo");
+					
+					trace("level key: " + levelKey);
+					// if map has intro messages, fill them in
+					if (dbo != null)
+					{
+						trace("message object: " + dbo.toString());
+						var messages:Array = dbo.Messages
+						for (var i:int = messages.length - 1; i >= 0; i--) {
+							var alert:Alert = new Alert(messages[i]);
+							alert.x = -100;
+							alert.y = -100;
+							alert.width = FlxG.width;
+							FlxG.stage.addChild(alert);
+						}
+					}
+				}
+			);
 			
 			lyrSprites.add(lyrMonster);
 			this.add(lyrBackground);
 			this.add(lyrStage);
-            this.add(lyrSprites);
-            this.add(lyrHUD);
+			this.add(lyrSprites);
+			this.add(lyrHUD);
 			this.add(lyrBattle);
-			
-			connected = true;
-			
-			// ask server for data about this player
-			// server will send back data so client can create this player's sprite
-			connection.send("playerInfo");
 		}
 		
 		//Determines whether the mouse is within the game map board, return true if it is or false if it is outside the board

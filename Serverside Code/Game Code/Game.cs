@@ -151,8 +151,8 @@ namespace GetAcross {
                                             );
                                             levelKey = addedQuest.Key;
                                             // tell client to initialize (board, monsters, player object & player sprite) with max AP amount
-                                            player.Send("init", player.Id, player.ConnectUserId, levelKey, 20);
-                                            player.Send("AlertMessages", staticMap.Key);
+                                            player.Send("init", player.Id, player.ConnectUserId, levelKey, 20, staticMap.Key);
+                                            //player.Send("AlertMessages", staticMap.Key);
                                     });
                                 });
                            
@@ -194,7 +194,7 @@ namespace GetAcross {
                                     }
 
                                     // tell client to initialize (board, monsters, player object & player sprite)
-                                    player.Send("init", player.Id, player.ConnectUserId, levelKey, player.AP);
+                                    player.Send("init", player.Id, player.ConnectUserId, levelKey, player.AP, "no_messages");
                                 }
                             );
                         }
