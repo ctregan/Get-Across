@@ -117,11 +117,12 @@ namespace GetAcross {
                             questPlayers.Set(player.ConnectUserId, questPlayerData);
                             newQuest.Set("players", questPlayers);
                             Console.WriteLine("questPlayers contents: " + questPlayers.ToString());
-
+                            Console.WriteLine("Level key: " + levelKey);
                             //Add Static Map to Quest, to be updated later
                             PlayerIO.BigDB.Load("StaticMaps", levelKey, 
                                 delegate(DatabaseObject staticMap)
                                 {
+                                    Console.WriteLine("Test");
                                     newQuest.Set("tileValues", staticMap.GetString("tileValues"));
                                     newQuest.Set("MonsterCount", staticMap.GetInt("MonsterCount"));
                                     if (staticMap.Contains("Monsters"))
@@ -139,26 +140,27 @@ namespace GetAcross {
                                         }
                                         newQuest.Set("Monsters", newMonsters);
                                     }
-                                });
-                            Console.WriteLine("Quest Tile Values Set " + newQuest.ToString());
-                            // add this quest object to Quests db
-                            PlayerIO.BigDB.CreateObject("NewQuests", null, newQuest,
-                                delegate(DatabaseObject addedQuest)
-                                {
-                                    questID = addedQuest.Key;
-                                    Console.WriteLine("made new questID!  new questID is: " + questID);
-                                    // save new quest object's ID to this player to link them to the quest
-                                    PlayerIO.BigDB.Load("PlayerObjects", player.ConnectUserId,
-                                        delegate(DatabaseObject thisPlayer)
+                                     Console.WriteLine("Quest Tile Values Set " + newQuest.ToString());
+                                // add this quest object to Quests db
+                                    PlayerIO.BigDB.CreateObject("NewQuests", null, newQuest,
+                                        delegate(DatabaseObject addedQuest)
                                         {
-                                            thisPlayer.Set("questID", addedQuest.Key);
-                                            thisPlayer.Save();
-                                        }
-                                    );
-                                    levelKey = addedQuest.Key;
-                                    // tell client to initialize (board, monsters, player object & player sprite) with max AP amount
-                                    player.Send("init", player.Id, player.ConnectUserId, levelKey, 20);
+                                            questID = addedQuest.Key;
+                                            Console.WriteLine("made new questID!  new questID is: " + questID);
+                                            // save new quest object's ID to this player to link them to the quest
+                                            PlayerIO.BigDB.Load("PlayerObjects", player.ConnectUserId,
+                                                delegate(DatabaseObject thisPlayer)
+                                                {
+                                                    thisPlayer.Set("questID", addedQuest.Key);
+                                                    thisPlayer.Save();
+                                                }
+                                            );
+                                            levelKey = addedQuest.Key;
+                                            // tell client to initialize (board, monsters, player object & player sprite) with max AP amount
+                                            player.Send("init", player.Id, player.ConnectUserId, levelKey, 20);
+                                    });
                                 });
+                           
                                    
                             // save positions in the serverside
                             player.positionX = player.positionY = 0;

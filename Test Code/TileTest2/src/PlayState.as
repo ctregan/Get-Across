@@ -415,7 +415,7 @@ package
 			//Tile Map
 			myMap = new FlxTilemap();
 			//myMap.drawIndex = 0;
-			myMap.loadMap(map_data, data_tiles, _tileSize, _tileSize);
+			myMap.loadMap(map_data, data_tiles, _tileSize, _tileSize,0,0,0,6);
 			//myMap.collideIndex = 1;
 			myMap.x = _mapOffsetX;
 			myMap.y = _mapOffsetY;			

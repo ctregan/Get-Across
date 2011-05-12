@@ -80,7 +80,7 @@ package
 		private function handleJoin(connection:Connection):void 
 		{
 			FlxG.switchState( new PlayState(connection, myClient))
-			FlxG.stage.removeChild(this);
+			FlxG.stage.removeChild(mainMenu);
 		}
 		
 		//Callback function for LOBBY, if it has encountered an error
