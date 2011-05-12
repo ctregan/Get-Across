@@ -312,7 +312,9 @@ namespace GetAcross {
                                 //Check to see if player completed Tutorial level, in which case update their tutorial value
                                 if (player.PlayerObject.GetInt("tutorial") == 1)
                                 {
-                                    player.PlayerObject.Set("abilities" ,player.PlayerObject.GetArray("abilities").Add("Crafter_Bridge"));
+                                    DatabaseArray abilities = new DatabaseArray();
+                                    abilities.Add("Crafter_Bridge");
+                                    player.PlayerObject.Set("abilities" ,abilities);
                                     player.PlayerObject.Set("tutorial", 2);
                                 }
                                 else if (player.PlayerObject.GetInt("tutorial") == 2)

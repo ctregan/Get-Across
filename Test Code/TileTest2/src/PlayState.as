@@ -1,6 +1,7 @@
 package  
 {
 	import org.flixel.*
+	import org.flixel.plugin.photonstorm.FlxHealthBar;
 	import org.flixel.system.input.*;// data.FlxMouse;
 	//import org.flixel.data.FlxPanel;
 	import playerio.*
@@ -143,6 +144,7 @@ package
 									monsterArray.push(myMonsterSprite);
 									lyrMonster.add(myMonsterSprite);
 									lyrHUD.add(myMonsterSprite.healthBar);
+									
 								}
 							}
 						}catch (e:Error) {
@@ -195,6 +197,10 @@ package
 					trace("playerInfo: AP to start with: " + playerAP);
 					myPlayer = new Player(posX, posY, _mapOffsetX, _mapOffsetY, _tileSize, playerAP);
 					playersArray[imPlayer - 1] = myPlayer;
+					var playerHealthBar:FlxHealthBar = new FlxHealthBar(myPlayer, 100, 20, 0, 25, true);
+					playerHealthBar.x = _apBoxOffsetX - 50
+					playerHealthBar.y = _apBoxOffsetY
+					lyrHUD.add(playerHealthBar);
 					lyrSprites.add(myPlayer);
 
 					//Load Abilities for Player From Database
@@ -227,13 +233,13 @@ package
 			})
 			
 			//New user has joined, make their character
-			connection.addMessageHandler("UserJoined", function(m:Message, userID:int, posX:int, posY:int) {
+			/*connection.addMessageHandler("UserJoined", function(m:Message, userID:int, posX:int, posY:int) {
 				if (userID != imPlayer) {
 					// create other player; AP doesn't matter, so default to 20
 					playersArray[userID-1] = new Player(posX, posY, _mapOffsetX, _mapOffsetY, _tileSize, 20);
 					if (playersArray[userID-1] != null && lyrSprites != null) lyrSprites.add(playersArray[userID-1]);
 				}
-			})
+			})*/
 			//Player has moved and we hear about it
 			connection.addMessageHandler("PlayerMove", function(m:Message, userID:int, posX:int, posY:int) {
 				if(userID != imPlayer){
@@ -508,7 +514,7 @@ package
 					
 					trace("level key: " + levelKey);
 					// if map has intro messages, fill them in
-					if (dbo != null)
+					if (dbo.Messages != null)
 					{
 						trace("message object: " + dbo.toString());
 						var messages:Array = dbo.Messages

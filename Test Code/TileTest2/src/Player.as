@@ -103,6 +103,12 @@ package
 				return 1;
 			}
 		}
+		
+		override public function update():void 
+		{
+			health = AP;
+			super.update();
+		}
 		//Sees if the desired move for the player is valid.
 		private function checkMove(proposedX:Number, proposedY:Number):Boolean {
 			if (PlayState.myMap.getTile(proposedX, proposedY) == WATER_TILE ) {
