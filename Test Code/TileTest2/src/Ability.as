@@ -69,8 +69,6 @@ package
 			if (_object.Effect.Type == "Terrain" && PlayState.myMap.getTile(tileX,tileY) == _object.Effect.From) {
 				PlayState.myMap.setTile(tileX, tileY, _object.Effect.To)
 				connection.send("MapTileChanged", tileX, tileY, _object.Effect.To);
-				//connection.send("QuestMapUpdate", PlayState.myMap.getMapData());
-				connection.send("QuestMapUpdate", PlayState.myMap.getData());
 				connection.send("QuestMapUpdate", PlayState.myMap.getMapData());
 			}else if (_object.Effect.Type == "Sprite") {
 				PlayState.lyrSprites.add(new EffectSprite((tileX * _tileSize ) + _xOffset, (tileY * _tileSize) + _yOffset, _object.Effect.Image, _object.Effect.Range, _tileSize));

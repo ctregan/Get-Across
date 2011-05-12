@@ -49,12 +49,14 @@ package
 		//Create a login box over the main menu
 		private function openLogin():void 
 		{
-			loginObj = new Login(this);
+			loginObj = new Login(mainMenu);
+			loginObj.height = FlxG.height;
 			loginObj.Show();
 		}
 		//Creates an account create box over the main menu
 		private function openAccountCreate():void {
 			registrationObj = new Registration(this);
+			registrationObj.height = FlxG.height;
 			registrationObj.Show();
 		}
 		

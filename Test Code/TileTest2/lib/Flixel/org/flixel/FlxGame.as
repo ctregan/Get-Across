@@ -170,7 +170,7 @@ package org.flixel
 		public function FlxGame(GameSizeX:uint,GameSizeY:uint,InitialState:Class,Zoom:Number=1,GameFramerate:uint=60,FlashFramerate:uint=30)
 		{
 			//super high priority init stuff (focus, mouse, etc)
-			flash.ui.Mouse.hide();
+			flash.ui.Mouse.show();
 			_lostFocus = false;
 			_focus = new Sprite();
 			_focus.visible = false;
@@ -243,7 +243,7 @@ package org.flixel
 					if(_debugger.visible)
 						flash.ui.Mouse.show();
 					else
-						flash.ui.Mouse.hide();
+						flash.ui.Mouse.show();
 					//_console.toggle();
 					return;
 				}
@@ -388,7 +388,7 @@ package org.flixel
 		protected function onFocus(FlashEvent:Event=null):void
 		{
 			if(!_debuggerUp)
-				flash.ui.Mouse.hide();
+				flash.ui.Mouse.show();
 			FlxG.resetInput();
 			_lostFocus = _focus.visible = false;
 			stage.frameRate = _flashFramerate;

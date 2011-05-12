@@ -162,18 +162,18 @@ package
 						);
 						
 						// create new menu for player to navigate back to main screen
-						var button:TextButton = new TextButton("Start a new quest!",
+						/*var button:TextButton = new TextButton("Start a new quest!",
 							function ()
 							{
 								FlxG.switchState(new MenuState(client));
 							}
-						);
+						);*/
 						var menu:Box = new Box().fill(0xFFFFFF, 0.8, 0)
 						menu.add(new Box().fill(0x00000, .5, 15).margin(10, 10, 10, 10).minSize(FlxG.width, FlxG.height).add(
 							new Box().fill(0xffffff,1,5).margin(10,10,10,10).minSize(300,0).add(
 									new Rows(
-										new Label("This quest is already finished!", 30, TextFormatAlign.CENTER),
-										button
+										new Label("This quest is already finished!", 30, TextFormatAlign.CENTER)
+										//button
 									).spacing(30)
 								)
 							)
@@ -415,7 +415,7 @@ package
 			//Tile Map
 			myMap = new FlxTilemap();
 			//myMap.drawIndex = 0;
-			myMap.loadMap(map_data, data_tiles, _tileSize, _tileSize);
+			myMap.loadMap(map_data, data_tiles, _tileSize, _tileSize,0,0,0,6);
 			//myMap.collideIndex = 1;
 			myMap.x = _mapOffsetX;
 			myMap.y = _mapOffsetY;			
