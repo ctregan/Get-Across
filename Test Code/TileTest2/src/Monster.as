@@ -1,6 +1,7 @@
 package  
 {
 	import org.flixel.FlxSprite;
+	import org.flixel.plugin.photonstorm.FlxHealthBar;
 	import playerio.Connection;
 	/**
 	 * ...
@@ -13,6 +14,7 @@ package
 		private var _xTile:int
 		private var _yTile:int
 		private var _monsterIndex:int //The Index of the Monster within the level's database table.
+		public var healthBar:FlxHealthBar;
 		
 		public function Monster(type:String, ap:int, monsterIndex:int, xTile:int, yTile:int, xOffset:int, yOffset:int, tileSize:int) 
 		{
@@ -31,6 +33,8 @@ package
             addAnimation("walk" + DOWN, [3,4,5], 15, true);
             addAnimation("walk" + LEFT, [6, 7, 8], 15, true);
 			addAnimation("walk" + RIGHT, [9, 10, 11], 15, true);
+			healthBar = new FlxHealthBar(this, 20, 5, 0, _ap, true);
+			healthBar.trackParent( -5, 0);
 			facing = FlxSprite.DOWN;
 			play("idle" + DOWN);
 		}
@@ -38,8 +42,10 @@ package
 		override public function update():void 
 		{
 			super.update();
+			this.health = _ap
 			if (_ap <= 0) {
 				this.kill();
+				healthBar.kill();
 			}
 		}
 		
@@ -61,6 +67,7 @@ package
 			
 			if (_ap <= 0) {
 				this.kill();
+				healthBar.kill();
 				player.inBattle = false;
 			}
 			connection.send("MonsterAPChange",  _ap, _monsterIndex)

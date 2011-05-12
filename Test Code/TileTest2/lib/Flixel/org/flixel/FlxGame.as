@@ -243,7 +243,7 @@ package org.flixel
 					if(_debugger.visible)
 						flash.ui.Mouse.show();
 					else
-						flash.ui.Mouse.hide();
+						flash.ui.Mouse.show();
 					//_console.toggle();
 					return;
 				}
@@ -388,7 +388,7 @@ package org.flixel
 		protected function onFocus(FlashEvent:Event=null):void
 		{
 			if(!_debuggerUp)
-				flash.ui.Mouse.hide();
+				flash.ui.Mouse.show();
 			FlxG.resetInput();
 			_lostFocus = _focus.visible = false;
 			stage.frameRate = _flashFramerate;

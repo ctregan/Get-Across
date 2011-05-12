@@ -372,6 +372,12 @@ namespace GetAcross {
                     {
                         int newAp = message.GetInt(0);
                         int monsterIndex = message.GetInt(1);
+                       /* PlayerIO.BigDB.Load("newQuests", levelKey,
+                            delegate(DatabaseObject dbo)
+                            {
+                                DatabaseArray monsters = dbo.GetArray("Monsters");
+                                monsters.GetObject(monsterIndex).Set("AP", newAp);
+                            */
                         //CHARLIE TO DO - Make this data reflected in the database too.
                         Broadcast("MonsterAPChange", player.Id, newAp, monsterIndex);
                         break;

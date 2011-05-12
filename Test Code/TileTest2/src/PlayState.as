@@ -141,6 +141,7 @@ package
 									var myMonsterSprite:Monster = new Monster(monsters[z].Type, monsters[z].AP, z, monsters[z].xTile, monsters[z].yTile, _mapOffsetX, _mapOffsetY, _tileSize);
 									monsterArray.push(myMonsterSprite);
 									lyrMonster.add(myMonsterSprite);
+									lyrHUD.add(myMonsterSprite.healthBar);
 								}
 							}
 						}catch (e:Error) {
@@ -247,6 +248,7 @@ package
 			connection.addMessageHandler("win", function(m:Message, userID:int, xp:int, coin:int) {
 				connection.disconnect();
 				FlxG.switchState(new QuestCompleteState(xp, coin, client));
+				this.kill();
 			})
 			//A monster has been hurt and need their AP updated
 			connection.addMessageHandler("MonsterAPChange", function (m:Message, userID:int, newAP:int, monsterIndex:int ):void 
