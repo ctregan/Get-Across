@@ -50,7 +50,7 @@ package
 							new TextButton("Random Map", randomMap)
 						).spacing(30)
 					)))
-			addChild(mainMenu);
+			FlxG.stage.addChild(mainMenu);
 		}
 		
 		//Callback function for when Start Tutorial Button is Pressed
@@ -79,7 +79,7 @@ package
 		//Callback function for LOBBY, once it has connected to a game
 		private function handleJoin(connection:Connection):void 
 		{
-			FlxG.state = new PlayState(connection, myClient)
+			FlxG.switchState( new PlayState(connection, myClient))
 		}
 		
 		//Callback function for LOBBY, if it has encountered an error

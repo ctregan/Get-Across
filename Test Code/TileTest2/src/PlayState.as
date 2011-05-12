@@ -1,8 +1,8 @@
 package  
 {
 	import org.flixel.*
-	import org.flixel.data.FlxMouse;
-	import org.flixel.data.FlxPanel;
+	import org.flixel.system.input.*;// data.FlxMouse;
+	//import org.flixel.data.FlxPanel;
 	import playerio.*
 	import sample.ui.Alert;
 	import sample.ui.components.AbilityButton;
@@ -36,7 +36,7 @@ package
 		private var playersArray:Array = []; //Array of all players on board
 		private var monsterArray:Array = [];
 		
-		private var myMouse:FlxMouse; //Mouse
+		private var myMouse:Mouse; //Mouse
 		private var errorMessage:FlxText; //Text Field to reflect any errors
 		private var secCounter:FlxText; //Text field to reflect time left until next AP
 		private var location:FlxText; //(x,x) graph information of where your player is.
@@ -165,7 +165,7 @@ package
 						var button:TextButton = new TextButton("Start a new quest!",
 							function ()
 							{
-								FlxG.state = new MenuState(client);
+								FlxG.switchState(new MenuState(client));
 							}
 						);
 						var menu:Box = new Box().fill(0xFFFFFF, 0.8, 0)
@@ -178,7 +178,7 @@ package
 								)
 							)
 						);
-						addChild(menu);
+						FlxG.stage.addChild(menu);
 					}
 				});
 			})
@@ -246,7 +246,7 @@ package
 			//A player has reached the end, victory!
 			connection.addMessageHandler("win", function(m:Message, userID:int, xp:int, coin:int) {
 				connection.disconnect();
-				FlxG.state = new QuestCompleteState(xp, coin, client);
+				FlxG.switchState(new QuestCompleteState(xp, coin, client));
 			})
 			//A monster has been hurt and need their AP updated
 			connection.addMessageHandler("MonsterAPChange", function (m:Message, userID:int, newAP:int, monsterIndex:int ):void 
@@ -315,7 +315,7 @@ package
 					lyrBattle.visible = myPlayer.inBattle;
 					 //Detect Monster collision, if a monster is overlapping your player then you are now in a fight
 					for (var monster in monsterArray) {
-						FlxU.overlap(monsterArray[monster], myPlayer, function() {
+						FlxG.overlap(monsterArray[monster], myPlayer, function() {
 							myPlayer.inBattle = true;
 							myPlayer.combatant = monsterArray[monster]
 							errorMessage.text = "BATTLE!";
@@ -414,9 +414,9 @@ package
 			
 			//Tile Map
 			myMap = new FlxTilemap();
-			myMap.drawIndex = 0;
+			//myMap.drawIndex = 0;
 			myMap.loadMap(map_data, data_tiles, _tileSize, _tileSize);
-			myMap.collideIndex = 1;
+			//myMap.collideIndex = 1;
 			myMap.x = _mapOffsetX;
 			myMap.y = _mapOffsetY;			
 			lyrStage.add(myMap);
@@ -430,14 +430,14 @@ package
 			//Background
 			
 			//Weak Attack Button
-			lyrBattle.add(new FlxButton(22, 284, function() { 
+			lyrBattle.add(new FlxButton(22, 284, "text", function() { 
 				if (myPlayer.inBattle) {
 					myPlayer.combatant.attack(1,myPlayer, connection);
 				}
 			}))
 			lyrBattle.add(new FlxText(24, 286, 100, "Weak Attack"));
 			//Medium Attack Button
-			lyrBattle.add(new FlxButton(22, 314, function() { 
+			lyrBattle.add(new FlxButton(22, 314, "text", function() { 
 				if (myPlayer.inBattle) {
 					myPlayer.combatant.attack(2,myPlayer, connection);
 				}
@@ -445,7 +445,7 @@ package
 			
 			lyrBattle.add(new FlxText(24, 316, 100, "Medium Attack"));
 			//Strong Attack Button
-			lyrBattle.add(new FlxButton(22, 344, function() { 
+			lyrBattle.add(new FlxButton(22, 344, "text", function() { 
 				if (myPlayer.inBattle) {
 					myPlayer.combatant.attack(3,myPlayer, connection);
 				}
