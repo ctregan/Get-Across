@@ -44,11 +44,10 @@ package sample.ui{
 			//Error
 			errorMessage = new Label("", 12, TextFormatAlign.CENTER, 0xFF0000, true);
 			errorMessage.width = 100;
-			var mainBox:Box = new Box();
 		
 			accountCreateBox = new Box().fill(0xFFFFFF,0.8).add(
 			new Box().fill(0x000000,.5,15).margin(10,10,10,10).minSize(300,0).add(
-				mainBox.fill(0xffffff,1,5).margin(10,10,10,10).minSize(300,0).add(
+				new Box().fill(0xffffff,1,5).margin(10,10,10,10).minSize(300,0).add(
 					new Rows(
 						new Label("Account Creation",20, TextFormatAlign.CENTER),
 						new Columns().margin(0, 5, 0, 5).spacing(3).add(

@@ -94,10 +94,12 @@ namespace GetAcross {
                 PlayerIO.BigDB.Load("PlayerObjects", player.ConnectUserId,
                     delegate(DatabaseObject result)
                     {
+                        Console.WriteLine("test");
                         // if player does not have a questID associated with it
                         // create new object in Quests db
                         if (!result.Contains("questID") || result.GetString("questID") == "noQuest")
                         {
+                            Console.WriteLine("test1");
                             // create new quest object
                             DatabaseObject newQuest = new DatabaseObject();
 
@@ -166,6 +168,7 @@ namespace GetAcross {
                         // else, this player has a questID saved
                         else
                         {
+                            Console.WriteLine("test3");
                             questID = result.GetString("questID");
                             levelKey = questID;
                             // obtain player's last position and save to serverside

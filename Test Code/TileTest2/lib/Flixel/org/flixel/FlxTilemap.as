@@ -1015,12 +1015,12 @@ package org.flixel
 		public function getMapData():String 
 		{
 			var returnString:String  = "";
-			for (var i:int = 0; i < heightInTiles; i++) {
-					for (var z:int = 0; z < widthInTiles; z++) {
-							if (z == widthInTiles - 1) {
-								returnString = returnString.concat(_data[(i * widthInTiles) + z] + "|");
+			for (var i:int = 0; i < _screenRows; i++) {
+					for (var z:int = 0; z < _screenCols; z++) {
+							if (z == _screenCols - 1) {
+								returnString = returnString.concat(_data[(i * _screenCols) + z] + "|");
 							}else{
-								returnString = returnString.concat(_data[(i * widthInTiles) + z] + ",");
+								returnString = returnString.concat(_data[(i * _screenCols) + z] + ",");
 							}
 					}
 			}
