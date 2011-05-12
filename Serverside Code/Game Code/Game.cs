@@ -94,12 +94,10 @@ namespace GetAcross {
                 PlayerIO.BigDB.Load("PlayerObjects", player.ConnectUserId,
                     delegate(DatabaseObject result)
                     {
-                        Console.WriteLine("test");
                         // if player does not have a questID associated with it
                         // create new object in Quests db
                         if (!result.Contains("questID") || result.GetString("questID") == "noQuest")
                         {
-                            Console.WriteLine("test1");
                             // create new quest object
                             DatabaseObject newQuest = new DatabaseObject();
 
@@ -122,7 +120,6 @@ namespace GetAcross {
                             PlayerIO.BigDB.Load("StaticMaps", levelKey, 
                                 delegate(DatabaseObject staticMap)
                                 {
-                                    Console.WriteLine("Test");
                                     newQuest.Set("tileValues", staticMap.GetString("tileValues"));
                                     newQuest.Set("MonsterCount", staticMap.GetInt("MonsterCount"));
                                     if (staticMap.Contains("Monsters"))
@@ -140,7 +137,6 @@ namespace GetAcross {
                                         }
                                         newQuest.Set("Monsters", newMonsters);
                                     }
-                                     Console.WriteLine("Quest Tile Values Set " + newQuest.ToString());
                                 // add this quest object to Quests db
                                     PlayerIO.BigDB.CreateObject("NewQuests", null, newQuest,
                                         delegate(DatabaseObject addedQuest)
@@ -157,7 +153,8 @@ namespace GetAcross {
                                             );
                                             levelKey = addedQuest.Key;
                                             // tell client to initialize (board, monsters, player object & player sprite) with max AP amount
-                                            player.Send("init", player.Id, player.ConnectUserId, levelKey, 20);
+                                            player.Send("init", player.Id, player.ConnectUserId, levelKey, 20, staticMap.Key);
+                                            //player.Send("AlertMessages", staticMap.Key);
                                     });
                                 });
                            
@@ -170,7 +167,6 @@ namespace GetAcross {
                         // else, this player has a questID saved
                         else
                         {
-                            Console.WriteLine("test3");
                             questID = result.GetString("questID");
                             levelKey = questID;
                             // obtain player's last position and save to serverside
@@ -200,7 +196,7 @@ namespace GetAcross {
                                     }
 
                                     // tell client to initialize (board, monsters, player object & player sprite)
-                                    player.Send("init", player.Id, player.ConnectUserId, levelKey, player.AP);
+                                    player.Send("init", player.Id, player.ConnectUserId, levelKey, player.AP, "no_messages");
                                 }
                             );
                         }
