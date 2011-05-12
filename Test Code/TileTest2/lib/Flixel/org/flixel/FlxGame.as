@@ -170,7 +170,7 @@ package org.flixel
 		public function FlxGame(GameSizeX:uint,GameSizeY:uint,InitialState:Class,Zoom:Number=1,GameFramerate:uint=60,FlashFramerate:uint=30)
 		{
 			//super high priority init stuff (focus, mouse, etc)
-			flash.ui.Mouse.hide();
+			flash.ui.Mouse.show();
 			_lostFocus = false;
 			_focus = new Sprite();
 			_focus.visible = false;
