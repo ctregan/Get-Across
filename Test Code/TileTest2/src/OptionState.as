@@ -54,7 +54,8 @@ package
 					)
 				)
 			))
-			
+			base.width = FlxG.stage.stageWidth
+			base.height = FlxG.stage.stageHeight
 			FlxG.stage.addChild(base);
 		}
 		

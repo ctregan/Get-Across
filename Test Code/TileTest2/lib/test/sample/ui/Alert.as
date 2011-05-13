@@ -20,7 +20,7 @@ package sample.ui{
 		public var unread:Boolean = false;
 		function Alert(text:String) {
 
-			textLabel = new Label(text, 15);
+			textLabel = new Label(text, 12);
 			textLabel.multiline = true;
 			fill(0xffffff,.8).add(
 				new Box().minSize(150,110).fill(0x0,.5,10).margin(10,10,10,10).add(
@@ -57,8 +57,8 @@ package sample.ui{
 		}
 		
 		private function handleResize(e:Event = null){
-			this.width = FlxG.stage.width
-			this.height = FlxG.stage.height
+			this.width = FlxG.stage.stageWidth
+			this.height = FlxG.stage.stageHeight
 		}
 	}
 }

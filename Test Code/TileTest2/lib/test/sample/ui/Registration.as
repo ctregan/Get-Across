@@ -12,7 +12,7 @@ package sample.ui{
 	import org.flixel.FlxG;
 	
 	public class Registration extends Sprite{
-		private var _stage:FlxState
+		private var _stage:Box
 		private var accountCreateBox:Box;
 		//Error messages
 		private var pwdError:Label
@@ -26,7 +26,7 @@ package sample.ui{
 		
 	
 		
-		function Registration(stage:FlxState){
+		function Registration(stage:Box){
 			_stage = stage
 			
 			//Error messages
@@ -105,8 +105,8 @@ package sample.ui{
 		private function realign(e:Event = null){
 			
 			accountCreateBox.reset();
-			accountCreateBox.width = FlxG.stage.width
-			accountCreateBox.height = FlxG.stage.height
+			accountCreateBox.width = FlxG.stage.stageWidth
+			accountCreateBox.height = FlxG.stage.stageHeight
 			
 		}
 		
@@ -153,9 +153,19 @@ package sample.ui{
 				ob.coin = 0
 				ob.tutorial = 1
 				ob.save()
-			})
+				
+				errorMessage.text = "Registration Successful. You May Now Log In."
+				
+				trace("Sucessfully connected to player.io");
 			
-			errorMessage.text = "Registration Successful. You May Now Log In."
+				//Set developmentsever (Comment out to connect to your server online)
+				client.multiplayer.developmentServer = "127.0.0.1:8184";
+				//Start Menu State
+				FlxG.switchState(new MenuState(client));
+				FlxG.stage.removeChild(_stage);
+				//Show lobby (parsing true hides the cancel button)
+				this.Hide(null);
+			})
 		}
 	}	
 }

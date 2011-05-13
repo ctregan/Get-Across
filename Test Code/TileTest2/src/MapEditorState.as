@@ -37,6 +37,7 @@ package
 			_name = name
 			_myClient = myClient
 			
+			FlxG.stage.addChild(new Alert("Welcome to the Map Editor, Use the palet to chose your tile and click on the map to place. Once you are done hit upload"));
 			//Make an all grass map
 			var initialMapData:String = "";
 			for (var h:int = 0; h < _height; h++) {
