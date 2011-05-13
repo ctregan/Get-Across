@@ -62,6 +62,7 @@ package
 		public static var lyrBackground:FlxGroup;
 		public static var lyrBattle:FlxGroup;
 		public static var lyrMonster:FlxGroup;
+		public static var lyrTop:FlxGroup;
 		
 		private static var abilitySelected:Boolean = false; //Indicates whether an ability is activated
 		private static var activeAbility:Ability; //Which ability is currently chosen
@@ -77,9 +78,9 @@ package
 		// constants/offset numbers
 		public var _mapOffsetX:int = 204; 	// left border of map
 		public var _mapOffsetY:int = 46;	// top border of map
-		private var _apBoxOffsetX:int = 290;
-		private var _apBoxOffsetY:int = 5;
-		private var _timerOffsetX:int = 330;
+		private var _apBoxOffsetX:int = 265;
+		private var _apBoxOffsetY:int = 10;
+		private var _timerOffsetX:int = 360;
 		private var _timerOffsetY:int = 5;
 		private var _positionInfoOffsetX:int = 480;
 		private var _positionInfoOffsetY:int = 368;
@@ -198,9 +199,10 @@ package
 					myPlayer = new Player(posX, posY, _mapOffsetX, _mapOffsetY, _tileSize, playerAP);
 					playersArray[imPlayer - 1] = myPlayer;
 					var playerHealthBar:FlxHealthBar = new FlxHealthBar(myPlayer, 100, 20, 0, 25, true);
-					playerHealthBar.x = _apBoxOffsetX - 50
-					playerHealthBar.y = _apBoxOffsetY
+					playerHealthBar.x = _apBoxOffsetX - 35
+					playerHealthBar.y = _apBoxOffsetY - 5
 					lyrHUD.add(playerHealthBar);
+					lyrTop.add(apInfo);
 					lyrSprites.add(myPlayer);
 
 					//Load Abilities for Player From Database
@@ -252,10 +254,7 @@ package
 				//myMap.setTile(posX, posY, newTileType, true);
 			})
 			//A player has reached the end, victory!
-			connection.addMessageHandler("win", function(m:Message, userID:int, xp:int, coin:int) {
-				connection.disconnect();
-				FlxG.switchState(new QuestCompleteState(xp, coin, client));
-			})
+			connection.addMessageHandler("win", cleanup)
 			//A monster has been hurt and need their AP updated
 			connection.addMessageHandler("MonsterAPChange", function (m:Message, userID:int, newAP:int, monsterIndex:int ):void 
 			{
@@ -278,7 +277,13 @@ package
 			})
 			
 		}
-		
+		private function cleanup(m:Message, userID:int, xp:int, coin:int):void 
+		{
+			connection.disconnect();
+			this.kill();
+			FlxG.switchState(new QuestCompleteState(xp, coin, client));
+			
+		}
 		override public function update():void 
 		{
 			if(connected == true){
@@ -434,6 +439,7 @@ package
 			lyrBackground = new FlxGroup;
 			lyrBattle = new FlxGroup;
 			lyrMonster = new FlxGroup;
+			lyrTop = new FlxGroup;
 			myMouse = FlxG.mouse;
 			
 			//Tile Map
@@ -502,7 +508,6 @@ package
 					lyrHUD.add(secCounter);
 					lyrHUD.add(location);
 					lyrHUD.add(errorMessage);
-					lyrHUD.add(apInfo);
 					lyrHUD.add(mouseLocation);
 					lyrBackground.add(background);
 					
@@ -535,6 +540,7 @@ package
 			this.add(lyrSprites);
 			this.add(lyrHUD);
 			this.add(lyrBattle);
+			this.add(lyrTop);
 		}
 		
 		//Determines whether the mouse is within the game map board, return true if it is or false if it is outside the board

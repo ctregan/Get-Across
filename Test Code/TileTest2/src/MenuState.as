@@ -47,7 +47,8 @@ package
 							characterInfo,
 							tutorialButton,
 							new TextButton("New Game", newGame),
-							new TextButton("Random Map", randomMap)
+							new TextButton("Random Map", randomMap),
+							new TextButton("Map Editor", mapEditor)
 						).spacing(30)
 					)))
 			FlxG.stage.addChild(mainMenu);
@@ -67,7 +68,10 @@ package
 		//Callback function for when New Game Button is pressed
 		private function newGame():void
 		{
-			FlxG.stage.addChild(new Alert("This Feature has not yet been implemented"));
+			//FlxG.stage.addChild(new Alert("This Feature has not yet been implemented"));
+			FlxG.switchState(new LevelChooseState(myClient));
+			FlxG.stage.removeChild(mainMenu);
+			this.kill();
 		}
 		
 		//Callback function for when Random Map Button is pressed
@@ -87,6 +91,14 @@ package
 		private function handleError(error:PlayerIOError):void{
 			trace("Got", error)
 			//FlxG.state = new LoginState()
+		}
+		
+		//Callback function for Map Editor Button
+		private function mapEditor():void 
+		{
+			FlxG.switchState(new OptionState(myClient));
+			FlxG.stage.removeChild(mainMenu);
+			this.kill();
 		}
 		
 	}

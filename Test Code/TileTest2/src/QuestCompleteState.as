@@ -43,6 +43,7 @@ package
 		{
 			FlxG.switchState(new MenuState(_client));
 			FlxG.stage.removeChild(mainMenu);
+			this.kill();
 		}
 		
 		//Callback function called when Player data object has been successfully loaded

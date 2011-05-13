@@ -112,12 +112,14 @@ namespace GetAcross {
                             questPlayers.Set("numPlayers", 1);
                             questPlayers.Set(player.ConnectUserId, questPlayerData);
                             newQuest.Set("players", questPlayers);
+                           
                             Console.WriteLine("questPlayers contents: " + questPlayers.ToString());
                             Console.WriteLine("Level key: " + levelKey);
                             //Add Static Map to Quest, to be updated later
                             PlayerIO.BigDB.Load("StaticMaps", levelKey, 
                                 delegate(DatabaseObject staticMap)
                                 {
+                                    newQuest.Set("StaticMapKey", staticMap.Key);
                                     newQuest.Set("tileValues", staticMap.GetString("tileValues"));
                                     newQuest.Set("MonsterCount", staticMap.GetInt("MonsterCount"));
                                     if (staticMap.Contains("Monsters"))
@@ -194,7 +196,7 @@ namespace GetAcross {
                                     }
 
                                     // tell client to initialize (board, monsters, player object & player sprite)
-                                    player.Send("init", player.Id, player.ConnectUserId, levelKey, player.AP, "no_messages");
+                                    player.Send("init", player.Id, player.ConnectUserId, levelKey, player.AP, questObject.GetString("StaticMapKey"));
                                 }
                             );
                         }
