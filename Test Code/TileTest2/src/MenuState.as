@@ -19,9 +19,6 @@ package
 		private var tutorialLevel:int = 0;
 		private var loader:Box
 		
-		private var _windowHeight:int = 400;
-		private var _windowWidth:int = 700;
-		
 		public function MenuState(client:Client) 
 		{
 			myClient = client

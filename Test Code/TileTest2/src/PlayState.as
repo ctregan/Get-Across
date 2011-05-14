@@ -144,7 +144,6 @@ package
 					//Recieve Tile Array from database to be turned into string with line breaks between each line
 					if (ob != null)
 					{
-						trace("loading data from NewQuests...\n" + ob.toString());
 						var mapString:String = ob.tileValues;
 						mapString = mapString.split("|").join("\n")
 						boardSetup(mapString, name, levelKey);
@@ -200,6 +199,7 @@ package
 						);
 						FlxG.stage.addChild(menu);
 					}
+					connection.send("PlayerSetUp");
 				});
 			})
 			
@@ -257,13 +257,13 @@ package
 			})
 			
 			//New user has joined, make their character
-			/*connection.addMessageHandler("UserJoined", function(m:Message, userID:int, posX:int, posY:int) {
+			connection.addMessageHandler("UserJoined", function(m:Message, userID:int, posX:int, posY:int) {
 				if (userID != imPlayer) {
 					// create other player; AP doesn't matter, so default to 20
 					playersArray[userID-1] = new Player(posX, posY, _mapOffsetX, _mapOffsetY, _tileSize, 20);
 					if (playersArray[userID-1] != null && lyrSprites != null) lyrSprites.add(playersArray[userID-1]);
 				}
-			})*/
+			})
 			//Player has moved and we hear about it
 			connection.addMessageHandler("PlayerMove", function(m:Message, userID:int, posX:int, posY:int) {
 				var tileType:int = getTileIdentity(posX, posY);
@@ -273,7 +273,7 @@ package
 			})
 			//A tile has changed and needs to be updated locally
 			connection.addMessageHandler("MapTileChanged", function(m:Message, userID:int, posX:int, posY:int, newTileType:int) {
-				setTileIdentity( posX, posY, newTileType);
+				myMap.setTile( posX, posY, newTileType);
 				//myMap.setTile(posX, posY, newTileType, true);
 			})
 			//A player has reached the end, victory!
@@ -287,12 +287,14 @@ package
 			{
 				client.bigDB.load("StaticMaps", levelKey,
 					function(dbo:DatabaseObject) {
-						trace("message object: " + dbo.toString());
+						//trace("message object: " + dbo.toString());
 						var messages:Array = dbo.Messages
 						for (var z in messages) {
 							//while (alert.unread) {
 							//}
 							alert.changeText(messages[z]);
+							alert.width = FlxG.stage.stageWidth
+							alert.height = FlxG.stage.stageHeight
 							FlxG.stage.addChild(alert);
 						}
 					}
@@ -353,17 +355,20 @@ package
 					}
 					if (FlxG.keys.justPressed("DOWN") && !myPlayer.isMoving && !myPlayer.inBattle) {
 						myPlayer.facing = FlxSprite.DOWN;
-						win = myPlayer.movePlayer(0, 1, _tileSize, getTileIdentity(myPlayer.xPos, myPlayer.yPos + 1), connection);
+						win = myPlayer.movePlayer(0, 1, _tileSize, connection);
+						connection.send("move", 0, 1);
 					}else if (FlxG.keys.justPressed("UP") && !myPlayer.isMoving && !myPlayer.inBattle) {
 						myPlayer.facing = FlxSprite.UP;
-						win = myPlayer.movePlayer(0, -1, _tileSize, getTileIdentity(myPlayer.xPos, myPlayer.yPos - 1), connection);
+						win = myPlayer.movePlayer(0, -1, _tileSize, connection);
+						connection.send("move", 0, -1);
 					}else if (FlxG.keys.justPressed("RIGHT") && !myPlayer.isMoving && !myPlayer.inBattle) {
 						myPlayer.facing = FlxSprite.RIGHT;
-						trace("going right");
-						win = myPlayer.movePlayer(1, 0, _tileSize, getTileIdentity(myPlayer.xPos + 1, myPlayer.yPos), connection);
+						win = myPlayer.movePlayer(1, 0, _tileSize, connection);
+						connection.send("move", 1, 0);
 					}else if (FlxG.keys.justPressed("LEFT") && !myPlayer.isMoving && !myPlayer.inBattle) {
 						myPlayer.facing = FlxSprite.LEFT;
-						win = myPlayer.movePlayer( -1, 0, _tileSize, getTileIdentity(myPlayer.xPos -1 , myPlayer.yPos), connection);
+						win = myPlayer.movePlayer( -1, 0, _tileSize, connection);
+						connection.send("move", -1, 0);
 					}else if (myMouse.justPressed() &&  mouseWithinTileMap() && abilitySelected) {
 						var selectedXTile:int = (myMouse.x - _mapOffsetX) / _tileSize
 						//(myMouse.x - (myMouse.x % 32)) / 32;
