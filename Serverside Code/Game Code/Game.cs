@@ -202,17 +202,7 @@ namespace GetAcross {
                         }
                     }
                 );
-                // this is how you broadcast a message to all players connected to the game
-                Broadcast("UserJoined", player.Id, player.positionX, player.positionY);
-                //Update them on who is already in the game
-                foreach (Player x in players)
-                {
-                    if (x!= null && x != player)
-                    {
-                        Console.WriteLine("Sending Player " + player.Id + " Player " + x.Id + " Position (" + x.positionX + ", " + x.positionY + ")"); //debug
-                        player.Send("UserJoined", x.Id, x.positionX, x.positionY);
-                    }
-                }
+               
             }
             else
             {
@@ -261,15 +251,28 @@ namespace GetAcross {
                     {
                         int messageX = message.GetInt(0);
                         int messageY = message.GetInt(1);
-                        int xDistance = Math.Abs(messageX - player.positionX);
-                        int yDistance = Math.Abs(messageY - player.positionY);
+                        Console.Write("Incoming Move Message from " + player.Id + " X Change: " + messageX + " Y Change: + " + messageY);
                         player.positionX = player.positionX + messageX;
                         player.positionY = player.positionY + messageY;
                         Console.WriteLine("Player " + player.Id + " is moving to (" + player.positionX + ", " + player.positionY + ")"); //debug 
                         Broadcast("PlayerMove", player.Id, messageX, messageY);
                         break;
                     }
-
+                case "PlayerSetUp":
+                    {
+                        // this is how you broadcast a message to all players connected to the game
+                        Broadcast("UserJoined", player.Id, player.positionX, player.positionY);
+                        //Update them on who is already in the game
+                        foreach (Player x in players)
+                        {
+                            if (x != null && x != player)
+                            {
+                                Console.WriteLine("Sending Player " + player.Id + " Player " + x.Id + " Position (" + x.positionX + ", " + x.positionY + ")"); //debug
+                                player.Send("UserJoined", x.Id, x.positionX, x.positionY);
+                            }
+                        }
+                        break;
+                    }
                 // client is asking for data about player to draw on the screen
                 case "playerInfo":
                     {

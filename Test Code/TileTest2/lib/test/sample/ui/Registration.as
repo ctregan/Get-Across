@@ -161,10 +161,10 @@ package sample.ui{
 				//Set developmentsever (Comment out to connect to your server online)
 				client.multiplayer.developmentServer = "127.0.0.1:8184";
 				//Start Menu State
-				FlxG.switchState(new MenuState(client));
+				Hide(null);
 				FlxG.stage.removeChild(_stage);
 				//Show lobby (parsing true hides the cancel button)
-				this.Hide(null);
+				FlxG.switchState(new MenuState(client));
 			})
 		}
 	}	

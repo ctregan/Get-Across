@@ -79,7 +79,7 @@ package
 				velocity.x = 0;*/
 				this.x = desiredX;
 				this.y = desiredY;
-				connection.send("move", xChange, yChange);
+				//connection.send("move", xChange, yChange);
 				if (PlayState.myMap.getTile(xPos, yPos) == WIN_TILE) {
 					return true;
 				}
