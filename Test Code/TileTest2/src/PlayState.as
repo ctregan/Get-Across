@@ -33,6 +33,7 @@ package
 		//[Embed(source = "data/map_data.txt", mimeType = "application/octet-stream")] public var data_map:Class; //Tile Map array
 		[Embed(source = "data/testTileSet2_32.png")] public var data_tiles:Class; //Tile Set Image
 		[Embed(source = "data/Cursor.png")] public var cursor_img:Class; //Mouse Cursor
+		[Embed(source = "data/selectedTile.png")] public var hoverTileImg:Class;
 		private var apInfo:FlxText; //Text field to reflect the numner of AP left
 		private var myPlayer:Player;
 		private var playersArray:Array = []; //Array of all players on board
@@ -115,8 +116,23 @@ package
 		
 		private var timer;				// object used for delays.
 		
+		private var camNextMoveUp:FlxCamera;
+		private var camNextMoveDown:FlxCamera;
+		private var camNextMoveRight:FlxCamera;
+		private var camNextMoveLeft:FlxCamera;
+		
+		private var camHover:FlxCamera;
+		
+		private var tileUp:FlxSprite;
+		private var tileDown:FlxSprite;
+		private var tileLeft:FlxSprite;
+		private var tileRight:FlxSprite;
+		
+		private var tileHover:FlxSprite;
+		
 		public function PlayState(connection:Connection, client:Client):void
 		{
+
 			super();
 			trace("Sucessfully connected to the multiplayer server");
 			
@@ -303,6 +319,13 @@ package
 			//camMap.color = 0xFFCCCC;
 			FlxG.addCamera(camMap);							// camera that shows where the character is on the map
 			
+			// camera that "follows" the mouse
+			//camHover = new FlxCamera(0, 0, _tileSize, _tileSize);
+			//camHover.setBounds(0, _windowHeight, myMap.width, myMap.height, true);
+			//camHover.color = 0xFFCCCC;
+			//FlxG.addCamera(camHover);
+			
+			
 			// stop the interval
 			clearInterval(timer);
 		}
@@ -359,6 +382,21 @@ package
 					}else if(!myPlayer.isMoving) {
 						myPlayer.play("idle" + myPlayer.facing);
 					}
+					
+					tileHover.visible = mouseWithinTileMap();
+
+					if (tileHover.visible) {
+						var xTemp:int = Math.floor((myMouse.x - _mapOffsetX) / _tileSize) * _tileSize;
+						var yTemp:int = Math.floor((myMouse.y - _mapOffsetY) / _tileSize) * _tileSize + _windowHeight;
+						tileHover.x = xTemp;
+						tileHover.y = yTemp;
+						if (myMouse.justPressed()) {
+							// if within 1 tile away
+							// if okay condition
+							// then go
+						}
+					}
+					
 					apInfo.text = "AP: " + myPlayer.AP;
 					location.text = "(" + myPlayer.xPos + "," + myPlayer.yPos + ")";
 					errorMessage.text = "" + myPlayer.errorMessage;
@@ -460,6 +498,8 @@ package
 		//Add all flixel elements to the board, essentially drawing the game.
 		private function boardSetup(map_data:String, playerName:String, levelKey:String):void 
 		{
+
+			
 			counter = _APcounterMax; // 1ap gained every 3 minutes
 			alert = new Alert("");
 			//Add chat to game
@@ -485,6 +525,8 @@ package
 			myMap.y = _windowHeight;
 			trace("made map below");
 			lyrStage.add(myMap);
+			
+			
 			
 			
 			// Top HUD
@@ -578,6 +620,11 @@ package
 			this.add(lyrBattle);
 			this.add(lyrTop);
 			
+			
+			
+			tileHover = new FlxSprite(0, _windowHeight, hoverTileImg);
+			add(tileHover);
+			//tileHover.visible = false;
 			trace("done setting up the board");
 		}
 		
@@ -600,13 +647,13 @@ package
 			//return myMap.getTile((x - _FlxG.width) / _tileSize, (y - FlxG.height) / _tileSize);
 			var xInt:Number = (x - _mapOffsetX) / _tileSize;
 			var yInt:Number = (y - _mapOffsetY) / _tileSize;
-			trace("getting identity of tile " + xInt + "," + yInt);
+			//trace("getting identity of tile " + xInt + "," + yInt);
 			return myMap.getTile(xInt, yInt);
 		}
 		
 		private function setTileIdentity(x:int, y:int, identity:int):void {
-			var xInt:Number = (x - _mapOffsetX) / _tileSize;
-			var yInt:Number = (y - _mapOffsetY) / _tileSize;			
+			var xInt:int = (x - _mapOffsetX) / _tileSize;
+			var yInt:int = (y - _mapOffsetY) / _tileSize;			
 			myMap.setTile(xInt, yInt, identity, true);
 		}
 		
