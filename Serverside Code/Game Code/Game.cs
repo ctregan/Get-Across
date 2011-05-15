@@ -12,8 +12,8 @@ namespace GetAcross {
 		public string Name;
         public int level;
         public int AP;
-        public int positionX;
-        public int positionY;
+        public int positionX;   // x tile position
+        public int positionY;   // y tile position
         public string characterClass;
 	}
     
@@ -35,6 +35,10 @@ namespace GetAcross {
         private String questID;    // id of the quest player is in
         DateTime startSessionTime, endSessionTime, lastSessionEndTime;
         String DateTimeFormat = "MM/dd/yyyy HH:mm:ss";
+
+        // variables to keep track of player resources, map
+        public int amountLumber = 0;
+        public String questMap = "";
 
 		// This method is called when an instance of your game is created
 		public override void GameStarted() {
@@ -137,7 +141,8 @@ namespace GetAcross {
                                         }
                                         newQuest.Set("Monsters", newMonsters);
                                     }
-                                // add this quest object to Quests db
+
+                                    // add this quest object to Quests db
                                     PlayerIO.BigDB.CreateObject("NewQuests", null, newQuest,
                                         delegate(DatabaseObject addedQuest)
                                         {
@@ -153,12 +158,11 @@ namespace GetAcross {
                                             );
                                             levelKey = addedQuest.Key;
                                             // tell client to initialize (board, monsters, player object & player sprite) with max AP amount
-                                            player.Send("init", player.Id, player.ConnectUserId, levelKey, 20, staticMap.Key);
+                                            player.Send("init", player.Id, player.ConnectUserId, levelKey, 20, staticMap.Key, null);
                                             //player.Send("AlertMessages", staticMap.Key);
                                     });
                                 });
                            
-                                   
                             // save positions in the serverside
                             player.positionX = player.positionY = 0;
                             player.AP = 20;
@@ -173,6 +177,8 @@ namespace GetAcross {
                             PlayerIO.BigDB.Load("NewQuests", questID,
                                 delegate(DatabaseObject questObject)
                                 {
+                                    String resources = null; // player's resources, to pass to client
+
                                     if (questObject != null)
                                     {
                                         // extract players playing this quest
@@ -193,10 +199,21 @@ namespace GetAcross {
                                             player.AP = startAP;
                                         }
                                         else player.AP = 20;
+
+                                        // get information about player resources from db
+                                        if (thisPlayer.Contains("resources"))
+                                        {
+                                            DatabaseObject resourcesObject = thisPlayer.GetObject("resources");
+                                            Console.WriteLine("resources object: " + resourcesObject.ToString());
+                                            if (resourcesObject.Contains("lumber"))
+                                                resources += "Lumber:" + resourcesObject.GetInt("lumber");
+                                            
+                                            Console.WriteLine("resources string: " + resources);
+                                        }
                                     }
 
                                     // tell client to initialize (board, monsters, player object & player sprite)
-                                    player.Send("init", player.Id, player.ConnectUserId, levelKey, player.AP, questObject.GetString("StaticMapKey"));
+                                    player.Send("init", player.Id, player.ConnectUserId, levelKey, player.AP, questObject.GetString("StaticMapKey"), resources);
                                 }
                             );
                         }
@@ -224,6 +241,9 @@ namespace GetAcross {
                     // if result is not null and contains something, save it into Quests db
                     if (result != null && result.Contains("players"))
                     {
+                        // save quest map data
+                        result.Set("tileValues", questMap);
+
                         Console.WriteLine("UserLeft result: " + result.ToString());
                         DatabaseObject players = result.GetObject("players");
                         if (players != null && players.Contains(playerConnectUserId))
@@ -234,6 +254,20 @@ namespace GetAcross {
                             thisPlayer.Set("AP", player.AP);
                             thisPlayer.Set("positionX", player.positionX);
                             thisPlayer.Set("positionY", player.positionY);
+
+                            // if resources exists, increment it; if not, create it
+                            if (thisPlayer.Contains("resources"))
+                            {
+                                DatabaseObject resourceCount = thisPlayer.GetObject("resources");
+                                resourceCount.Set("lumber", amountLumber);
+                            }
+
+                            else
+                            {
+                                DatabaseObject resourceCount = new DatabaseObject();
+                                resourceCount.Set("lumber", amountLumber);
+                                thisPlayer.Set("resources", resourceCount);
+                            }
                         }
 
                         result.Save();
@@ -293,10 +327,20 @@ namespace GetAcross {
                         break;
                     }
 
-                case "playerAP":
+                // update server's variables for this player stat
+                case "updateStat":
                     {
-                        player.AP = message.GetInt(0);
-                        Console.WriteLine("server: got player AP! " + player.AP);
+                        String statType = message.GetString(0);
+                        if (statType == "AP")
+                        {
+                            player.AP = message.GetInt(1);
+                            Console.WriteLine("server: player's AP increased! " + player.AP);
+                        }
+                        else if (statType == "lumber")
+                        {
+                            amountLumber = message.GetInt(1);
+                            Console.WriteLine("server: player's lumber increased! " + amountLumber);
+                        }
                         break;
                     }
                 case "win":
@@ -356,11 +400,12 @@ namespace GetAcross {
 
                         break;
                     }
+
+                // recieves one string that is the newly updated map; save to associated quest object
                 case "QuestMapUpdate":
                     {
-                        //NADINE TO DO - This message will recieve one string that is the newly updated map, need to sav
-                        //to the player's associated quest object
-                        player.GetPlayerObject(
+                        questMap = message.GetString(0);
+                        /*player.GetPlayerObject(
                             delegate(DatabaseObject updatedPlayerObject){
                                 PlayerIO.BigDB.Load("NewQuests", levelKey,
                                      delegate(DatabaseObject dbo)
@@ -368,7 +413,7 @@ namespace GetAcross {
                                             dbo.Set("tileValues", message.GetString(0));
                                             dbo.Save();
                                         });
-                            });
+                            });*/
                         break;
                     }
                 case "MonsterAPChange":
