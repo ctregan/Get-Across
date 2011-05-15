@@ -51,6 +51,7 @@ package
 		private var lvl:FlxText;
 		private var experience:FlxText;
 		private var resources:FlxText;
+		public static var resourcesText:FlxText;
 		private var background:Background;
 		private var playerStartX: int = 0;	// starting x position of this player
 		private var playerStartY: int = 0;	// starting y position of this player
@@ -98,7 +99,7 @@ package
 		private var _lvlTextOffsetY:int = 5;
 		private var _experienceTextOffsetX:int = 70;
 		private var _experienceTextOffsetY:int = 5;
-		private var _resoruceTextOffsetX:int = 540;
+		private var _resourceTextOffsetX:int = 540;
 		private var _resourceTextOffsetY:int = 250;
 		
 		private static var myClient:Client;
@@ -112,6 +113,10 @@ package
 		
 		private var _windowHeight:int = 400;
 		private var _windowWidth:int = 700;
+		
+		private var gatherResourceButton:FlxButton;
+		
+		
 		
 		private var timer;				// object used for delays.
 		
@@ -210,7 +215,7 @@ package
 					// add player to screen --
 					trace("create player sprite: " + posX + " " + posY);
 					trace("playerInfo: AP to start with: " + playerAP);
-					myPlayer = new Player(posX, posY, 0, _windowHeight, _tileSize, playerAP);
+					myPlayer = new Player(posX, posY, 0, _windowHeight, _tileSize, getTileIdentity(posX, posY), playerAP);
 					playersArray[imPlayer - 1] = myPlayer;
 					var playerHealthBar:FlxHealthBar = new FlxHealthBar(myPlayer, 100, 20, 0, 25, true);
 					playerHealthBar.x = _apBoxOffsetX - 35
@@ -261,8 +266,9 @@ package
 			})*/
 			//Player has moved and we hear about it
 			connection.addMessageHandler("PlayerMove", function(m:Message, userID:int, posX:int, posY:int) {
+				var tileType:int = getTileIdentity(posX, posY);
 				if(userID != imPlayer){
-					Player(playersArray[userID - 1]).movePlayer(posX, posY, _tileSize, connection);
+					Player(playersArray[userID - 1]).movePlayer(posX, posY, _tileSize, tileType,connection);
 				}
 			})
 			//A tile has changed and needs to be updated locally
@@ -316,6 +322,17 @@ package
 		}
 		override public function update():void 
 		{
+			if (getTileIdentity(myPlayer.xPos, myPlayer.yPos) == CHERRY_TILE)
+			{
+				gatherResourceButton = new FlxButton(myPlayer.x + 20, myPlayer.y - 20, "Pick Cherry");
+				//gatherResourcesButton.x = myPlayer.x + 20;
+				//gatherResourcesButton.y = myPlayer.y - 20;
+				//gatherResourcesButton.visible = true;
+				add(gatherResourceButton);
+			}
+			else { 
+				remove(gatherResourceButton);// gatherResourcesButton.visible = false;
+			}
 			if(connected == true){
 				counter -= FlxG.elapsed;
 				if (counter <= 0)
@@ -336,17 +353,17 @@ package
 					}
 					if (FlxG.keys.justPressed("DOWN") && !myPlayer.isMoving && !myPlayer.inBattle) {
 						myPlayer.facing = FlxSprite.DOWN;
-						win = myPlayer.movePlayer(0, 1, _tileSize, connection);
+						win = myPlayer.movePlayer(0, 1, _tileSize, getTileIdentity(myPlayer.xPos, myPlayer.yPos + 1), connection);
 					}else if (FlxG.keys.justPressed("UP") && !myPlayer.isMoving && !myPlayer.inBattle) {
 						myPlayer.facing = FlxSprite.UP;
-						win = myPlayer.movePlayer(0, -1, _tileSize, connection);
+						win = myPlayer.movePlayer(0, -1, _tileSize, getTileIdentity(myPlayer.xPos, myPlayer.yPos - 1), connection);
 					}else if (FlxG.keys.justPressed("RIGHT") && !myPlayer.isMoving && !myPlayer.inBattle) {
 						myPlayer.facing = FlxSprite.RIGHT;
 						trace("going right");
-						win = myPlayer.movePlayer(1, 0, _tileSize, connection);
+						win = myPlayer.movePlayer(1, 0, _tileSize, getTileIdentity(myPlayer.xPos + 1, myPlayer.yPos), connection);
 					}else if (FlxG.keys.justPressed("LEFT") && !myPlayer.isMoving && !myPlayer.inBattle) {
 						myPlayer.facing = FlxSprite.LEFT;
-						win = myPlayer.movePlayer( -1, 0, _tileSize, connection);
+						win = myPlayer.movePlayer( -1, 0, _tileSize, getTileIdentity(myPlayer.xPos -1 , myPlayer.yPos), connection);
 					}else if (myMouse.justPressed() &&  mouseWithinTileMap() && abilitySelected) {
 						var selectedXTile:int = (myMouse.x - _mapOffsetX) / _tileSize
 						//(myMouse.x - (myMouse.x % 32)) / 32;
@@ -524,7 +541,8 @@ package
 				function(dbo:DatabaseObject) {					
 					//render game background
 					//Right Side HUD
-					resources = new FlxText(_resoruceTextOffsetX, _resourceTextOffsetY, 150, "Resources:", true);			
+					resources = new FlxText(_resourceTextOffsetX, _resourceTextOffsetY, 150, "Resources:", true);
+					resourcesText = new FlxText(_resourceTextOffsetX, _resourceTextOffsetY + 10,150, "", true);
 					goals = new FlxText(_goalsBoxOffsetX, _goalsBoxOffsetY, 100, "Goals:\nReach the Red Star", true); 
 					goals.frameHeight = 75;			
 					errorMessage = new FlxText(_errorMessageOffsetX, _errorMessageOffsetY, 120, "Errors Appear Here", true);
@@ -537,6 +555,7 @@ package
 					background = new Background();
 					
 					lyrHUD.add(resources);
+					lyrHUD.add(resourcesText);
 					lyrHUD.add(lvl);
 					lyrHUD.add(experience);
 					lyrHUD.add(abilities);
@@ -596,7 +615,7 @@ package
 				&& ( myMouse.y < _mapOffsetY + myMap.height));
 		}
 		
-		private function getTileIdentity(x:int,y:int):uint {
+		public function getTileIdentity(x:int,y:int):uint {
 			//return myMap.getTile((x - _FlxG.width) / _tileSize, (y - FlxG.height) / _tileSize);
 			var xInt:Number = (x - _mapOffsetX) / _tileSize;
 			var yInt:Number = (y - _mapOffsetY) / _tileSize;
@@ -604,12 +623,26 @@ package
 			return myMap.getTile(xInt, yInt);
 		}
 		
-		private function setTileIdentity(x:int, y:int, identity:int):void {
+		public function setTileIdentity(x:int, y:int, identity:int):void {
 			var xInt:Number = (x - _mapOffsetX) / _tileSize;
 			var yInt:Number = (y - _mapOffsetY) / _tileSize;			
 			myMap.setTile(xInt, yInt, identity, true);
 		}
-		
+
+		public function gatherResource():void
+		{
+			// increase player's amount of lumber
+			myPlayer.amountLumber++;
+			resourcesText.text = "Lumber: " + myPlayer.amountLumber;
+			
+			// remove tree from tile, and tell server
+			myMap.setTile(myPlayer.xPos, myPlayer.yPos, GRASS_TILE);
+			
+			// tell server about new map, new values for player
+			myConnection.send("MapTileChanged", myPlayer.xPos, myPlayer.yPos, GRASS_TILE);
+			myConnection.send("QuestMapUpdate", myMap.getMapData());
+			myConnection.send("updateStat", "lumber", myPlayer.amountLumber);
+		}
 	
 		//***************************************************
 		//*****************PLAYERIO Functions****************

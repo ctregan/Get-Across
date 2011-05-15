@@ -17,6 +17,7 @@ package
 		private var myClient:Client;
 		private var tutorialButton:TextButton;
 		private var tutorialLevel:int = 0;
+		private var loader:Box
 		
 		private var _windowHeight:int = 400;
 		private var _windowWidth:int = 700;
@@ -55,19 +56,44 @@ package
 						).spacing(30)
 					)))
 			FlxG.stage.addChild(mainMenu);
+			
+			loader = new Box().fill(0xffffff,.8).add(
+				new Label("Creating Tutorial Level.", 20)
+			).add(
+				new Box().margin(20).add(new Label("Please wait while we connect to the server.", 12))
+			)
+			loader.width = FlxG.stage.stageWidth
+			loader.height = FlxG.stage.stageHeight
 		}
 		
 		//Callback function for when Start Tutorial Button is Pressed
 		private function startTutorial():void
 		{
-			var lobby:Lobby = new Lobby(myClient, "GetAcross", "Tutorial_" + tutorialLevel, handleJoin, handleError)
+			var _levelKey:String = "Tutorial_" + tutorialLevel
+			//var lobby:Lobby = new Lobby(myClient, "GetAcross", "Tutorial_" + tutorialLevel, handleJoin, handleError)
+			//FlxG.stage.addChild(lobby);
 			//FlxG.state = new QuestLobby(myClient);
-			
+			myClient.multiplayer.createRoom(
+				null,								//Room id, null for auto generted
+				"GetAcross",							//RoomType to create, bounce is a simple bounce server
+				true,								//Hide room from userlist
+				{name:"Tutorial", key:_levelKey},						//Room Join data, data is returned to lobby list. Variabels can be modifed on the server
+				joinRoom,							//Create handler
+				handleError					//Error handler										   
+			)
 			//Show lobby (parsing true hides the cancel button)
 			//this.Hide(null);
-			lobby.show(true);
 		}
-		
+		//Callback for once room is created
+		private function joinRoom(id:String):void{
+			showLoader()
+			myClient.multiplayer.joinRoom(
+				id,									//Room id
+				{},									//User join data.
+				handleJoin,							//Join handler
+				handleError					//Error handler	
+			)
+		}
 		//Callback function for when New Game Button is pressed
 		private function newGame():void
 		{
@@ -88,6 +114,7 @@ package
 		{
 			FlxG.switchState( new PlayState(connection, myClient))
 			FlxG.stage.removeChild(mainMenu);
+			FlxG.stage.removeChild(loader);
 		}
 		
 		//Callback function for LOBBY, if it has encountered an error
@@ -104,6 +131,13 @@ package
 			this.kill();
 		}
 		
+		private function showLoader():void{
+			FlxG.stage.addChild(loader)
+		}
+
+		private function hideLoader():void{
+			if(loader.parent)FlxG.stage.removeChild(loader)
+		}
 	}
 
 }
