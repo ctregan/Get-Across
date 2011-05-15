@@ -18,6 +18,9 @@ package
 		private var tutorialButton:TextButton;
 		private var tutorialLevel:int = 0;
 		
+		private var _windowHeight:int = 400;
+		private var _windowWidth:int = 700;
+		
 		public function MenuState(client:Client) 
 		{
 			myClient = client
@@ -40,7 +43,7 @@ package
 				tutorialButton.enabled = false;
 			}
 			mainMenu = new Box().fill(0xFFFFFF, 0.8, 0)
-			mainMenu.add(new Box().fill(0x00000, .5, 15).margin(10, 10, 10, 10).minSize(FlxG.width, FlxG.height).add(
+			mainMenu.add(new Box().fill(0x00000, .5, 15).margin(10, 10, 10, 10).minSize(_windowWidth, _windowHeight).add(
 				new Box().fill(0xffffff,1,5).margin(10,10,10,10).minSize(300,0).add(
 						new Rows(
 							new Label("Main Menu", 30, TextFormatAlign.CENTER),

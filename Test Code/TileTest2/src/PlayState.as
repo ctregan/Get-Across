@@ -15,6 +15,7 @@ package
 	import sample.ui.Prompt
 	import sample.ui.Chat
 	import flash.text.TextFormatAlign
+	import flash.utils.*;
 	/**
 	 * ...
 	 * @author Charlie Regan
@@ -106,6 +107,14 @@ package
 		private static var playerAP:int;
 		private var _APcounterMax:int = 10;	// seconds to pass until player gets AP incremented
 		
+		private var camMap:FlxCamera;
+		private var camMap2:FlxCamera;
+		
+		private var _windowHeight:int = 400;
+		private var _windowWidth:int = 700;
+		
+		private var timer;				// object used for delays.
+		
 		public function PlayState(connection:Connection, client:Client):void
 		{
 			super();
@@ -134,6 +143,7 @@ package
 						var mapString:String = ob.tileValues;
 						mapString = mapString.split("|").join("\n")
 						boardSetup(mapString, name, levelKey);
+						trace("board made");
 						//Load Monster
 						try {
 							//monsterArray = new Array[ob.MonsterCount];
@@ -188,6 +198,10 @@ package
 				});
 			})
 			
+			if (myMap == null) {
+				trace("map doesn't exist....");
+			}
+			
 			
 			//Recieve Info from server about your saved character
 			connection.addMessageHandler("playerInfo", function(m:Message, posX:int, posY:int, name:String) {
@@ -196,7 +210,7 @@ package
 					// add player to screen --
 					trace("create player sprite: " + posX + " " + posY);
 					trace("playerInfo: AP to start with: " + playerAP);
-					myPlayer = new Player(posX, posY, _mapOffsetX, _mapOffsetY, _tileSize, playerAP);
+					myPlayer = new Player(posX, posY, 0, _windowHeight, _tileSize, playerAP);
 					playersArray[imPlayer - 1] = myPlayer;
 					var playerHealthBar:FlxHealthBar = new FlxHealthBar(myPlayer, 100, 20, 0, 25, true);
 					playerHealthBar.x = _apBoxOffsetX - 35
@@ -214,7 +228,7 @@ package
 									var yButtonPlacementModifier:int = 0;
 									for (var z:String in dbarr) {
 										var test:DatabaseObject = dbarr[z]
-										var myAbility:Ability = new Ability(_tileSize, _mapOffsetX, _mapOffsetY, myPlayer, test);
+										var myAbility:Ability = new Ability(_tileSize, 0, _windowHeight, myPlayer, test);
 										myAbility.visible = false;
 										lyrStage.add(myAbility);
 										trace("Loaded Ability " + test.Name + "\n");
@@ -230,8 +244,11 @@ package
 						}
 					});
 				}
+				timer = setInterval(setCameras, 100);	// set up camera after 0.1 second.... to ensure everything is set
+
 				//FlxG.follow(myPlayer);
 				//FlxG.followBounds(0, 0, myMap.width, myMap.height);
+				
 			})
 			
 			//New user has joined, make their character
@@ -275,8 +292,21 @@ package
 					}
 				);
 			})
-			
+		
 		}
+		
+		private function setCameras():void {
+			// Camera will show up at where the map should be
+			camMap= new FlxCamera(_mapOffsetX, _mapOffsetY, 320, 320);
+			camMap.follow(myPlayer, FlxCamera.STYLE_TOPDOWN);
+			camMap.setBounds(0, _windowHeight, myMap.width, myMap.height, true);
+			//camMap.color = 0xFFCCCC;
+			FlxG.addCamera(camMap);							// camera that shows where the character is on the map
+			
+			// stop the interval
+			clearInterval(timer);
+		}
+		
 		private function cleanup(m:Message, userID:int, xp:int, coin:int):void 
 		{
 			connection.disconnect();
@@ -312,6 +342,7 @@ package
 						win = myPlayer.movePlayer(0, -1, _tileSize, connection);
 					}else if (FlxG.keys.justPressed("RIGHT") && !myPlayer.isMoving && !myPlayer.inBattle) {
 						myPlayer.facing = FlxSprite.RIGHT;
+						trace("going right");
 						win = myPlayer.movePlayer(1, 0, _tileSize, connection);
 					}else if (FlxG.keys.justPressed("LEFT") && !myPlayer.isMoving && !myPlayer.inBattle) {
 						myPlayer.facing = FlxSprite.LEFT;
@@ -351,8 +382,9 @@ package
 						})
 					}
 				}
-				super.update();
 			}
+			
+			super.update();
 		}
 		
 		//Give a tile number and return information String about that Tile
@@ -407,7 +439,7 @@ package
 				}
 			});
 		}
-
+		
 		//Returns whether an ability has been selected to be used by the player
 		public static function getAbilitySelected():Boolean 
 		{
@@ -447,9 +479,13 @@ package
 			//myMap.drawIndex = 0;
 			myMap.loadMap(map_data, data_tiles, _tileSize, _tileSize,0,0,0,6);
 			//myMap.collideIndex = 1;
-			myMap.x = _mapOffsetX;
-			myMap.y = _mapOffsetY;			
+			//myMap.x = _mapOffsetX;
+			//myMap.y = _mapOffsetY;
+			myMap.x = 0;			// put the map off sight
+			myMap.y = _windowHeight;
+			trace("made map below");
 			lyrStage.add(myMap);
+			
 			
 			// Top HUD
 			apInfo = new FlxText(_apBoxOffsetX, _apBoxOffsetY, 100, "AP:", true);
@@ -541,26 +577,37 @@ package
 			this.add(lyrHUD);
 			this.add(lyrBattle);
 			this.add(lyrTop);
+			
+			trace("done setting up the board");
 		}
 		
 		//Determines whether the mouse is within the game map board, return true if it is or false if it is outside the board
 		private function mouseWithinTileMap():Boolean
 		{
-			if (myMap.x < myMouse.x + _mapOffsetX 
+			/*if (myMap.x < myMouse.x + _mapOffsetX 
 				&& myMouse.x < (myMap.x + myMap.width + _mapOffsetX) 
 				&& myMap.y < myMouse.y +_mapOffsetY
 				&& myMouse.y < (myMap.y + myMap.height + _mapOffsetY)) {	
 				return true;
-			}
-			return false;
+			}*/
+			return ((myMouse.x > _mapOffsetX )
+				&& (myMouse.x < _mapOffsetX + myMap.width)
+				&& (myMouse.y > _mapOffsetY)
+				&& ( myMouse.y < _mapOffsetY + myMap.height));
 		}
 		
 		private function getTileIdentity(x:int,y:int):uint {
-			return myMap.getTile((x - _mapOffsetX) / _tileSize, (y - _mapOffsetY) / _tileSize);
+			//return myMap.getTile((x - _FlxG.width) / _tileSize, (y - FlxG.height) / _tileSize);
+			var xInt:Number = (x - _mapOffsetX) / _tileSize;
+			var yInt:Number = (y - _mapOffsetY) / _tileSize;
+			trace("getting identity of tile " + xInt + "," + yInt);
+			return myMap.getTile(xInt, yInt);
 		}
 		
-		private function setTileIdentity(x:int,y:int,identity:int):void {
-			myMap.setTile((x - _mapOffsetX) / _tileSize, (y - _mapOffsetY) / _tileSize, identity, true);
+		private function setTileIdentity(x:int, y:int, identity:int):void {
+			var xInt:Number = (x - _mapOffsetX) / _tileSize;
+			var yInt:Number = (y - _mapOffsetY) / _tileSize;			
+			myMap.setTile(xInt, yInt, identity, true);
 		}
 		
 	
