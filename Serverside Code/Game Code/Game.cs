@@ -261,7 +261,7 @@ namespace GetAcross {
                         Console.WriteLine("questMap data to save: " + questMap);
                         result.Set("tileValues", questMap);
 
-                        Console.WriteLine("UserLeft result: " + result.ToString());
+                        
                         DatabaseObject players = result.GetObject("players");
                         if (players != null && players.Contains(playerConnectUserId))
                         {
@@ -287,7 +287,10 @@ namespace GetAcross {
                             }
                         }
 
-                        result.Save();
+                        result.Save(delegate()
+                        {
+                            Console.WriteLine("UserLeft result: " + result.ToString());
+                        });
                     }
                 }
             );
@@ -302,7 +305,6 @@ namespace GetAcross {
                     {
                         int messageX = message.GetInt(0);
                         int messageY = message.GetInt(1);
-                        Console.Write("Incoming Move Message from " + player.Id + " X Change: " + messageX + " Y Change: + " + messageY);
                         player.positionX = player.positionX + messageX;
                         player.positionY = player.positionY + messageY;
                         Console.WriteLine("Player " + player.Id + " is moving to (" + player.positionX + ", " + player.positionY + ")"); //debug 

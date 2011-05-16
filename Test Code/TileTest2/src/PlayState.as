@@ -342,7 +342,7 @@ package
 		{
 			
 			if (connected == true) {
-				if (getTileIdentity(myPlayer.xPos, myPlayer.yPos) == CHERRY_TILE)
+				if (myPlayer != null && getTileIdentity(myPlayer.xPos, myPlayer.yPos) == CHERRY_TILE)
 				{
 					gatherResourceButton = new FlxButton(myPlayer.x + 20, myPlayer.y - 20, "Pick Cherry");
 					//gatherResourcesButton.x = myPlayer.x + 20;
@@ -402,7 +402,8 @@ package
 					}
 					
 					tileHover.visible = mouseWithinTileMap();
-
+					
+					//CLICK MOVING CODE
 					if (tileHover.visible) {
 						var xTemp:int = Math.floor((myMouse.x - _mapOffsetX) / _tileSize);
 						var xTempCoord:int = xTemp * _tileSize;
@@ -420,7 +421,7 @@ package
 						
 						if (absDis < 2 && absDis > 0 && canGo) {	// one away
 							tileHover.loadGraphic(hoverTileImg);
-							if (myMouse.justPressed()) {
+							if (myMouse.justPressed() && abilitySelected == false) {
 								trace("okay to move");
 								// check for condition....
 								
@@ -601,47 +602,59 @@ package
 			//Initially the battle hud is invisible, it will be visible when a user enters combat
 			lyrBattle.visible = false;
 			
+						//render game background
+			//Right Side HUD
+			resources = new FlxText(_resourceTextOffsetX, _resourceTextOffsetY, 150, "Resources:", true);			
+			resourcesText = new FlxText(_resourceTextOffsetX, _resourceTextOffsetY + 10,150, "", true);
+			gatherResourcesButton = new FlxButton(_resourceTextOffsetX, _resourceTextOffsetY + 15, "Gather lumber!", gatherResource);
+
+			goals = new FlxText(_goalsBoxOffsetX, _goalsBoxOffsetY, 100, "Goals:\nReach the Red Star", true); 
+			goals.frameHeight = 75;			
+			errorMessage = new FlxText(_errorMessageOffsetX, _errorMessageOffsetY, 120, "Errors Appear Here", true);
+			location = new FlxText(_positionInfoOffsetX, _positionInfoOffsetY, 100, "(0,0)", true);
+			mouseLocation = new FlxText(_terrainMessageBoxOffsetX, _terrainMessageBoxOffsetY, 260, "(0,0)", true);
+			secCounter = new FlxText(_timerOffsetX, _timerOffsetY, 100, "15 Sec until AP", true);			
+			abilities = new FlxText(_cardBoxOffsetX, _cardBoxOffsetY, 100, "Abilities:\n", true);
+			
+			// background
+			background = new Background();
+			
+			lyrHUD.add(resources);
+			lyrHUD.add(resourcesText);
+			lyrHUD.add(gatherResourcesButton);
+			lyrHUD.add(lvl);
+			lyrHUD.add(experience);
+			lyrHUD.add(abilities);
+			lyrHUD.add(goals);
+			lyrHUD.add(secCounter);
+			lyrHUD.add(location);
+			lyrHUD.add(errorMessage);
+			lyrHUD.add(mouseLocation);
+			lyrBackground.add(background);
+			
+			
+			
+			lyrSprites.add(lyrMonster);
+			this.add(lyrBackground);
+			this.add(lyrStage);
+			this.add(lyrHUD);
+			this.add(lyrBattle);
+			this.add(lyrTop);
+			this.add(lyrSprites);
+			
+			tileHover = new FlxSprite(0, _windowHeight, hoverTileImg);
+			this.add(tileHover);
+			
+			connected = true;
+			
+			// gather resources button is not visible unless you can gather something
+			gatherResourcesButton.visible = false;
+			
+			// ask server for data about this player
+			// server will send back data so client can create this player's sprite
+			connection.send("playerInfo");
 			client.bigDB.load("StaticMaps", levelKey,
 				function(dbo:DatabaseObject) {					
-					//render game background
-					//Right Side HUD
-					resources = new FlxText(_resourceTextOffsetX, _resourceTextOffsetY, 150, "Resources:", true);			
-					resourcesText = new FlxText(_resourceTextOffsetX, _resourceTextOffsetY + 10,150, "", true);
-					gatherResourcesButton = new FlxButton(_resourceTextOffsetX, _resourceTextOffsetY + 15, "Gather lumber!", gatherResource);
-
-					goals = new FlxText(_goalsBoxOffsetX, _goalsBoxOffsetY, 100, "Goals:\nReach the Red Star", true); 
-					goals.frameHeight = 75;			
-					errorMessage = new FlxText(_errorMessageOffsetX, _errorMessageOffsetY, 120, "Errors Appear Here", true);
-					location = new FlxText(_positionInfoOffsetX, _positionInfoOffsetY, 100, "(0,0)", true);
-					mouseLocation = new FlxText(_terrainMessageBoxOffsetX, _terrainMessageBoxOffsetY, 260, "(0,0)", true);
-					secCounter = new FlxText(_timerOffsetX, _timerOffsetY, 100, "15 Sec until AP", true);			
-					abilities = new FlxText(_cardBoxOffsetX, _cardBoxOffsetY, 100, "Abilities:\n", true);
-					
-					// background
-					background = new Background();
-					
-					lyrHUD.add(resources);
-					lyrHUD.add(resourcesText);
-					lyrHUD.add(gatherResourcesButton);
-					lyrHUD.add(lvl);
-					lyrHUD.add(experience);
-					lyrHUD.add(abilities);
-					lyrHUD.add(goals);
-					lyrHUD.add(secCounter);
-					lyrHUD.add(location);
-					lyrHUD.add(errorMessage);
-					lyrHUD.add(mouseLocation);
-					lyrBackground.add(background);
-					
-					connected = true;
-					
-					// gather resources button is not visible unless you can gather something
-					gatherResourcesButton.visible = false;
-					
-					// ask server for data about this player
-					// server will send back data so client can create this player's sprite
-					connection.send("playerInfo");
-					
 					trace("level key: " + levelKey);
 					// if map has intro messages, fill them in
 					if (dbo.Messages != null)
@@ -659,16 +672,8 @@ package
 				}
 			);
 			
-			lyrSprites.add(lyrMonster);
-			this.add(lyrBackground);
-			this.add(lyrStage);
-			this.add(lyrHUD);
-			this.add(lyrBattle);
-			this.add(lyrTop);
-			this.add(lyrSprites);
 
-			tileHover = new FlxSprite(0, _windowHeight, hoverTileImg);
-			add(tileHover);
+			
 			trace("done setting up the board");
 		}
 		
