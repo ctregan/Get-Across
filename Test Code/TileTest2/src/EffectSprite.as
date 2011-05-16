@@ -12,18 +12,25 @@ package
 		private var _range:int
 		private var _tileSize:int
 		[Embed(source = "data/bacon.png")] private var bacon:Class;
+		[Embed(source = "data/redflower.png")] private var redflower:Class;
 		public function EffectSprite(xPixel:int, yPixel:int, img:String, range:int, tileSize:int) 
 		{
-			_tileSize = tileSize
-			_range = range
+			_tileSize = tileSize;
+			_range = range;
+			var classToinitialize:Class;
+			
 			if(img == "bacon"){
-				super(xPixel, yPixel, bacon)
+				classToinitialize = bacon;
 			}
+			else if (img == "redflower") {
+				classToinitialize = redflower;
+			}
+			
+			super(xPixel, yPixel, classToinitialize);
 			
 			var myTimer:Timer = new Timer(1000);
 			myTimer.addEventListener(TimerEvent.TIMER, wait)
 			myTimer.start();
-			
 		}
 		
 		private function wait(event:TimerEvent):void 

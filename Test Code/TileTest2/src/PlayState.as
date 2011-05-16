@@ -52,6 +52,7 @@ package
 		private var lvl:FlxText;
 		private var experience:FlxText;
 		private var resources:FlxText;
+		public static var resourcesText:FlxText;
 		private var background:Background;
 		private var playerStartX: int = 0;	// starting x position of this player
 		private var playerStartY: int = 0;	// starting y position of this player
@@ -75,11 +76,15 @@ package
 		private var client:Client;
 		private var connection:Connection; //connection to server
 		
+		// buttons for side menu
+		public static var gatherResourcesButton:FlxButton;
+		
+		
 		private var win:Boolean = false; //This variable will indicate if a user has won or not
 		
 		// constants/offset numbers
-		public var _mapOffsetX:int = 204; 	// left border of map
-		public var _mapOffsetY:int = 46;	// top border of map
+		public static var _mapOffsetX:int = 204; 	// left border of map
+		public static var _mapOffsetY:int = 46;	// top border of map
 		private var _apBoxOffsetX:int = 265;
 		private var _apBoxOffsetY:int = 10;
 		private var _timerOffsetX:int = 360;
@@ -94,12 +99,12 @@ package
 		private var _goalsBoxOffsetY:int = 70;
 		private var _cardBoxOffsetX:int = 31;
 		private var _cardBoxOffsetY:int = 75;
-		private var _tileSize:int = 32;
+		private static var _tileSize:int = 32;
 		private var _lvlTextOffsetX:int = 5;
 		private var _lvlTextOffsetY:int = 5;
 		private var _experienceTextOffsetX:int = 70;
 		private var _experienceTextOffsetY:int = 5;
-		private var _resoruceTextOffsetX:int = 540;
+		private var _resourceTextOffsetX:int = 540;
 		private var _resourceTextOffsetY:int = 250;
 		
 		private static var myClient:Client;
@@ -107,6 +112,7 @@ package
 		private static var playerName:String;
 		private static var playerAP:int;
 		private var _APcounterMax:int = 10;	// seconds to pass until player gets AP incremented
+		private static var resourcesString;
 		
 		private var camMap:FlxCamera;
 		private var camMap2:FlxCamera;
@@ -146,18 +152,19 @@ package
 			this.connection = myConnection = connection;
 			
 			//Connection successful, load board and player
-			connection.addMessageHandler("init", function(m:Message, iAm:int, name:String, level:String, startAP:int, levelKey:String) {
+			connection.addMessageHandler("init", function(m:Message, iAm:int, name:String, level:String, startAP:int, levelKey:String, resources:String) {
 				imPlayer = iAm;
 				playerAP = startAP;
 				trace("init: starting ap: " + playerAP);
 				//boardSetup(level);
+				resourcesString = resources;
 				client.bigDB.load("NewQuests", level, function(ob:DatabaseObject):void {
 					//Recieve Tile Array from database to be turned into string with line breaks between each line
 					if (ob != null)
 					{
-						trace("loading data from NewQuests...\n" + ob.toString());
 						var mapString:String = ob.tileValues;
-						mapString = mapString.split("|").join("\n")
+						connection.send("QuestMapUpdate", mapString);
+						mapString = mapString.split("|").join("\n");
 						boardSetup(mapString, name, levelKey);
 						trace("board made");
 						//Load Monster
@@ -167,7 +174,7 @@ package
 							for (var z in monsters) {
 								//Dont add a monster that is dead
 								if(monsters[z].AP > 0){
-									var myMonsterSprite:Monster = new Monster(monsters[z].Type, monsters[z].AP, z, monsters[z].xTile, monsters[z].yTile, _mapOffsetX, _mapOffsetY, _tileSize);
+									var myMonsterSprite:Monster = new Monster(monsters[z].Type, monsters[z].AP, z, monsters[z].xTile, monsters[z].yTile,0, _windowHeight, _tileSize);
 									monsterArray.push(myMonsterSprite);
 									lyrMonster.add(myMonsterSprite);
 									lyrHUD.add(myMonsterSprite.healthBar);
@@ -211,6 +218,7 @@ package
 						);
 						FlxG.stage.addChild(menu);
 					}
+					connection.send("PlayerSetUp");
 				});
 			})
 			
@@ -226,9 +234,11 @@ package
 					// add player to screen --
 					trace("create player sprite: " + posX + " " + posY);
 					trace("playerInfo: AP to start with: " + playerAP);
-					myPlayer = new Player(posX, posY, 0, _windowHeight, _tileSize, playerAP);
+					trace("resources to start with: " + playerAP);
+					myPlayer = new Player(posX, posY, 0, _windowHeight, _tileSize, playerAP, resourcesString);
 					playersArray[imPlayer - 1] = myPlayer;
-					var playerHealthBar:FlxHealthBar = new FlxHealthBar(myPlayer, 100, 20, 0, 25, true);
+					
+					var playerHealthBar:FlxHealthBar = new FlxHealthBar(myPlayer, 100, 20, 0, 20, true);
 					playerHealthBar.x = _apBoxOffsetX - 35
 					playerHealthBar.y = _apBoxOffsetY - 5
 					lyrHUD.add(playerHealthBar);
@@ -268,13 +278,13 @@ package
 			})
 			
 			//New user has joined, make their character
-			/*connection.addMessageHandler("UserJoined", function(m:Message, userID:int, posX:int, posY:int) {
+			connection.addMessageHandler("UserJoined", function(m:Message, userID:int, posX:int, posY:int) {
 				if (userID != imPlayer) {
 					// create other player; AP doesn't matter, so default to 20
-					playersArray[userID-1] = new Player(posX, posY, _mapOffsetX, _mapOffsetY, _tileSize, 20);
+					playersArray[userID-1] = new Player(posX, posY, 0,_windowHeight , _tileSize, 20, null);
 					if (playersArray[userID-1] != null && lyrSprites != null) lyrSprites.add(playersArray[userID-1]);
 				}
-			})*/
+			})
 			//Player has moved and we hear about it
 			connection.addMessageHandler("PlayerMove", function(m:Message, userID:int, posX:int, posY:int) {
 				if(userID != imPlayer){
@@ -283,7 +293,7 @@ package
 			})
 			//A tile has changed and needs to be updated locally
 			connection.addMessageHandler("MapTileChanged", function(m:Message, userID:int, posX:int, posY:int, newTileType:int) {
-				setTileIdentity( posX, posY, newTileType);
+				myMap.setTile( posX, posY, newTileType);
 				//myMap.setTile(posX, posY, newTileType, true);
 			})
 			//A player has reached the end, victory!
@@ -297,12 +307,14 @@ package
 			{
 				client.bigDB.load("StaticMaps", levelKey,
 					function(dbo:DatabaseObject) {
-						trace("message object: " + dbo.toString());
+						//trace("message object: " + dbo.toString());
 						var messages:Array = dbo.Messages
 						for (var z in messages) {
 							//while (alert.unread) {
 							//}
 							alert.changeText(messages[z]);
+							alert.width = FlxG.stage.stageWidth
+							alert.height = FlxG.stage.stageHeight
 							FlxG.stage.addChild(alert);
 						}
 					}
@@ -345,8 +357,10 @@ package
 				{
 					// After 180 seconds has passed, the timer will reset.
 					counter = _APcounterMax;
-					myPlayer.AP++;
-					myConnection.send("playerAP", myPlayer.AP);
+					// increment player's AP if it's not the max yet
+					if (myPlayer.AP < 20)
+						myPlayer.AP++;
+					myConnection.send("updateStat", "AP", myPlayer.AP);
 				}
 				//Update HUD Information
 				secCounter.text = counter.toPrecision(3) + " seconds until more AP";
@@ -355,21 +369,25 @@ package
 				if (myPlayer != null && !win) {
 					if (myPlayer.AP <= 20 && FlxG.keys.justPressed("A")) {
 						myPlayer.AP++;
-						myConnection.send("playerAP", myPlayer.AP);
+						myConnection.send("updateStat", "AP", myPlayer.AP);
 					}
 					if (FlxG.keys.justPressed("DOWN") && !myPlayer.isMoving && !myPlayer.inBattle) {
 						myPlayer.facing = FlxSprite.DOWN;
 						win = myPlayer.movePlayer(0, 1, _tileSize, connection);
+						connection.send("move", 0, 1);
 					}else if (FlxG.keys.justPressed("UP") && !myPlayer.isMoving && !myPlayer.inBattle) {
 						myPlayer.facing = FlxSprite.UP;
 						win = myPlayer.movePlayer(0, -1, _tileSize, connection);
+						connection.send("move", 0, -1);
 					}else if (FlxG.keys.justPressed("RIGHT") && !myPlayer.isMoving && !myPlayer.inBattle) {
 						myPlayer.facing = FlxSprite.RIGHT;
 						trace("going right");
 						win = myPlayer.movePlayer(1, 0, _tileSize, connection);
+						connection.send("move", 1, 0);
 					}else if (FlxG.keys.justPressed("LEFT") && !myPlayer.isMoving && !myPlayer.inBattle) {
 						myPlayer.facing = FlxSprite.LEFT;
 						win = myPlayer.movePlayer( -1, 0, _tileSize, connection);
+						connection.send("move", -1, 0);
 					}else if (myMouse.justPressed() &&  mouseWithinTileMap() && abilitySelected) {
 						var selectedXTile:int = (myMouse.x - _mapOffsetX) / _tileSize
 						//(myMouse.x - (myMouse.x % 32)) / 32;
@@ -435,7 +453,9 @@ package
 					}
 				}
 			}
-			
+			if (lyrSprites.visible) {
+				trace("the sprite layer is visible");
+			}
 			super.update();
 		}
 		
@@ -580,7 +600,9 @@ package
 				function(dbo:DatabaseObject) {					
 					//render game background
 					//Right Side HUD
-					resources = new FlxText(_resoruceTextOffsetX, _resourceTextOffsetY, 150, "Resources:", true);			
+					resources = new FlxText(_resourceTextOffsetX, _resourceTextOffsetY, 150, "Resources:", true);			
+					resourcesText = new FlxText(_resourceTextOffsetX, _resourceTextOffsetY + 10,150, "", true);
+					gatherResourcesButton = new FlxButton(_resourceTextOffsetX, _resourceTextOffsetY + 15, "Gather lumber!", gatherResource);
 					goals = new FlxText(_goalsBoxOffsetX, _goalsBoxOffsetY, 100, "Goals:\nReach the Red Star", true); 
 					goals.frameHeight = 75;			
 					errorMessage = new FlxText(_errorMessageOffsetX, _errorMessageOffsetY, 120, "Errors Appear Here", true);
@@ -588,11 +610,13 @@ package
 					mouseLocation = new FlxText(_terrainMessageBoxOffsetX, _terrainMessageBoxOffsetY, 260, "(0,0)", true);
 					secCounter = new FlxText(_timerOffsetX, _timerOffsetY, 100, "15 Sec until AP", true);			
 					abilities = new FlxText(_cardBoxOffsetX, _cardBoxOffsetY, 100, "Abilities:\n", true);
-
+					
 					// background
 					background = new Background();
 					
 					lyrHUD.add(resources);
+					lyrHUD.add(resourcesText);
+					lyrHUD.add(gatherResourcesButton);
 					lyrHUD.add(lvl);
 					lyrHUD.add(experience);
 					lyrHUD.add(abilities);
@@ -604,7 +628,10 @@ package
 					lyrBackground.add(background);
 					
 					connected = true;
-			
+					
+					// gather resources button is not visible unless you can gather something
+					gatherResourcesButton.visible = false;
+					
 					// ask server for data about this player
 					// server will send back data so client can create this player's sprite
 					connection.send("playerInfo");
@@ -614,7 +641,7 @@ package
 					if (dbo.Messages != null)
 					{
 						trace("message object: " + dbo.toString());
-						var messages:Array = dbo.Messages
+						var messages:Array = dbo.Messages;
 						for (var i:int = messages.length - 1; i >= 0; i--) {
 							var alert:Alert = new Alert(messages[i]);
 							alert.x = -100;
@@ -629,11 +656,11 @@ package
 			lyrSprites.add(lyrMonster);
 			this.add(lyrBackground);
 			this.add(lyrStage);
-			this.add(lyrSprites);
 			this.add(lyrHUD);
 			this.add(lyrBattle);
 			this.add(lyrTop);
-			
+			this.add(lyrSprites);
+
 			
 			
 			tileHover = new FlxSprite(0, _windowHeight, hoverTileImg);
@@ -657,7 +684,8 @@ package
 				&& ( myMouse.y < _mapOffsetY + myMap.height));
 		}
 		
-		private function getTileIdentity(x:int,y:int):uint {
+		// given x and y position of mouse, returns what tile it is hovering over
+		public static function getTileIdentity(x:int,y:int):uint {
 			//return myMap.getTile((x - _FlxG.width) / _tileSize, (y - FlxG.height) / _tileSize);
 			var xInt:Number = (x - _mapOffsetX) / _tileSize;
 			var yInt:Number = (y - _mapOffsetY) / _tileSize;
@@ -665,13 +693,30 @@ package
 			return myMap.getTile(xInt, yInt);
 		}
 		
+		// given x and y position of tile on the map, return what type of tile this is
+		private function getTileType(x:int, y:int):uint {
+			return 0;
+		}
 		private function setTileIdentity(x:int, y:int, identity:int):void {
 			var xInt:int = (x - _mapOffsetX) / _tileSize;
 			var yInt:int = (y - _mapOffsetY) / _tileSize;			
 			myMap.setTile(xInt, yInt, identity, true);
 		}
 		
-	
+		public function gatherResource():void
+		{
+			// increase player's amount of lumber
+			myPlayer.amountLumber++;
+			resourcesText.text = "Lumber: " + myPlayer.amountLumber;
+			
+			// remove tree from tile, and tell server
+			myMap.setTile(myPlayer.xPos, myPlayer.yPos, GRASS_TILE);
+			
+			// tell server about new map, new values for player
+			myConnection.send("MapTileChanged", myPlayer.xPos, myPlayer.yPos, GRASS_TILE);
+			myConnection.send("QuestMapUpdate", myMap.getMapData());
+			myConnection.send("updateStat", "lumber", myPlayer.amountLumber);
+		}
 		//***************************************************
 		//*****************PLAYERIO Functions****************
 		//***************************************************
