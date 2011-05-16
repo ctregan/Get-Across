@@ -1,5 +1,6 @@
 package  
 {
+	import flash.display.Sprite;
 	import org.flixel.*
 	import org.flixel.plugin.photonstorm.FlxHealthBar;
 	import org.flixel.system.input.*;// data.FlxMouse;
@@ -34,6 +35,7 @@ package
 		[Embed(source = "data/testTileSet2_32.png")] public var data_tiles:Class; //Tile Set Image
 		[Embed(source = "data/Cursor.png")] public var cursor_img:Class; //Mouse Cursor
 		[Embed(source = "data/hoverTileImg.png")] public var hoverTileImg:Class;
+		[Embed(source = "data/noTileImg.png")] public var hoverTileImgNo:Class;
 		private var apInfo:FlxText; //Text field to reflect the numner of AP left
 		private var myPlayer:Player;
 		private var playersArray:Array = []; //Array of all players on board
@@ -338,14 +340,7 @@ package
 			camMap.setBounds(0, _windowHeight, myMap.width, myMap.height, true);
 			//camMap.color = 0xFFCCCC;
 			FlxG.addCamera(camMap);							// camera that shows where the character is on the map
-			
-			// camera that "follows" the mouse
-			//camHover = new FlxCamera(0, 0, _tileSize, _tileSize);
-			//camHover.setBounds(0, _windowHeight, myMap.width, myMap.height, true);
-			//camHover.color = 0xFFCCCC;
-			//FlxG.addCamera(camHover);
-			
-			
+		
 			// stop the interval
 			clearInterval(timer);
 		}
@@ -428,12 +423,15 @@ package
 						var yTempCoord:int = yTemp * _tileSize + _windowHeight;
 						tileHover.x = xTempCoord;
 						tileHover.y = yTempCoord;
-						if (myMouse.justPressed()) {
-							// if within 1 tile away
-							// if okay condition
-							// then go
-							var absDis:int = Math.abs(myPlayer.xPos - xTemp) + Math.abs(myPlayer.yPos - yTemp);
-							if (absDis < 2 && absDis > 0) {	// one away
+						
+						// if within 1 tile away
+						// if okay condition
+						// then go
+						var absDis:int = Math.abs(myPlayer.xPos - xTemp) + Math.abs(myPlayer.yPos - yTemp);
+						
+						if (absDis < 2 && absDis > 0 ) {	// one away
+							tileHover.loadGraphic(hoverTileImg);
+							if (myMouse.justPressed()) {
 								trace("okay to move");
 								// check for condition....
 								
@@ -444,6 +442,9 @@ package
 								
 								myPlayer.movePlayer(xTemp - myPlayer.xPos, yTemp - myPlayer.yPos, _tileSize, connection)
 							}
+						} else {
+							// if not within reach, set color to red
+							tileHover.loadGraphic(hoverTileImgNo);
 						}
 					}
 					
@@ -470,9 +471,6 @@ package
 						})
 					}
 				}
-			}
-			if (lyrSprites.visible) {
-				trace("the sprite layer is visible");
 			}
 			super.update();
 		}
