@@ -13,12 +13,12 @@ package
 	public class Player extends FlxSprite
 	{
 		//Tile Value Constants, if tileSet changes, need to update these!!
-		public static const GRASS_TILE:int = 0;
-		public static const HILL_TILE:int = 1;
-		public static const TREE_TILE:int = 2;
-		public static const CHERRY_TILE:int = 3;
-		public static const WATER_TILE:int = 4;
-		public static const WIN_TILE:int = 5;
+		private const GRASS_TILE:int = 0;
+		private const HILL_TILE:int = 1;
+		private const TREE_TILE:int = 2;
+		private const CHERRY_TILE:int = 3;
+		private const WATER_TILE:int = 4;
+		private const WIN_TILE:int = 5;
 		
 		[Embed(source = "data/character1.png")] public var player_avatar:Class;
 		public var AP:Number; //Amount of AP
@@ -30,46 +30,17 @@ package
 		public var yPos:Number; //Y Tile Position
 		public var inBattle:Boolean = false;
 		public var combatant:Monster;
-		//public var xTilePixel:Number; //The X tile location in pixels for the player's current tile
-		//public var yTilePixel:Number; //The Y tile location in pixels for the player's current tile
+		public var xTilePixel:Number; //The X tile location in pixels for the player's current tile
+		public var yTilePixel:Number; //The Y tile location in pixels for the player's current tile
 		private var _move_speed:int = 400;
 		public var isMoving:Boolean = false;
 		
-		// player's resources
-		public var amountLumber:int;
-		
-		public function Player(startX:Number, startY:Number, xOffset:int, yOffset:int, tileSize:int, startAP:int, resourcesString:String) 
+		public function Player(startX:Number, startY:Number, xOffset:int, yOffset:int, tileSize:int, startAP:int) 
 		{
 			errorMessage = "";
 			xPos = startX;
 			yPos = startY;
 			AP = startAP;
-			
-			// load amount of resources player has saved			
-			// split list of resources from
-			// "Lumber:0/Cherry:3/Seed:2"
-			// to ["Lumber:0", "Cherry:3", "Seed:2"]
-			if (resourcesString != null)
-			{
-				trace("resourcesString: " + resourcesString);
-				var resourcesArray:Array = resourcesString.split("/");
-				var resource:Array;
-				for (var i:int = 0; i < resourcesArray.length; i++)
-				{
-					resource = (resourcesArray[i]).split(":");
-					
-					// change player's variables
-					switch (resource[0])
-					{
-						case "Lumber":
-							amountLumber = resource[1];
-							PlayState.resourcesText.text += "Lumber: " + amountLumber + "\n";
-							break;
-					}
-					
-				}
-			}
-			
 			super(((startX) * tileSize) + xOffset, ((startY) * tileSize) + yOffset);
 			loadGraphic(player_avatar, true, false, 32 , 32);
 			addAnimation("idle" + UP, [0], 0, false);
@@ -120,7 +91,7 @@ package
 			}
 			
 			// sends AP this player has to the server
-			connection.send("updateStat", "AP", AP);
+			connection.send("playerAP", AP);
 			
 			return false;
 		}
@@ -136,17 +107,8 @@ package
 		override public function update():void 
 		{
 			health = AP;
-			// if player is on a cherry tile, show menu to gather resources
-			if (PlayState.getTileIdentity(this.x, this.y) == CHERRY_TILE)
-			{
-				PlayState.gatherResourcesButton.x = this.x + 20;
-				PlayState.gatherResourcesButton.y = this.y - 20;
-				PlayState.gatherResourcesButton.visible = true;
-			}
-			else PlayState.gatherResourcesButton.visible = false;
 			super.update();
 		}
-		
 		//Sees if the desired move for the player is valid.
 		private function checkMove(proposedX:Number, proposedY:Number):Boolean {
 			if (PlayState.myMap.getTile(proposedX, proposedY) == WATER_TILE ) {
