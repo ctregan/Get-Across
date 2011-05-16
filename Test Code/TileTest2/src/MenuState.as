@@ -77,7 +77,7 @@ package
 				null,								//Room id, null for auto generted
 				"GetAcross",							//RoomType to create, bounce is a simple bounce server
 				true,								//Hide room from userlist
-				{name:"Tutorial", key:_levelKey},						//Room Join data, data is returned to lobby list. Variabels can be modifed on the server
+				{name:"Tutorial", key:_levelKey, type:"static"},						//Room Join data, data is returned to lobby list. Variabels can be modifed on the server
 				joinRoom,							//Create handler
 				handleError					//Error handler										   
 			)
