@@ -33,7 +33,7 @@ package
 		//[Embed(source = "data/map_data.txt", mimeType = "application/octet-stream")] public var data_map:Class; //Tile Map array
 		[Embed(source = "data/testTileSet2_32.png")] public var data_tiles:Class; //Tile Set Image
 		[Embed(source = "data/Cursor.png")] public var cursor_img:Class; //Mouse Cursor
-		[Embed(source = "data/selectedTile.png")] public var hoverTileImg:Class;
+		[Embed(source = "data/hoverTileImg.png")] public var hoverTileImg:Class;
 		private var apInfo:FlxText; //Text field to reflect the numner of AP left
 		private var myPlayer:Player;
 		private var playersArray:Array = []; //Array of all players on board
@@ -386,14 +386,28 @@ package
 					tileHover.visible = mouseWithinTileMap();
 
 					if (tileHover.visible) {
-						var xTemp:int = Math.floor((myMouse.x - _mapOffsetX) / _tileSize) * _tileSize;
-						var yTemp:int = Math.floor((myMouse.y - _mapOffsetY) / _tileSize) * _tileSize + _windowHeight;
-						tileHover.x = xTemp;
-						tileHover.y = yTemp;
+						var xTemp:int = Math.floor((myMouse.x - _mapOffsetX) / _tileSize);
+						var xTempCoord:int = xTemp * _tileSize;
+						var yTemp:int = Math.floor((myMouse.y - _mapOffsetY) / _tileSize);
+						var yTempCoord:int = yTemp * _tileSize + _windowHeight;
+						tileHover.x = xTempCoord;
+						tileHover.y = yTempCoord;
 						if (myMouse.justPressed()) {
 							// if within 1 tile away
 							// if okay condition
 							// then go
+							var absDis:int = Math.abs(myPlayer.xPos - xTemp) + Math.abs(myPlayer.yPos - yTemp);
+							if (absDis < 2 && absDis > 0) {	// one away
+								trace("okay to move");
+								// check for condition....
+								
+								if (xTemp < myPlayer.xPos) myPlayer.facing = FlxSprite.LEFT;
+								else if (xTemp > myPlayer.xPos) myPlayer.facing =FlxSprite.RIGHT;
+								else if (yTemp < myPlayer.yPos) myPlayer.facing =FlxSprite.UP;
+								else if (yTemp > myPlayer.yPos) myPlayer.facing =FlxSprite.DOWN;
+								
+								myPlayer.movePlayer(xTemp - myPlayer.xPos, yTemp - myPlayer.yPos, _tileSize, connection)
+							}
 						}
 					}
 					
