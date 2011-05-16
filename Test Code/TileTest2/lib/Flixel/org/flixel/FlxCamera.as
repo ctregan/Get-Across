@@ -271,15 +271,21 @@ package org.flixel
 		{
 			//Either follow the object closely, 
 			//or doublecheck our deadzone and update accordingly.
+			//trace("camera update...");
 			if(target != null)
 			{
-				if(deadzone == null)
+				//trace("target is not null");
+				if (deadzone == null){
+					//trace("deadzone is null");
 					focusOn(target.getMidpoint(_point));
+				}
 				else
 				{
 					var edge:Number;
 					var targetX:Number = target.x + ((target.x > 0)?0.0000001:-0.0000001);
 					var targetY:Number = target.y + ((target.y > 0)?0.0000001:-0.0000001);
+					
+					//trace("edge is " + edge + " & scroll.x:" + scroll.x + " scroll.y:" + scroll.y);
 					
 					edge = targetX - deadzone.x;
 					if(scroll.x > edge)
@@ -359,6 +365,10 @@ package org.flixel
 		public function follow(Target:FlxObject, Style:uint=STYLE_LOCKON):void
 		{
 			target = Target;
+			trace("camera is assigned a target");
+			if (target == null) {
+				trace("although assgined target, target is null");
+			}
 			var helper:Number;
 			switch(Style)
 			{
