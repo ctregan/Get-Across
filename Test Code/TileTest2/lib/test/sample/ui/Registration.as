@@ -115,7 +115,7 @@ package sample.ui{
 		{
 			PlayerIO.quickConnect.simpleRegister(FlxG.stage,
 				"get-across-ynrpgn4egdtvzlz3wg8w", 
-				//"getacross-rny1binyakgosozwy0h8wg", CHARLIE'S SERVER
+				//"getacross-rny1binyakgosozwy0h8wg", //CHARLIE'S SERVER
 				username, 
 				password, 
 				email,
