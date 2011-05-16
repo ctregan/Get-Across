@@ -67,6 +67,9 @@ package
 		public static var lyrMonster:FlxGroup;
 		public static var lyrTop:FlxGroup;
 		
+		private static var _windowWidth:int = 700;
+		private static var _windowHeight:int = 400;
+		
 		private static var abilitySelected:Boolean = false; //Indicates whether an ability is activated
 		private static var activeAbility:Ability; //Which ability is currently chosen
 		
@@ -120,8 +123,12 @@ package
 		private var _windowHeight:int = 400;
 		private var _windowWidth:int = 700;
 		
-		private var timer;				// object used for delays.
+		private var gatherResourceButton:FlxButton;
 		
+		
+		
+		private var timer;				// object used for delays.
+
 		private var camNextMoveUp:FlxCamera;
 		private var camNextMoveDown:FlxCamera;
 		private var camNextMoveRight:FlxCamera;
@@ -287,6 +294,7 @@ package
 			})
 			//Player has moved and we hear about it
 			connection.addMessageHandler("PlayerMove", function(m:Message, userID:int, posX:int, posY:int) {
+				var tileType:int = getTileIdentity(posX, posY);
 				if(userID != imPlayer){
 					Player(playersArray[userID - 1]).movePlayer(posX, posY, _tileSize, connection);
 				}
@@ -351,6 +359,17 @@ package
 		}
 		override public function update():void 
 		{
+			if (getTileIdentity(myPlayer.xPos, myPlayer.yPos) == CHERRY_TILE)
+			{
+				gatherResourceButton = new FlxButton(myPlayer.x + 20, myPlayer.y - 20, "Pick Cherry");
+				//gatherResourcesButton.x = myPlayer.x + 20;
+				//gatherResourcesButton.y = myPlayer.y - 20;
+				//gatherResourcesButton.visible = true;
+				add(gatherResourceButton);
+			}
+			else { 
+				remove(gatherResourceButton);// gatherResourcesButton.visible = false;
+			}
 			if(connected == true){
 				counter -= FlxG.elapsed;
 				if (counter <= 0)
@@ -381,7 +400,6 @@ package
 						connection.send("move", 0, -1);
 					}else if (FlxG.keys.justPressed("RIGHT") && !myPlayer.isMoving && !myPlayer.inBattle) {
 						myPlayer.facing = FlxSprite.RIGHT;
-						trace("going right");
 						win = myPlayer.movePlayer(1, 0, _tileSize, connection);
 						connection.send("move", 1, 0);
 					}else if (FlxG.keys.justPressed("LEFT") && !myPlayer.isMoving && !myPlayer.inBattle) {
@@ -603,6 +621,7 @@ package
 					resources = new FlxText(_resourceTextOffsetX, _resourceTextOffsetY, 150, "Resources:", true);			
 					resourcesText = new FlxText(_resourceTextOffsetX, _resourceTextOffsetY + 10,150, "", true);
 					gatherResourcesButton = new FlxButton(_resourceTextOffsetX, _resourceTextOffsetY + 15, "Gather lumber!", gatherResource);
+
 					goals = new FlxText(_goalsBoxOffsetX, _goalsBoxOffsetY, 100, "Goals:\nReach the Red Star", true); 
 					goals.frameHeight = 75;			
 					errorMessage = new FlxText(_errorMessageOffsetX, _errorMessageOffsetY, 120, "Errors Appear Here", true);
@@ -701,6 +720,10 @@ package
 			var xInt:int = (x - _mapOffsetX) / _tileSize;
 			var yInt:int = (y - _mapOffsetY) / _tileSize;			
 			myMap.setTile(xInt, yInt, identity, true);
+		}
+
+		private function getTileIdentity(x:int,y:int):uint {
+			return myMap.getTile((x - _mapOffsetX) / _tileSize, (y - _mapOffsetY) / _tileSize);
 		}
 		
 		public function gatherResource():void
