@@ -115,6 +115,7 @@ package sample.ui{
 		{
 			PlayerIO.quickConnect.simpleRegister(FlxG.stage,
 				"get-across-ynrpgn4egdtvzlz3wg8w", 
+				//"getacross-rny1binyakgosozwy0h8wg", CHARLIE'S SERVER
 				username, 
 				password, 
 				email,
@@ -152,19 +153,23 @@ package sample.ui{
 				ob.xp = 0
 				ob.coin = 0
 				ob.tutorial = 1
-				ob.save()
-				
-				errorMessage.text = "Registration Successful. You May Now Log In."
-				
-				trace("Sucessfully connected to player.io");
-			
-				//Set developmentsever (Comment out to connect to your server online)
-				client.multiplayer.developmentServer = "127.0.0.1:8184";
 				//Start Menu State
 				Hide(null);
 				FlxG.stage.removeChild(_stage);
-				//Show lobby (parsing true hides the cancel button)
-				FlxG.switchState(new MenuState(client));
+				ob.save(false, false, function() {
+					
+					
+					trace("Sucessfully connected to player.io");
+				
+					//Set developmentsever (Comment out to connect to your server online)
+					client.multiplayer.developmentServer = "127.0.0.1:8184";
+
+					//Show lobby (parsing true hides the cancel button)
+					FlxG.switchState(new MenuState(client));
+					});
+				
+				
+				
 			})
 		}
 	}	
