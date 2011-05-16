@@ -51,7 +51,6 @@ package
 		private var lvl:FlxText;
 		private var experience:FlxText;
 		private var resources:FlxText;
-		public static var resourcesText:FlxText;
 		private var background:Background;
 		private var playerStartX: int = 0;	// starting x position of this player
 		private var playerStartY: int = 0;	// starting y position of this player
@@ -99,7 +98,7 @@ package
 		private var _lvlTextOffsetY:int = 5;
 		private var _experienceTextOffsetX:int = 70;
 		private var _experienceTextOffsetY:int = 5;
-		private var _resourceTextOffsetX:int = 540;
+		private var _resoruceTextOffsetX:int = 540;
 		private var _resourceTextOffsetY:int = 250;
 		
 		private static var myClient:Client;
@@ -107,6 +106,7 @@ package
 		private static var playerName:String;
 		private static var playerAP:int;
 		private var _APcounterMax:int = 10;	// seconds to pass until player gets AP incremented
+<<<<<<< HEAD
 		
 		private var camMap:FlxCamera;
 		private var camMap2:FlxCamera;
@@ -119,6 +119,8 @@ package
 		
 		
 		private var timer;				// object used for delays.
+=======
+>>>>>>> parent of 6958eba... implemented gathering lumber from trees
 		
 		public function PlayState(connection:Connection, client:Client):void
 		{
@@ -215,7 +217,11 @@ package
 					// add player to screen --
 					trace("create player sprite: " + posX + " " + posY);
 					trace("playerInfo: AP to start with: " + playerAP);
+<<<<<<< HEAD
 					myPlayer = new Player(posX, posY, 0, _windowHeight, _tileSize, getTileIdentity(posX, posY), playerAP);
+=======
+					myPlayer = new Player(posX, posY, _mapOffsetX, _mapOffsetY, _tileSize, playerAP);
+>>>>>>> parent of 6958eba... implemented gathering lumber from trees
 					playersArray[imPlayer - 1] = myPlayer;
 					var playerHealthBar:FlxHealthBar = new FlxHealthBar(myPlayer, 100, 20, 0, 25, true);
 					playerHealthBar.x = _apBoxOffsetX - 35
@@ -546,8 +552,12 @@ package
 				function(dbo:DatabaseObject) {					
 					//render game background
 					//Right Side HUD
+<<<<<<< HEAD
 					resources = new FlxText(_resourceTextOffsetX, _resourceTextOffsetY, 150, "Resources:", true);
 					resourcesText = new FlxText(_resourceTextOffsetX, _resourceTextOffsetY + 10,150, "", true);
+=======
+					resources = new FlxText(_resoruceTextOffsetX, _resourceTextOffsetY, 150, "Resources:", true);			
+>>>>>>> parent of 6958eba... implemented gathering lumber from trees
 					goals = new FlxText(_goalsBoxOffsetX, _goalsBoxOffsetY, 100, "Goals:\nReach the Red Star", true); 
 					goals.frameHeight = 75;			
 					errorMessage = new FlxText(_errorMessageOffsetX, _errorMessageOffsetY, 120, "Errors Appear Here", true);
@@ -560,7 +570,10 @@ package
 					background = new Background();
 					
 					lyrHUD.add(resources);
+<<<<<<< HEAD
 					lyrHUD.add(resourcesText);
+=======
+>>>>>>> parent of 6958eba... implemented gathering lumber from trees
 					lyrHUD.add(lvl);
 					lyrHUD.add(experience);
 					lyrHUD.add(abilities);
@@ -620,6 +633,7 @@ package
 				&& ( myMouse.y < _mapOffsetY + myMap.height));
 		}
 		
+<<<<<<< HEAD
 		public function getTileIdentity(x:int,y:int):uint {
 			//return myMap.getTile((x - _FlxG.width) / _tileSize, (y - FlxG.height) / _tileSize);
 			var xInt:Number = (x - _mapOffsetX) / _tileSize;
@@ -648,6 +662,16 @@ package
 			myConnection.send("QuestMapUpdate", myMap.getMapData());
 			myConnection.send("updateStat", "lumber", myPlayer.amountLumber);
 		}
+=======
+		private function getTileIdentity(x:int,y:int):uint {
+			return myMap.getTile((x - _mapOffsetX) / _tileSize, (y - _mapOffsetY) / _tileSize);
+		}
+		
+		private function setTileIdentity(x:int,y:int,identity:int):void {
+			myMap.setTile((x - _mapOffsetX) / _tileSize, (y - _mapOffsetY) / _tileSize, identity, true);
+		}
+		
+>>>>>>> parent of 6958eba... implemented gathering lumber from trees
 	
 		//***************************************************
 		//*****************PLAYERIO Functions****************
