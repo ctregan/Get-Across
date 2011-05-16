@@ -359,18 +359,19 @@ package
 		}
 		override public function update():void 
 		{
-			if (getTileIdentity(myPlayer.xPos, myPlayer.yPos) == CHERRY_TILE)
-			{
-				gatherResourceButton = new FlxButton(myPlayer.x + 20, myPlayer.y - 20, "Pick Cherry");
-				//gatherResourcesButton.x = myPlayer.x + 20;
-				//gatherResourcesButton.y = myPlayer.y - 20;
-				//gatherResourcesButton.visible = true;
-				add(gatherResourceButton);
-			}
-			else { 
-				remove(gatherResourceButton);// gatherResourcesButton.visible = false;
-			}
-			if(connected == true){
+			
+			if (connected == true) {
+				if (getTileIdentity(myPlayer.xPos, myPlayer.yPos) == CHERRY_TILE)
+				{
+					gatherResourceButton = new FlxButton(myPlayer.x + 20, myPlayer.y - 20, "Pick Cherry");
+					//gatherResourcesButton.x = myPlayer.x + 20;
+					//gatherResourcesButton.y = myPlayer.y - 20;
+					//gatherResourcesButton.visible = true;
+					add(gatherResourceButton);
+				}
+				else { 
+					remove(gatherResourceButton);// gatherResourcesButton.visible = false;
+				}
 				counter -= FlxG.elapsed;
 				if (counter <= 0)
 				{

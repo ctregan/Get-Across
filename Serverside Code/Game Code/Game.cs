@@ -162,7 +162,7 @@ namespace GetAcross {
                                         }
                                         newQuest.Set("Monsters", newMonsters);
                                     }
-
+                                    Console.WriteLine("Setting up new quest " + newQuest.ToString());
                                     // add this quest object to Quests db
                                     PlayerIO.BigDB.CreateObject("NewQuests", null, newQuest,
                                         delegate(DatabaseObject addedQuest)
@@ -175,7 +175,8 @@ namespace GetAcross {
                                             // tell client to initialize (board, monsters, player object & player sprite) with max AP amount
                                             player.Send("init", player.Id, player.ConnectUserId, questID, 20, levelKey, "");
                                             //player.Send("AlertMessages", staticMap.Key);
-                                    });
+                                        });
+
                                 });
                            
                             // save positions in the serverside
