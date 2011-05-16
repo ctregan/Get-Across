@@ -29,7 +29,7 @@ namespace GetAcross {
         private Player[] players;
         private int numPlayers;
         private Tile[,] field;
-        private String levelKey;
+        private String levelKey; //STATIC MAP KEY
         private String playerConnectUserId;
         //private int player.AP;       // server's variable to keep track of clientside player AP amount
         private String questID;    // id of the quest player is in
@@ -92,9 +92,28 @@ namespace GetAcross {
                 PlayerIO.BigDB.Load("PlayerObjects", player.ConnectUserId,
                     delegate(DatabaseObject result)
                     {
+                        //If the room already has a questID associated with it, give that quest to the player
+                        //and update the quest with the new player
+                        if (questID != null)
+                        {
+                            result.Set("questID", questID);
+                            result.Save();
+
+                            PlayerIO.BigDB.Load("NewQuests", questID,
+                                delegate(DatabaseObject currentQuest)
+                                {
+                                    DatabaseObject questPlayerData = new DatabaseObject();
+                                    questPlayerData.Set("positionX", 0);
+                                    questPlayerData.Set("positionY", 0);
+                                    questPlayerData.Set("AP", 20); 
+
+                                    DatabaseObject questPlayers = currentQuest.GetObject("players");
+                                    questPlayers.Set(player.ConnectUserId, questPlayerData);
+                                });
+                        }
                         // if player does not have a questID associated with it
                         // create new object in Quests db
-                        if (!result.Contains("questID") || result.GetString("questID") == "noQuest")
+                        else if (!result.Contains("questID") || result.GetString("questID") == "noQuest")
                         {
                             // create new quest object
                             DatabaseObject newQuest = new DatabaseObject();
@@ -151,9 +170,8 @@ namespace GetAcross {
                                                     thisPlayer.Save();
                                                 }
                                             );
-                                            levelKey = addedQuest.Key;
                                             // tell client to initialize (board, monsters, player object & player sprite) with max AP amount
-                                            player.Send("init", player.Id, player.ConnectUserId, levelKey, 20, staticMap.Key);
+                                            player.Send("init", player.Id, player.ConnectUserId, questID, 20, levelKey);
                                             //player.Send("AlertMessages", staticMap.Key);
                                     });
                                 });
@@ -168,7 +186,7 @@ namespace GetAcross {
                         else
                         {
                             questID = result.GetString("questID");
-                            levelKey = questID;
+                            //levelKey = questID;
                             // obtain player's last position and save to serverside
                             PlayerIO.BigDB.Load("NewQuests", questID,
                                 delegate(DatabaseObject questObject)
@@ -196,7 +214,7 @@ namespace GetAcross {
                                     }
 
                                     // tell client to initialize (board, monsters, player object & player sprite)
-                                    player.Send("init", player.Id, player.ConnectUserId, levelKey, player.AP, questObject.GetString("StaticMapKey"));
+                                    player.Send("init", player.Id, player.ConnectUserId, questID, player.AP, levelKey);
                                 }
                             );
                         }
@@ -362,7 +380,7 @@ namespace GetAcross {
                         //to the player's associated quest object
                         player.GetPlayerObject(
                             delegate(DatabaseObject updatedPlayerObject){
-                                PlayerIO.BigDB.Load("NewQuests", levelKey,
+                                PlayerIO.BigDB.Load("NewQuests", questID,
                                      delegate(DatabaseObject dbo)
                                         {
                                             dbo.Set("tileValues", message.GetString(0));
@@ -375,14 +393,15 @@ namespace GetAcross {
                     {
                         int newAp = message.GetInt(0);
                         int monsterIndex = message.GetInt(1);
-                       /* PlayerIO.BigDB.Load("newQuests", levelKey,
-                            delegate(DatabaseObject dbo)
-                            {
-                                DatabaseArray monsters = dbo.GetArray("Monsters");
-                                monsters.GetObject(monsterIndex).Set("AP", newAp);
-                            */
+                        PlayerIO.BigDB.Load("newQuests", questID,
+                             delegate(DatabaseObject dbo)
+                             {
+                                 DatabaseArray monsters = dbo.GetArray("Monsters");
+                                 monsters.GetObject(monsterIndex).Set("AP", newAp);
+                                 Broadcast("MonsterAPChange", player.Id, newAp, monsterIndex);
+                                 
+                             });
                         //CHARLIE TO DO - Make this data reflected in the database too.
-                        Broadcast("MonsterAPChange", player.Id, newAp, monsterIndex);
                         break;
                     }
 			}

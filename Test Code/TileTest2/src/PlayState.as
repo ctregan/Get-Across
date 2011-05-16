@@ -121,12 +121,12 @@ package
 			this.connection = myConnection = connection;
 			
 			//Connection successful, load board and player
-			connection.addMessageHandler("init", function(m:Message, iAm:int, name:String, level:String, startAP:int, levelKey:String) {
+			connection.addMessageHandler("init", function(m:Message, iAm:int, name:String, qid:String, startAP:int, levelKey:String) {
 				imPlayer = iAm;
 				playerAP = startAP;
 				trace("init: starting ap: " + playerAP);
 				//boardSetup(level);
-				client.bigDB.load("NewQuests", level, function(ob:DatabaseObject):void {
+				client.bigDB.load("NewQuests", qid, function(ob:DatabaseObject):void {
 					//Recieve Tile Array from database to be turned into string with line breaks between each line
 					if (ob != null)
 					{
