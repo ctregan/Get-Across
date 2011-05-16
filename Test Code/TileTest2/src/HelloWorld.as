@@ -13,7 +13,9 @@ package
 		
 		public function HelloWorld() 
 		{
-			super(700, 400, LoginState,1);
+			// increasing the window size so that we'll have more space for extra stuff (like bigger map... 
+			// Max map size is....?
+			super(700, 800, LoginState,1);
 		}
 	}
 
