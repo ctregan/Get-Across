@@ -431,6 +431,7 @@ package
 								else if (yTemp > myPlayer.yPos) myPlayer.facing =FlxSprite.DOWN;
 								
 								win = myPlayer.movePlayer(xTemp - myPlayer.xPos, yTemp - myPlayer.yPos, _tileSize, connection)
+								connection.send("move",xTemp - myPlayer.xPos, yTemp - myPlayer.yPos);
 							}
 						} else {
 							// if not within reach, set color to red

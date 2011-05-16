@@ -436,7 +436,7 @@ namespace GetAcross {
                 case "QuestMapUpdate":
                     {
                         questMap = message.GetString(0);
-                        /*player.GetPlayerObject(
+                        player.GetPlayerObject(
                             delegate(DatabaseObject updatedPlayerObject){
                                 PlayerIO.BigDB.Load("NewQuests", questID,
                                      delegate(DatabaseObject dbo)
@@ -444,19 +444,20 @@ namespace GetAcross {
                                             dbo.Set("tileValues", message.GetString(0));
                                             dbo.Save();
                                         });
-                            });*/
+                            });
                         break;
                     }
                 case "MonsterAPChange":
                     {
                         int newAp = message.GetInt(0);
                         int monsterIndex = message.GetInt(1);
-                       /* PlayerIO.BigDB.Load("newQuests", questID,
+                        PlayerIO.BigDB.Load("newQuests", questID,
                             delegate(DatabaseObject dbo)
                             {
                                 DatabaseArray monsters = dbo.GetArray("Monsters");
                                 monsters.GetObject(monsterIndex).Set("AP", newAp);
-                            */
+                                dbo.Save();
+                            });
                         //CHARLIE TO DO - Make this data reflected in the database too.
                         Broadcast("MonsterAPChange", player.Id, newAp, monsterIndex);
                         break;
