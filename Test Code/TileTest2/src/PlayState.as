@@ -265,7 +265,7 @@ package
 						}
 					});
 				}
-				timer = setInterval(setCameras, 100);	// set up camera after 0.1 second.... to ensure everything is set
+				timer = setInterval(setCameras, 200);	// set up camera after 0.1 second.... to ensure everything is set
 
 				//FlxG.follow(myPlayer);
 				//FlxG.followBounds(0, 0, myMap.width, myMap.height);
@@ -411,25 +411,62 @@ package
 						tileHover.y = yTempCoord;
 						
 						// if within 1 tile away
-						// if okay condition
-						// then go
+						// & if okay condition then go
 						var absDis:int = Math.abs(myPlayer.xPos - xTemp) + Math.abs(myPlayer.yPos - yTemp);
 						// have to check if the move is possible beforehand... 
 						var canGo:Boolean = myPlayer.checkMove(xTemp, yTemp);
-						
-						if (absDis < 2 && absDis > 0 && canGo) {	// one away
-							tileHover.loadGraphic(hoverTileImg);
-							if (myMouse.justPressed()) {
-								trace("okay to move");
-								// check for condition....
-								
-								if (xTemp < myPlayer.xPos) myPlayer.facing = FlxSprite.LEFT;
-								else if (xTemp > myPlayer.xPos) myPlayer.facing =FlxSprite.RIGHT;
-								else if (yTemp < myPlayer.yPos) myPlayer.facing =FlxSprite.UP;
-								else if (yTemp > myPlayer.yPos) myPlayer.facing =FlxSprite.DOWN;
-								
-								win = myPlayer.movePlayer(xTemp - myPlayer.xPos, yTemp - myPlayer.yPos, _tileSize, connection)
+
+						var hasMonster:Boolean = false;
+						// check if there is a monster in that tile
+						for (var m in monsterArray)
+						{
+							// if the selected 
+							if (monsterArray[m]._xTile == xTemp && monsterArray[m]._yTile == yTemp) {
+								hasMonster = true;
+								myPlayer.combatant = monsterArray[m]
 							}
+						}
+						
+						if (hasMonster) {
+							// show fighting options
+							
+							
+							// get ready to battle
+							myPlayer.inBattle = true;
+							
+							errorMessage.text = "BATTLE!";
+							lyrBattle.visible = true;							
+						} 
+						if (myPlayer) {
+							if (myPlayer.combatant) {
+								if (!myPlayer.combatant.alive) {
+									myPlayer.inBattle = false;
+									lyrBattle.visible = false;
+									errorMessage.text = "defeated monster";
+									hasMonster = false;
+								}
+							}
+						}
+						
+						
+						// if within distance
+						if (absDis < 2 && absDis > 0 && !hasMonster) {
+							if (canGo) {					// if the player is able to go on (no obstacle)
+								tileHover.loadGraphic(hoverTileImg);
+								if (myMouse.justPressed()) {						
+								
+									if (xTemp < myPlayer.xPos) myPlayer.facing = FlxSprite.LEFT;
+									else if (xTemp > myPlayer.xPos) myPlayer.facing =FlxSprite.RIGHT;
+									else if (yTemp < myPlayer.yPos) myPlayer.facing =FlxSprite.UP;
+									else if (yTemp > myPlayer.yPos) myPlayer.facing =FlxSprite.DOWN;
+									
+									win = myPlayer.movePlayer(xTemp - myPlayer.xPos, yTemp - myPlayer.yPos, _tileSize, connection)
+								}
+							} 
+							// check what actions can be done at this tile
+							// ex: monster
+							
+
 						} else {
 							// if not within reach, set color to red
 							tileHover.loadGraphic(hoverTileImgNo);
@@ -575,30 +612,17 @@ package
 			//Battle HUD
 			//Background
 			
-			//Weak Attack Button
-			lyrBattle.add(new FlxButton(22, 284, "text", function() { 
-				if (myPlayer.inBattle) {
-					myPlayer.combatant.attack(1,myPlayer, connection);
-				}
-			}))
-			lyrBattle.add(new FlxText(24, 286, 100, "Weak Attack"));
-			//Medium Attack Button
-			lyrBattle.add(new FlxButton(22, 314, "text", function() { 
-				if (myPlayer.inBattle) {
-					myPlayer.combatant.attack(2,myPlayer, connection);
-				}
-			}))
+			//while (!myPlayer);
 			
-			lyrBattle.add(new FlxText(24, 316, 100, "Medium Attack"));
+			//Weak Attack Button
+			lyrBattle.add(new FlxButton(22, 284, "Weak Attack", weakAttack))
+			//Medium Attack Button
+			lyrBattle.add(new FlxButton(22, 314, "Medium Attack", mediumAttack))
 			//Strong Attack Button
-			lyrBattle.add(new FlxButton(22, 344, "text", function() { 
-				if (myPlayer.inBattle) {
-					myPlayer.combatant.attack(3,myPlayer, connection);
-				}
-			}))
-			lyrBattle.add(new FlxText(24, 346, 100, "Strong Attack"));
+			lyrBattle.add(new FlxButton(22, 344, "String Attack", strongAttack))
 			//Initially the battle hud is invisible, it will be visible when a user enters combat
 			lyrBattle.visible = false;
+			trace("battle options added...");
 			
 			client.bigDB.load("StaticMaps", levelKey,
 				function(dbo:DatabaseObject) {					
@@ -687,6 +711,24 @@ package
 			var yInt:Number = (y - _mapOffsetY) / _tileSize;
 			//trace("getting identity of tile " + xInt + "," + yInt);
 			return myMap.getTile(xInt, yInt);
+		}
+		
+		private function weakAttack() { 
+			if (myPlayer.inBattle) {
+				myPlayer.combatant.attack(1, myPlayer, connection);
+			}
+		}
+		
+		private function mediumAttack() { 
+			if (myPlayer.inBattle) {
+				myPlayer.combatant.attack(2, myPlayer, connection);
+			}
+		}
+		
+		private function strongAttack() { 
+			if (myPlayer.inBattle) {
+				myPlayer.combatant.attack(3, myPlayer, connection);
+			}
 		}
 		
 		// given x and y position of tile on the map, return what type of tile this is
