@@ -170,13 +170,10 @@ namespace GetAcross {
                                             questID = addedQuest.Key;
                                             Console.WriteLine("made new questID!  new questID is: " + questID);
                                             result.Set("questID", addedQuest.Key);
-                                            result.Save(delegate()
-                                                    {
-                                                        player.Send("init", player.Id, player.ConnectUserId, questID, 20, levelKey, "");
-                                                    });
+                                            result.Save();
                                             //levelKey = addedQuest.Key;
                                             // tell client to initialize (board, monsters, player object & player sprite) with max AP amount
-                                            
+                                            player.Send("init", player.Id, player.ConnectUserId, questID, 20, levelKey, "");
                                             //player.Send("AlertMessages", staticMap.Key);
                                     });
                                 });
