@@ -67,6 +67,9 @@ package
 		public static var lyrMonster:FlxGroup;
 		public static var lyrTop:FlxGroup;
 		
+		private static var _windowWidth:int = 700;
+		private static var _windowHeight:int = 400;
+		
 		private static var abilitySelected:Boolean = false; //Indicates whether an ability is activated
 		private static var activeAbility:Ability; //Which ability is currently chosen
 		
@@ -125,9 +128,7 @@ package
 		
 		
 		private var timer;				// object used for delays.
-=======
->>>>>>> parent of 6958eba... implemented gathering lumber from trees
-		
+
 		private var camNextMoveUp:FlxCamera;
 		private var camNextMoveDown:FlxCamera;
 		private var camNextMoveRight:FlxCamera;
@@ -295,7 +296,7 @@ package
 			connection.addMessageHandler("PlayerMove", function(m:Message, userID:int, posX:int, posY:int) {
 				var tileType:int = getTileIdentity(posX, posY);
 				if(userID != imPlayer){
-					Player(playersArray[userID - 1]).movePlayer(posX, posY, _tileSize, tileType,connection);
+					Player(playersArray[userID - 1]).movePlayer(posX, posY, _tileSize, connection);
 				}
 			})
 			//A tile has changed and needs to be updated locally
@@ -721,21 +722,6 @@ package
 			myMap.setTile(xInt, yInt, identity, true);
 		}
 
-		public function gatherResource():void
-		{
-			// increase player's amount of lumber
-			myPlayer.amountLumber++;
-			resourcesText.text = "Lumber: " + myPlayer.amountLumber;
-			
-			// remove tree from tile, and tell server
-			myMap.setTile(myPlayer.xPos, myPlayer.yPos, GRASS_TILE);
-			
-			// tell server about new map, new values for player
-			myConnection.send("MapTileChanged", myPlayer.xPos, myPlayer.yPos, GRASS_TILE);
-			myConnection.send("QuestMapUpdate", myMap.getMapData());
-			myConnection.send("updateStat", "lumber", myPlayer.amountLumber);
-		}
-=======
 		private function getTileIdentity(x:int,y:int):uint {
 			return myMap.getTile((x - _mapOffsetX) / _tileSize, (y - _mapOffsetY) / _tileSize);
 		}
