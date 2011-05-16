@@ -87,7 +87,6 @@ package
 		//thus to move one tile to the right send (1,0) as arugments, one to left is (-1,0)
 		//NOW RETURNS A BOOLEAN, True if the move has caused the user to reach the end, False if not
 		public function movePlayer(xChange:Number, yChange:Number, tileSize:int, connection:Connection):Boolean {
-			trace("x:" + xPos + " y:" + yPos + " change_x:" + xChange + " change_y:" + yChange + " tile_size:" + tileSize);
 			if (checkMove(xPos + xChange, yPos + yChange)) {
 				isMoving = true;
 				xPos = xPos + xChange;
@@ -109,7 +108,9 @@ package
 				this.x = desiredX;
 				this.y = desiredY;
 				//connection.send("move", xChange, yChange);
+				//trace("x:" + xPos + " y:" + yPos + " change_x:" + xChange + " change_y:" + yChange + " tile_size:" + tileSize + " type:" + PlayState.myMap.getTile(xPos, yPos));
 				if (PlayState.myMap.getTile(xPos, yPos) == WIN_TILE) {
+					trace("at win!");
 					return true;
 				}
 				var myTimer:Timer = new Timer(500);
@@ -148,7 +149,7 @@ package
 		}
 		
 		//Sees if the desired move for the player is valid.
-		private function checkMove(proposedX:Number, proposedY:Number):Boolean {
+		public function checkMove(proposedX:Number, proposedY:Number):Boolean {
 			if (PlayState.myMap.getTile(proposedX, proposedY) == WATER_TILE ) {
 				errorMessage = "Invalid Move, can't cross water";
 				return false;
