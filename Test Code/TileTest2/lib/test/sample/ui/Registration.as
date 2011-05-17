@@ -114,8 +114,8 @@ package sample.ui{
 		private function createAccount(password:String, username:String, email:String):void 
 		{
 			PlayerIO.quickConnect.simpleRegister(FlxG.stage,
-				"get-across-ynrpgn4egdtvzlz3wg8w", 
-				//"getacross-rny1binyakgosozwy0h8wg", //CHARLIE'S SERVER
+				//"get-across-ynrpgn4egdtvzlz3wg8w", 
+				"getacross-rny1binyakgosozwy0h8wg", //CHARLIE'S SERVER
 				username, 
 				password, 
 				email,

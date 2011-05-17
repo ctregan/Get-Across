@@ -274,7 +274,6 @@ package
 										lyrStage.add(myAbility);
 										trace("Loaded Ability " + test.Name + "\n");
 										lyrHUD.add(new AbilityButton(_cardBoxOffsetX, _cardBoxOffsetY + yButtonPlacementModifier, myAbility))
-										lyrHUD.add(new FlxText(_cardBoxOffsetX + 2, _cardBoxOffsetY + yButtonPlacementModifier + 2, 100, test.Name))
 										yButtonPlacementModifier += 30
 									}
 								})
@@ -415,6 +414,7 @@ package
 							myPlayer.AP -= activeAbility._cost;
 							activeAbility.visible = false;
 							setActiveAbility(null);
+							abilitySelected = false;
 							trace("cast bridge!  new AP: " + myPlayer.AP);
 							connection.send("updateStat", "AP", myPlayer.AP);
 						}
@@ -553,7 +553,6 @@ package
 		{
 			return abilitySelected;
 		}
-		
 		// Updates which ability is currently active
 		public static function setActiveAbility(toActivate:Ability):void 
 		{
