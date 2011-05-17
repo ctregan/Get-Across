@@ -171,6 +171,21 @@ namespace GetAcross {
                                         }
                                         newQuest.Set("Monsters", newMonsters);
                                     }
+                                    if (staticMap.Contains("Buttons"))
+                                    {
+                                        DatabaseArray buttons = staticMap.GetArray("Buttons");
+                                        DatabaseArray newButtons = new DatabaseArray();
+                                        for (int i = 1; i <= buttons.Count; i++)
+                                        {
+                                            DatabaseObject button = new DatabaseObject();
+                                            button.Set("xTile", buttons.GetObject(i - 1).GetInt("xTile"));
+                                            button.Set("yTile", buttons.GetObject(i - 1).GetInt("yTile"));
+                                            button.Set("xOpen", buttons.GetObject(i - 1).GetInt("xOpen"));
+                                            button.Set("yOpen", buttons.GetObject(i - 1).GetInt("yOpen"));
+                                            newButtons.Add(button);
+                                        }
+                                        newQuest.Set("Buttons", newButtons);
+                                    }
                                     Console.WriteLine("Setting up new quest " + newQuest.ToString());
                                     // add this quest object to Quests db
                                     PlayerIO.BigDB.CreateObject("NewQuests", null, newQuest,
@@ -182,7 +197,8 @@ namespace GetAcross {
                                             result.Save();
                                             //levelKey = addedQuest.Key;
                                             // tell client to initialize (board, monsters, player object & player sprite) with max AP amount
-                                            player.Send("init", player.Id, player.ConnectUserId, questID, 20, levelKey, "");
+                                            addedQuest.Save(delegate() { player.Send("init", player.Id, player.ConnectUserId, questID, 20, levelKey, ""); });
+                                           
                                             //player.Send("AlertMessages", staticMap.Key);
                                         });
 
