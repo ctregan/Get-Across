@@ -106,6 +106,7 @@ package
 		private var _cardBoxOffsetX:int = 31;
 		private var _cardBoxOffsetY:int = 75;
 		private static var _tileSize:int = 32;
+		private static var _viewSize:int = 32;
 		private var _lvlTextOffsetX:int = 5;
 		private var _lvlTextOffsetY:int = 5;
 		private var _experienceTextOffsetX:int = 70;
@@ -250,6 +251,8 @@ package
 					trace("create player sprite: " + posX + " " + posY);
 					trace("playerInfo: AP to start with: " + playerAP);
 					trace("resources to start with: " + playerAP);
+					if (posX < 0) posX = 0;
+					if (posY < 0) posY = 0;
 					myPlayer = new Player(posX, posY, 0, _windowHeight, _tileSize, playerAP, resourcesString);
 					playersArray[imPlayer - 1] = myPlayer;
 					
@@ -420,10 +423,16 @@ package
 						}
 					//CLICK MOVING
 					}else if (tileHover.visible) {
-						var xTemp:int = Math.floor((myMouse.x - _mapOffsetX) / _tileSize);
-						var xTempCoord:int = xTemp * _tileSize;
-						var yTemp:int = Math.floor((myMouse.y - _mapOffsetY) / _tileSize);
-						var yTempCoord:int = yTemp * _tileSize + _windowHeight;
+						var camOffsetX:int = 0;
+						if (camMap && camMap.scroll) camOffsetX = camMap.scroll.x;
+						var camOffsetY:int = 0;
+						if (camMap && camMap.scroll) camOffsetY = camMap.scroll.y;
+												
+						var xTemp:int = Math.floor((myMouse.x - _mapOffsetX + camOffsetX + 0) / _viewSize);		// the tile number
+						var xTempCoord:int = xTemp * _tileSize + 0;
+						var yTemp:int = Math.floor((myMouse.y - _mapOffsetY + camOffsetY - _windowHeight) / _viewSize);		// the tile number
+						var yTempCoord:int = yTemp * _tileSize + _windowHeight;									// the coordinate of that tile
+						//trace("camera offset:" + camOffsetX + "," + camOffsetY + " actualcoord:" + xTemp + "," + yTemp + " coord:" + xTempCoord + "," + yTempCoord);
 						tileHover.x = xTempCoord;
 						tileHover.y = yTempCoord;
 						
