@@ -137,14 +137,6 @@ package
 		override public function update():void 
 		{
 			health = AP;
-			// if player is on a cherry tile, show menu to gather resources
-			if (PlayState.getTileIdentity(this.x, this.y) == CHERRY_TILE)
-			{
-				PlayState.gatherResourcesButton.x = this.x + 20;
-				PlayState.gatherResourcesButton.y = this.y - 20;
-				PlayState.gatherResourcesButton.visible = true;
-			}
-			else PlayState.gatherResourcesButton.visible = false;
 			super.update();
 		}
 		
