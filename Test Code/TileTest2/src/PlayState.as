@@ -40,6 +40,7 @@ package
 		private var myPlayer:Player;
 		private var playersArray:Array = []; //Array of all players on board
 		private var monsterArray:Array = [];
+		private var buttonArray:Array = []; //Array of all buttons on the board
 		
 		private var myMouse:Mouse; //Mouse
 		private var errorMessage:FlxText; //Text Field to reflect any errors
@@ -160,24 +161,42 @@ package
 						var mapString:String = ob.tileValues;
 						connection.send("QuestMapUpdate", mapString);
 						mapString = mapString.split("|").join("\n");
+						trace("Board MapString: " + mapString);
 						boardSetup(mapString, name, levelKey);
 						trace("board made");
 						//Load Monster
 						try {
 							//monsterArray = new Array[ob.MonsterCount];
 							var monsters:Array = ob.Monsters
-							for (var z in monsters) {
-								//Dont add a monster that is dead
-								if(monsters[z].AP > 0){
-									var myMonsterSprite:Monster = new Monster(monsters[z].Type, monsters[z].AP, z, monsters[z].xTile, monsters[z].yTile,0, _windowHeight, _tileSize);
-									monsterArray.push(myMonsterSprite);
-									lyrMonster.add(myMonsterSprite);
-									lyrHUD.add(myMonsterSprite.healthBar);
-									
+							if(monsters != null){
+								for (var z in monsters) {
+									//Dont add a monster that is dead
+									if(monsters[z].AP > 0){
+										var myMonsterSprite:Monster = new Monster(monsters[z].Type, monsters[z].AP, z, monsters[z].xTile, monsters[z].yTile,0, _windowHeight, _tileSize);
+										monsterArray.push(myMonsterSprite);
+										lyrMonster.add(myMonsterSprite);
+										lyrHUD.add(myMonsterSprite.healthBar);
+										
+									}
+								}
+							}
+							
+						}catch (e:Error) {
+							trace("Monster Loading Error: " + e);
+						}
+						
+						//Load Buttons
+						try {
+							var buttons:Array = ob.Buttons
+							if (buttons != null) {
+								for (var z in buttons) {
+									var myButtonSprite:ButtonSprite = new ButtonSprite(buttons[z].xTile, buttons[z].yTile, buttons[z].xOpen , buttons[z].yOpen, myMap, _tileSize);
+									buttonArray.push(myButtonSprite);
+									lyrSprites.add(myButtonSprite);
 								}
 							}
 						}catch (e:Error) {
-							trace("Monster Loading Error: " + e);
+							trace("Button Loading Error: " + e);
 						}
 					}
 					
@@ -459,7 +478,14 @@ package
 							myPlayer.combatant = monsterArray[monster]
 							errorMessage.text = "BATTLE!";
 							lyrBattle.visible = true;
-						})
+						});
+					}
+					//Detect Button Collision
+					for (var button in buttonArray) {
+						FlxG.overlap(buttonArray[button], myPlayer, function ():void 
+						{
+							ButtonSprite(buttonArray[button]).clickButton(connection);
+						});
 					}
 				}
 			}
