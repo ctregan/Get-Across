@@ -40,6 +40,7 @@ package
 		private var myPlayer:Player;
 		private var playersArray:Array = []; //Array of all players on board
 		private var monsterArray:Array = [];
+		private var buttonArray:Array = []; //Array of all buttons on the board
 		
 		private var myMouse:Mouse; //Mouse
 		private var errorMessage:FlxText; //Text Field to reflect any errors
@@ -153,6 +154,7 @@ package
 				trace("init: starting ap: " + playerAP);
 				//boardSetup(level);
 				resourcesString = resources;
+				trace("level to search in newquest: " + level);
 				client.bigDB.load("NewQuests", level, function(ob:DatabaseObject):void {
 					//Recieve Tile Array from database to be turned into string with line breaks between each line
 					if (ob != null)
@@ -160,24 +162,42 @@ package
 						var mapString:String = ob.tileValues;
 						connection.send("QuestMapUpdate", mapString);
 						mapString = mapString.split("|").join("\n");
+						trace("Board MapString: " + mapString);
 						boardSetup(mapString, name, levelKey);
 						trace("board made");
 						//Load Monster
 						try {
 							//monsterArray = new Array[ob.MonsterCount];
 							var monsters:Array = ob.Monsters
-							for (var z in monsters) {
-								//Dont add a monster that is dead
-								if(monsters[z].AP > 0){
-									var myMonsterSprite:Monster = new Monster(monsters[z].Type, monsters[z].AP, z, monsters[z].xTile, monsters[z].yTile,0, _windowHeight, _tileSize);
-									monsterArray.push(myMonsterSprite);
-									lyrMonster.add(myMonsterSprite);
-									lyrHUD.add(myMonsterSprite.healthBar);
-									
+							if(monsters != null){
+								for (var z in monsters) {
+									//Dont add a monster that is dead
+									if(monsters[z].AP > 0){
+										var myMonsterSprite:Monster = new Monster(monsters[z].Type, monsters[z].AP, z, monsters[z].xTile, monsters[z].yTile,0, _windowHeight, _tileSize);
+										monsterArray.push(myMonsterSprite);
+										lyrMonster.add(myMonsterSprite);
+										lyrHUD.add(myMonsterSprite.healthBar);
+										
+									}
+								}
+							}
+							
+						}catch (e:Error) {
+							trace("Monster Loading Error: " + e);
+						}
+						
+						//Load Buttons
+						try {
+							var buttons:Array = ob.Buttons
+							if (buttons != null) {
+								for (var z in buttons) {
+									var myButtonSprite:ButtonSprite = new ButtonSprite(buttons[z].xTile, buttons[z].yTile, buttons[z].xOpen , buttons[z].yOpen, myMap, _tileSize);
+									buttonArray.push(myButtonSprite);
+									lyrSprites.add(myButtonSprite);
 								}
 							}
 						}catch (e:Error) {
-							trace("Monster Loading Error: " + e);
+							trace("Button Loading Error: " + e);
 						}
 					}
 					
@@ -202,7 +222,7 @@ package
 							}
 						);
 						var menu:Box = new Box().fill(0xFFFFFF, 0.8, 0)
-						menu.add(new Box().fill(0x00000, .5, 15).margin(10, 10, 10, 10).minSize(FlxG.width, FlxG.height).add(
+						menu.add(new Box().fill(0x00000, .5, 15).margin(10, 10, 10, 10).minSize(FlxG.width/2, FlxG.height).add(
 							new Box().fill(0xffffff,1,5).margin(10,10,10,10).minSize(300,0).add(
 									new Rows(
 										new Label("This quest is already finished!", 30, TextFormatAlign.CENTER),
@@ -265,7 +285,7 @@ package
 						}
 					});
 				}
-				timer = setInterval(setCameras, 200);	// set up camera after 0.1 second.... to ensure everything is set
+				timer = setInterval(setCameras, 100);	// set up camera after 0.1 second.... to ensure everything is set
 
 				//FlxG.follow(myPlayer);
 				//FlxG.followBounds(0, 0, myMap.width, myMap.height);
@@ -321,12 +341,12 @@ package
 		
 		private function setCameras():void {
 			// Camera will show up at where the map should be
-			camMap= new FlxCamera(_mapOffsetX, _mapOffsetY, 320, 320, 1.5);
+			camMap= new FlxCamera(_mapOffsetX, _mapOffsetY, 320, 320);
 			camMap.follow(myPlayer, FlxCamera.STYLE_TOPDOWN);
 			camMap.setBounds(0, _windowHeight, myMap.width, myMap.height, true);
 			//camMap.color = 0xFFCCCC;
-			
 			FlxG.addCamera(camMap);							// camera that shows where the character is on the map
+		
 			// stop the interval
 			clearInterval(timer);
 		}
@@ -342,16 +362,14 @@ package
 		{
 			
 			if (connected == true) {
-				if (myPlayer != null && getTileIdentity(myPlayer.xPos, myPlayer.yPos) == CHERRY_TILE)
+				if (myPlayer != null && myMap.getTile(myPlayer.xPos, myPlayer.yPos) == CHERRY_TILE)
 				{
-					gatherResourceButton = new FlxButton(myPlayer.x + 20, myPlayer.y - 20, "Pick Cherry");
-					//gatherResourcesButton.x = myPlayer.x + 20;
-					//gatherResourcesButton.y = myPlayer.y - 20;
-					//gatherResourcesButton.visible = true;
-					add(gatherResourceButton);
+					gatherResourcesButton.x = myPlayer.x + 20;
+					gatherResourcesButton.y = myPlayer.y - 20;
+					gatherResourcesButton.visible = true;
 				}
 				else { 
-					remove(gatherResourceButton);// gatherResourcesButton.visible = false;
+					gatherResourcesButton.visible = false;
 				}
 				counter -= FlxG.elapsed;
 				if (counter <= 0)
@@ -390,102 +408,64 @@ package
 						connection.send("move", -1, 0);
 					}else if (myMouse.justPressed() &&  mouseWithinTileMap() && abilitySelected) {
 						var selectedXTile:int = (myMouse.x - _mapOffsetX) / _tileSize
-						//(myMouse.x - (myMouse.x % 32)) / 32;
 						var selectedYTile:int = (myMouse.y - _mapOffsetY) / _tileSize
-						//(myMouse.y - (myMouse.y % 32)) / 32
 						//TO DO: ADD ALERT MESSAGE!!!
 						if (checkActiveAbilityRange(selectedXTile, selectedYTile)) {
 							activeAbility.cast(selectedXTile, selectedYTile , connection);
+							myPlayer.AP -= activeAbility._cost;
+							activeAbility.visible = false;
+							setActiveAbility(null);
+							trace("cast bridge!  new AP: " + myPlayer.AP);
+							connection.send("updateStat", "AP", myPlayer.AP);
+						}
+					//CLICK MOVING
+					}else if (tileHover.visible) {
+						var xTemp:int = Math.floor((myMouse.x - _mapOffsetX) / _tileSize);
+						var xTempCoord:int = xTemp * _tileSize;
+						var yTemp:int = Math.floor((myMouse.y - _mapOffsetY) / _tileSize);
+						var yTempCoord:int = yTemp * _tileSize + _windowHeight;
+						tileHover.x = xTempCoord;
+						tileHover.y = yTempCoord;
+						
+						// if within 1 tile away
+						// if okay condition
+						// then go
+						var absDis:int = Math.abs(myPlayer.xPos - xTemp) + Math.abs(myPlayer.yPos - yTemp);
+						// have to check if the move is possible beforehand... 
+						var canGo:Boolean = myPlayer.checkMove(xTemp, yTemp);
+						
+						if (absDis < 2 && absDis > 0 && canGo) {	// one away
+							tileHover.loadGraphic(hoverTileImg);
+							if (myMouse.justPressed() && abilitySelected == false && !myPlayer.isMoving && !myPlayer.inBattle) {
+								trace("okay to move");
+								// check for condition....
+								
+								if (xTemp < myPlayer.xPos) myPlayer.facing = FlxSprite.LEFT;
+								else if (xTemp > myPlayer.xPos) myPlayer.facing =FlxSprite.RIGHT;
+								else if (yTemp < myPlayer.yPos) myPlayer.facing =FlxSprite.UP;
+								else if (yTemp > myPlayer.yPos) myPlayer.facing =FlxSprite.DOWN;
+								
+								win = myPlayer.movePlayer(xTemp - myPlayer.xPos, yTemp - myPlayer.yPos, _tileSize, connection)
+								connection.send("move",xTemp - myPlayer.xPos, yTemp - myPlayer.yPos);
+							}
+						} else {
+							// if not within reach, set color to red
+							tileHover.loadGraphic(hoverTileImgNo);
 						}
 					}else if(!myPlayer.isMoving) {
 						myPlayer.play("idle" + myPlayer.facing);
 					}
 					
 					tileHover.visible = mouseWithinTileMap();
-
 					
-					//CLICK MOVING CODE
-					if (tileHover.visible) {
-						var camOffsetX:int = 0;
-						if (camMap && camMap.scroll) camOffsetX = camMap.scroll.x;
-						var camOffsetY:int = 0;
-						if (camMap && camMap.scroll) camOffsetY = camMap.scroll.y;
-						//trace("camera offset:" + camOffsetX + "," + camOffsetY);
-						var xTemp:int = Math.floor((myMouse.x - _mapOffsetX) / _tileSize);
-						var xTempCoord:int = xTemp * _tileSize;// + camOffsetY;
-						var yTemp:int = Math.floor((myMouse.y - _mapOffsetY) / _tileSize);
-						var yTempCoord:int = yTemp * _tileSize + _windowHeight;// + camOffsetY;
-						tileHover.x = xTempCoord;
-						tileHover.y = yTempCoord;
-						
-						// if within 1 tile away
-						// & if okay condition then go
-						var absDis:int = Math.abs(myPlayer.xPos - xTemp) + Math.abs(myPlayer.yPos - yTemp);
-						// have to check if the move is possible beforehand... 
-						var canGo:Boolean = myPlayer.checkMove(xTemp, yTemp);
 
-						var hasMonster:Boolean = false;
-						// check if there is a monster in that tile
-						for (var m in monsterArray)
-						{
-							// if the selected 
-							if (monsterArray[m]._xTile == xTemp && monsterArray[m]._yTile == yTemp) {
-								hasMonster = true;
-								myPlayer.combatant = monsterArray[m]
-							}
-						}
-						
-						if (hasMonster) {
-							// show fighting options
-							
-							
-							// get ready to battle
-							myPlayer.inBattle = true;
-							
-							errorMessage.text = "BATTLE!";
-							lyrBattle.visible = true;							
-						} 
-						if (myPlayer) {
-							if (myPlayer.combatant) {
-								if (!myPlayer.combatant.alive) {
-									myPlayer.inBattle = false;
-									lyrBattle.visible = false;
-									errorMessage.text = "defeated monster";
-									hasMonster = false;
-								}
-							}
-						}
-						
-						
-						// if within distance
-						if (absDis < 2 && absDis > 0 && !hasMonster) {
-							if (canGo) {					// if the player is able to go on (no obstacle)
-								tileHover.loadGraphic(hoverTileImg);
-								if (myMouse.justPressed()) {						
-								
-									if (xTemp < myPlayer.xPos) myPlayer.facing = FlxSprite.LEFT;
-									else if (xTemp > myPlayer.xPos) myPlayer.facing =FlxSprite.RIGHT;
-									else if (yTemp < myPlayer.yPos) myPlayer.facing =FlxSprite.UP;
-									else if (yTemp > myPlayer.yPos) myPlayer.facing =FlxSprite.DOWN;
-									
-									win = myPlayer.movePlayer(xTemp - myPlayer.xPos, yTemp - myPlayer.yPos, _tileSize, connection)
-								}
-							} 
-							// check what actions can be done at this tile
-							// ex: monster
-							
-
-						} else {
-							// if not within reach, set color to red
-							tileHover.loadGraphic(hoverTileImgNo);
-						}
-					}
 					
 					apInfo.text = "AP: " + myPlayer.AP;
 					location.text = "(" + myPlayer.xPos + "," + myPlayer.yPos + ")";
 					errorMessage.text = "" + myPlayer.errorMessage;
 					if (win) {
 						connection.send("win")
+						connected = false;
 					}
 					if (mouseWithinTileMap()){
 						mouseLocation.text = tileInformation(getTileIdentity(myMouse.x, myMouse.y));
@@ -501,11 +481,17 @@ package
 							myPlayer.combatant = monsterArray[monster]
 							errorMessage.text = "BATTLE!";
 							lyrBattle.visible = true;
-						})
+						});
+					}
+					//Detect Button Collision
+					for (var button in buttonArray) {
+						FlxG.overlap(buttonArray[button], myPlayer, function ():void 
+						{
+							ButtonSprite(buttonArray[button]).clickButton(connection);
+						});
 					}
 				}
 			}
-			
 			super.update();
 		}
 		
@@ -582,8 +568,6 @@ package
 		//Add all flixel elements to the board, essentially drawing the game.
 		private function boardSetup(map_data:String, playerName:String, levelKey:String):void 
 		{
-
-			
 			counter = _APcounterMax; // 1ap gained every 3 minutes
 			alert = new Alert("");
 			//Add chat to game
@@ -621,17 +605,30 @@ package
 			//Battle HUD
 			//Background
 			
-			//while (!myPlayer);
-			
 			//Weak Attack Button
-			lyrBattle.add(new FlxButton(22, 284, "Weak Attack", weakAttack))
+			lyrBattle.add(new FlxButton(22, 284, "text", function() { 
+				if (myPlayer.inBattle) {
+					myPlayer.combatant.attack(1,myPlayer, connection);
+				}
+			}))
+			lyrBattle.add(new FlxText(24, 286, 100, "Weak Attack"));
 			//Medium Attack Button
-			lyrBattle.add(new FlxButton(22, 314, "Medium Attack", mediumAttack))
+			lyrBattle.add(new FlxButton(22, 314, "text", function() { 
+				if (myPlayer.inBattle) {
+					myPlayer.combatant.attack(2,myPlayer, connection);
+				}
+			}))
+			
+			lyrBattle.add(new FlxText(24, 316, 100, "Medium Attack"));
 			//Strong Attack Button
-			lyrBattle.add(new FlxButton(22, 344, "Strong Attack", strongAttack))
+			lyrBattle.add(new FlxButton(22, 344, "text", function() { 
+				if (myPlayer.inBattle) {
+					myPlayer.combatant.attack(3,myPlayer, connection);
+				}
+			}))
+			lyrBattle.add(new FlxText(24, 346, 100, "Strong Attack"));
 			//Initially the battle hud is invisible, it will be visible when a user enters combat
 			lyrBattle.visible = false;
-			trace("battle options added...");
 			
 			//render game background
 			//Right Side HUD
@@ -662,8 +659,6 @@ package
 			lyrHUD.add(errorMessage);
 			lyrHUD.add(mouseLocation);
 			lyrBackground.add(background);
-			
-			
 			
 			lyrSprites.add(lyrMonster);
 			this.add(lyrBackground);
@@ -724,24 +719,6 @@ package
 			var yInt:Number = (y - _mapOffsetY) / _tileSize;
 			//trace("getting identity of tile " + xInt + "," + yInt);
 			return myMap.getTile(xInt, yInt);
-		}
-		
-		private function weakAttack() { 
-			if (myPlayer.inBattle) {
-				myPlayer.combatant.attack(1, myPlayer, connection);
-			}
-		}
-		
-		private function mediumAttack() { 
-			if (myPlayer.inBattle) {
-				myPlayer.combatant.attack(2, myPlayer, connection);
-			}
-		}
-		
-		private function strongAttack() { 
-			if (myPlayer.inBattle) {
-				myPlayer.combatant.attack(3, myPlayer, connection);
-			}
 		}
 		
 		// given x and y position of tile on the map, return what type of tile this is
