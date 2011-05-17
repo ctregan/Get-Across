@@ -22,17 +22,13 @@ package sample.ui.components{
 			super(xPixel, yPixel, "ability", buttonClick );
 		}
 		
-		private function buttonClick():void 
+		public function buttonClick():void 
 		{
-			if (_rangeShow && PlayState.getAbilitySelected()) {
-					_ability.visible = false;
-					_rangeShow = false;
-					PlayState.setActiveAbility(null);
-				}else if(!_rangeShow && !PlayState.getAbilitySelected()){
-					PlayState.setActiveAbility(_ability);
-					_ability.visible = true;
-					_rangeShow = true;
-				}
+			if(!PlayState.getAbilitySelected()){
+				PlayState.setActiveAbility(_ability);
+				_ability.visible = true;
+				_rangeShow = true;
+			}
 		}
 			
 	}	

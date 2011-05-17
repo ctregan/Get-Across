@@ -408,24 +408,18 @@ package
 						connection.send("move", -1, 0);
 					}else if (myMouse.justPressed() &&  mouseWithinTileMap() && abilitySelected) {
 						var selectedXTile:int = (myMouse.x - _mapOffsetX) / _tileSize
-						//(myMouse.x - (myMouse.x % 32)) / 32;
 						var selectedYTile:int = (myMouse.y - _mapOffsetY) / _tileSize
-						//(myMouse.y - (myMouse.y % 32)) / 32
 						//TO DO: ADD ALERT MESSAGE!!!
 						if (checkActiveAbilityRange(selectedXTile, selectedYTile)) {
 							activeAbility.cast(selectedXTile, selectedYTile , connection);
 							myPlayer.AP -= activeAbility._cost;
+							activeAbility.visible = false;
+							setActiveAbility(null);
 							trace("cast bridge!  new AP: " + myPlayer.AP);
 							connection.send("updateStat", "AP", myPlayer.AP);
 						}
-					}else if(!myPlayer.isMoving) {
-						myPlayer.play("idle" + myPlayer.facing);
-					}
-					
-					tileHover.visible = mouseWithinTileMap();
-					
-					//CLICK MOVING CODE
-					if (tileHover.visible) {
+					//CLICK MOVING
+					}else if (tileHover.visible) {
 						var xTemp:int = Math.floor((myMouse.x - _mapOffsetX) / _tileSize);
 						var xTempCoord:int = xTemp * _tileSize;
 						var yTemp:int = Math.floor((myMouse.y - _mapOffsetY) / _tileSize);
@@ -442,7 +436,7 @@ package
 						
 						if (absDis < 2 && absDis > 0 && canGo) {	// one away
 							tileHover.loadGraphic(hoverTileImg);
-							if (myMouse.justPressed() && abilitySelected == false) {
+							if (myMouse.justPressed() && abilitySelected == false && !myPlayer.isMoving && !myPlayer.inBattle) {
 								trace("okay to move");
 								// check for condition....
 								
@@ -458,13 +452,20 @@ package
 							// if not within reach, set color to red
 							tileHover.loadGraphic(hoverTileImgNo);
 						}
+					}else if(!myPlayer.isMoving) {
+						myPlayer.play("idle" + myPlayer.facing);
 					}
+					
+					tileHover.visible = mouseWithinTileMap();
+					
+
 					
 					apInfo.text = "AP: " + myPlayer.AP;
 					location.text = "(" + myPlayer.xPos + "," + myPlayer.yPos + ")";
 					errorMessage.text = "" + myPlayer.errorMessage;
 					if (win) {
 						connection.send("win")
+						connected = false;
 					}
 					if (mouseWithinTileMap()){
 						mouseLocation.text = tileInformation(getTileIdentity(myMouse.x, myMouse.y));
@@ -658,8 +659,6 @@ package
 			lyrHUD.add(errorMessage);
 			lyrHUD.add(mouseLocation);
 			lyrBackground.add(background);
-			
-			
 			
 			lyrSprites.add(lyrMonster);
 			this.add(lyrBackground);
