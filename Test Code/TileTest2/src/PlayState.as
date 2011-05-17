@@ -154,6 +154,7 @@ package
 				trace("init: starting ap: " + playerAP);
 				//boardSetup(level);
 				resourcesString = resources;
+				trace("level to search in newquest: " + level);
 				client.bigDB.load("NewQuests", level, function(ob:DatabaseObject):void {
 					//Recieve Tile Array from database to be turned into string with line breaks between each line
 					if (ob != null)
@@ -221,7 +222,7 @@ package
 							}
 						);
 						var menu:Box = new Box().fill(0xFFFFFF, 0.8, 0)
-						menu.add(new Box().fill(0x00000, .5, 15).margin(10, 10, 10, 10).minSize(FlxG.width, FlxG.height).add(
+						menu.add(new Box().fill(0x00000, .5, 15).margin(10, 10, 10, 10).minSize(FlxG.width/2, FlxG.height).add(
 							new Box().fill(0xffffff,1,5).margin(10,10,10,10).minSize(300,0).add(
 									new Rows(
 										new Label("This quest is already finished!", 30, TextFormatAlign.CENTER),
@@ -361,16 +362,14 @@ package
 		{
 			
 			if (connected == true) {
-				if (myPlayer != null && getTileIdentity(myPlayer.xPos, myPlayer.yPos) == CHERRY_TILE)
+				if (myPlayer != null && myMap.getTile(myPlayer.xPos, myPlayer.yPos) == CHERRY_TILE)
 				{
-					gatherResourceButton = new FlxButton(myPlayer.x + 20, myPlayer.y - 20, "Pick Cherry");
-					//gatherResourcesButton.x = myPlayer.x + 20;
-					//gatherResourcesButton.y = myPlayer.y - 20;
-					//gatherResourcesButton.visible = true;
-					add(gatherResourceButton);
+					gatherResourcesButton.x = myPlayer.x + 20;
+					gatherResourcesButton.y = myPlayer.y - 20;
+					gatherResourcesButton.visible = true;
 				}
 				else { 
-					remove(gatherResourceButton);// gatherResourcesButton.visible = false;
+					gatherResourcesButton.visible = false;
 				}
 				counter -= FlxG.elapsed;
 				if (counter <= 0)
@@ -415,6 +414,9 @@ package
 						//TO DO: ADD ALERT MESSAGE!!!
 						if (checkActiveAbilityRange(selectedXTile, selectedYTile)) {
 							activeAbility.cast(selectedXTile, selectedYTile , connection);
+							myPlayer.AP -= activeAbility._cost;
+							trace("cast bridge!  new AP: " + myPlayer.AP);
+							connection.send("updateStat", "AP", myPlayer.AP);
 						}
 					}else if(!myPlayer.isMoving) {
 						myPlayer.play("idle" + myPlayer.facing);
@@ -565,8 +567,6 @@ package
 		//Add all flixel elements to the board, essentially drawing the game.
 		private function boardSetup(map_data:String, playerName:String, levelKey:String):void 
 		{
-
-			
 			counter = _APcounterMax; // 1ap gained every 3 minutes
 			alert = new Alert("");
 			//Add chat to game
@@ -629,7 +629,7 @@ package
 			//Initially the battle hud is invisible, it will be visible when a user enters combat
 			lyrBattle.visible = false;
 			
-						//render game background
+			//render game background
 			//Right Side HUD
 			resources = new FlxText(_resourceTextOffsetX, _resourceTextOffsetY, 150, "Resources:", true);			
 			resourcesText = new FlxText(_resourceTextOffsetX, _resourceTextOffsetY + 10,150, "", true);

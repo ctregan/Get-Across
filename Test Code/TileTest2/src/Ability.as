@@ -14,7 +14,7 @@ package
 		[Embed(source = "data/Range_1.png")] public var range1:Class;
 		[Embed(source = "data/Range_2.png")] public var range2:Class;
 		private var _range:int;
-		private var _cost:int;
+		public var _cost:int;
 		private var _effect:String;
 		private var _caster:Player;
 		private var _tileSize:int;
