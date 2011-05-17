@@ -321,12 +321,12 @@ package
 		
 		private function setCameras():void {
 			// Camera will show up at where the map should be
-			camMap= new FlxCamera(_mapOffsetX, _mapOffsetY, 320, 320);
+			camMap= new FlxCamera(_mapOffsetX, _mapOffsetY, 320, 320, 1.5);
 			camMap.follow(myPlayer, FlxCamera.STYLE_TOPDOWN);
 			camMap.setBounds(0, _windowHeight, myMap.width, myMap.height, true);
 			//camMap.color = 0xFFCCCC;
+			
 			FlxG.addCamera(camMap);							// camera that shows where the character is on the map
-		
 			// stop the interval
 			clearInterval(timer);
 		}
@@ -402,13 +402,19 @@ package
 					}
 					
 					tileHover.visible = mouseWithinTileMap();
+
 					
 					//CLICK MOVING CODE
 					if (tileHover.visible) {
+						var camOffsetX:int = 0;
+						if (camMap && camMap.scroll) camOffsetX = camMap.scroll.x;
+						var camOffsetY:int = 0;
+						if (camMap && camMap.scroll) camOffsetY = camMap.scroll.y;
+						//trace("camera offset:" + camOffsetX + "," + camOffsetY);
 						var xTemp:int = Math.floor((myMouse.x - _mapOffsetX) / _tileSize);
-						var xTempCoord:int = xTemp * _tileSize;
+						var xTempCoord:int = xTemp * _tileSize;// + camOffsetY;
 						var yTemp:int = Math.floor((myMouse.y - _mapOffsetY) / _tileSize);
-						var yTempCoord:int = yTemp * _tileSize + _windowHeight;
+						var yTempCoord:int = yTemp * _tileSize + _windowHeight;// + camOffsetY;
 						tileHover.x = xTempCoord;
 						tileHover.y = yTempCoord;
 						
@@ -499,6 +505,7 @@ package
 					}
 				}
 			}
+			
 			super.update();
 		}
 		
@@ -626,7 +633,7 @@ package
 			lyrBattle.visible = false;
 			trace("battle options added...");
 			
-						//render game background
+			//render game background
 			//Right Side HUD
 			resources = new FlxText(_resourceTextOffsetX, _resourceTextOffsetY, 150, "Resources:", true);			
 			resourcesText = new FlxText(_resourceTextOffsetX, _resourceTextOffsetY + 10,150, "", true);
