@@ -45,18 +45,18 @@ package
 				continueButton = new TextButton("Continue Last Quest", continueQuest);
 				tutorialButton.visible = false;
 				tutorialButton.enabled = false;
-				
-			}
-			//Try to load questID, if no quest then that button is invisible
-			try {
-				_questID = ob.questID;
-				if (_questID == "noQuest") {
+				try {
+					_questID = ob.questID;
+					if (_questID == "noQuest") {
+						continueButton.enabled = false;
+					}
+				}catch (e:Error)
+				{
 					continueButton.enabled = false;
 				}
-			}catch (e:Error)
-			{
-				continueButton.enabled = false;
 			}
+			//Try to load questID, if no quest then that button is invisible
+			
 			
 			mainMenu = new Box().fill(0xFFFFFF, 0.8, 0)
 			mainMenu.add(new Box().fill(0x00000, .5, 15).margin(10, 10, 10, 10).minSize(_windowWidth, _windowHeight).add(
@@ -84,7 +84,11 @@ package
 		//Callback function for when Continue Button is pressed
 		private function continueQuest():void 
 		{
-			var _levelKey:String = "";
+			if (tutorialLevel <= 5) {
+				var _levelKey:String = "Tutorial_" + tutorialLevel;
+			}else{
+				var _levelKey:String = "";
+			}
 			myClient.multiplayer.createRoom(
 				null,								//Room id, null for auto generted
 				"GetAcross",							//RoomType to create, bounce is a simple bounce server
