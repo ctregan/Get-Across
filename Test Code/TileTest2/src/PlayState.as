@@ -434,7 +434,8 @@ package
 
 						if (camMap && camMap.scroll) camOffsetY = camMap.scroll.y;
 						
-						if (_zoomedIn) currentZoomView = 2;						
+						if (_zoomedIn) currentZoomView = 2;	
+						else  currentZoomView = 1;	
 						var xTemp:int = getTileX();// Math.floor((myMouse.x - _mapOffsetX) / _viewSize / currentZoomView + camOffsetX / _viewSize);						
 						//var xTemp:int = Math.floor((myMouse.x - _mapOffsetX + camOffsetX + 0) / _viewSize / currentZoomView);		// the tile number
 						var xTempCoord:int = xTemp * _tileSize + 0;
@@ -641,6 +642,7 @@ package
 			
 			lyrBattle.add(new FlxText(24, 316, 100, "Medium Attack"));
 			//Strong Attack Button
+			lyrBattle.add(new FlxButton(22, 344, "text", function() { 
 			lyrBattle.add(new FlxButton(22, 344, "text", function() { 
 				if (myPlayer.inBattle) {
 					myPlayer.combatant.attack(3,myPlayer, connection);
