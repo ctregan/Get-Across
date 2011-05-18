@@ -107,6 +107,7 @@ package
 		private var _cardBoxOffsetY:int = 75;
 		private static var _tileSize:int = 32;
 		private static var _viewSize:int = 32;
+		private static var _zoomedIn:Boolean = false;
 		private var _lvlTextOffsetX:int = 5;
 		private var _lvlTextOffsetY:int = 5;
 		private var _experienceTextOffsetX:int = 70;
@@ -122,16 +123,20 @@ package
 		private static var resourcesString;
 		
 		private var camMap:FlxCamera;
-		private var camMap2:FlxCamera;
 		
 		private var _windowHeight:int = 400;
-		private var _windowWidth:int = 700;
+		private var _windowWidth:int = 700
 		
+		var camOffsetX:int = 0;
+		var camOffsetY:int = 0;
+		var currentZoomView:int = 1;
 		private var gatherResourceButton:FlxButton;
 		
 		private var timer;				// object used for delays.
 		
 		private var tileHover:FlxSprite;
+		
+		private var thingsSet:Number = 0;
 		
 		public function PlayState(connection:Connection, client:Client):void
 		{
@@ -288,11 +293,9 @@ package
 						}
 					});
 				}
-				timer = setInterval(setCameras, 100);	// set up camera after 0.1 second.... to ensure everything is set
-
-				//FlxG.follow(myPlayer);
-				//FlxG.followBounds(0, 0, myMap.width, myMap.height);
-				
+				//timer = setInterval(setCameras, 100);	// set up camera after 0.1 second.... to ensure everything is set
+				trace("done with character, setting camera ***");
+				setCameras();
 			})
 			
 			//New user has joined, make their character
@@ -343,15 +346,18 @@ package
 		}
 		
 		private function setCameras():void {
-			// Camera will show up at where the map should be
-			camMap= new FlxCamera(_mapOffsetX, _mapOffsetY, 320, 320);
-			camMap.follow(myPlayer, FlxCamera.STYLE_TOPDOWN);
-			camMap.setBounds(0, _windowHeight, myMap.width, myMap.height, true);
-			//camMap.color = 0xFFCCCC;
-			FlxG.addCamera(camMap);							// camera that shows where the character is on the map
-		
-			// stop the interval
-			clearInterval(timer);
+			thingsSet++;
+			trace(thingsSet);
+			if (thingsSet > 1) {
+				trace("make camera");
+				// Camera will show up at where the map should be
+				camMap= new FlxCamera(_mapOffsetX, _mapOffsetY, 320, 320);
+				camMap.follow(myPlayer, FlxCamera.STYLE_TOPDOWN);
+				camMap.setBounds(0, _windowHeight, myMap.width, myMap.height, true);
+				camMap.deadzone = new FlxRect(_viewSize * 2, _viewSize * 2, 320 - _viewSize * 4, 320 - _viewSize * 4);
+				//camMap.color = 0xFFCCCC;
+				FlxG.addCamera(camMap);							// camera that shows where the character is on the map
+			}
 		}
 		
 		private function cleanup(m:Message, userID:int, xp:int, coin:int):void 
@@ -410,8 +416,8 @@ package
 						win = myPlayer.movePlayer( -1, 0, _tileSize, connection);
 						connection.send("move", -1, 0);
 					}else if (myMouse.justPressed() &&  mouseWithinTileMap() && abilitySelected) {
-						var selectedXTile:int = (myMouse.x - _mapOffsetX) / _tileSize
-						var selectedYTile:int = (myMouse.y - _mapOffsetY) / _tileSize
+						var selectedXTile:int = getTileX();// (myMouse.x - _mapOffsetX) / _tileSize
+						var selectedYTile:int = getTileY();// (myMouse.y - _mapOffsetY) / _tileSize
 						//TO DO: ADD ALERT MESSAGE!!!
 						if (checkActiveAbilityRange(selectedXTile, selectedYTile)) {
 							activeAbility.cast(selectedXTile, selectedYTile , connection);
@@ -423,16 +429,19 @@ package
 						}
 					//CLICK MOVING
 					}else if (tileHover.visible) {
-						var camOffsetX:int = 0;
+
 						if (camMap && camMap.scroll) camOffsetX = camMap.scroll.x;
-						var camOffsetY:int = 0;
+
 						if (camMap && camMap.scroll) camOffsetY = camMap.scroll.y;
-												
-						var xTemp:int = Math.floor((myMouse.x - _mapOffsetX + camOffsetX + 0) / _viewSize);		// the tile number
+						
+						if (_zoomedIn) currentZoomView = 2;						
+						var xTemp:int = getTileX();// Math.floor((myMouse.x - _mapOffsetX) / _viewSize / currentZoomView + camOffsetX / _viewSize);						
+						//var xTemp:int = Math.floor((myMouse.x - _mapOffsetX + camOffsetX + 0) / _viewSize / currentZoomView);		// the tile number
 						var xTempCoord:int = xTemp * _tileSize + 0;
-						var yTemp:int = Math.floor((myMouse.y - _mapOffsetY + camOffsetY - _windowHeight) / _viewSize);		// the tile number
+						//var yTemp:int = Math.floor((myMouse.y - _mapOffsetY + camOffsetY - _windowHeight) / _viewSize / currentZoomView);	
+						var yTemp:int = getTileY();// Math.floor((myMouse.y - _mapOffsetY) / _viewSize / currentZoomView + (camOffsetY - _windowHeight) / _viewSize );// the tile number
 						var yTempCoord:int = yTemp * _tileSize + _windowHeight;									// the coordinate of that tile
-						//trace("camera offset:" + camOffsetX + "," + camOffsetY + " actualcoord:" + xTemp + "," + yTemp + " coord:" + xTempCoord + "," + yTempCoord);
+						trace("camera offset:" + camOffsetX + "," + camOffsetY + " actualcoord:" + xTemp + "," + yTemp + " coord:" + xTempCoord + "," + yTempCoord);
 						tileHover.x = xTempCoord;
 						tileHover.y = yTempCoord;
 						
@@ -532,6 +541,14 @@ package
 			
 		}
 		
+		private function getTileX():int {
+			return Math.floor((myMouse.x - _mapOffsetX) / _viewSize / currentZoomView + camOffsetX / _viewSize);						
+		}
+		
+		private function getTileY():int {
+			return Math.floor((myMouse.y - _mapOffsetY) / _viewSize / currentZoomView + (camOffsetY - _windowHeight) / _viewSize );
+		}
+		
 		// update AP value for this player in the Quests database
 		// input: new value of AP
 		public static function updateAP(newAP:int):void
@@ -593,24 +610,19 @@ package
 			
 			//Tile Map
 			myMap = new FlxTilemap();
-			//myMap.drawIndex = 0;
 			myMap.loadMap(map_data, data_tiles, _tileSize, _tileSize,0,0,0,6);
-			//myMap.collideIndex = 1;
-			//myMap.x = _mapOffsetX;
-			//myMap.y = _mapOffsetY;
 			myMap.x = 0;			// put the map off sight
 			myMap.y = _windowHeight;
 			trace("made map below");
 			lyrStage.add(myMap);
-			
-			
-			
-			
+		
 			// Top HUD
 			apInfo = new FlxText(_apBoxOffsetX, _apBoxOffsetY, 100, "AP:", true);
 			lvl = new FlxText(_lvlTextOffsetX, _lvlTextOffsetY, 100, "Lvl:1", true);
 			experience = new FlxText(_experienceTextOffsetX, _experienceTextOffsetY, 100, "Exp:0", true);
 			
+			var zoomInButton:FlxButton = new FlxButton(100, 340, "+", zoomInAction);
+			var zoomOutButton:FlxButton = new FlxButton(100, 370, "-", zoomOutAction);
 			//Battle HUD
 			//Background
 			
@@ -667,6 +679,8 @@ package
 			lyrHUD.add(location);
 			lyrHUD.add(errorMessage);
 			lyrHUD.add(mouseLocation);
+			lyrHUD.add(zoomInButton);
+			lyrHUD.add(zoomOutButton);
 			lyrBackground.add(background);
 			
 			lyrSprites.add(lyrMonster);
@@ -679,7 +693,7 @@ package
 			
 			tileHover = new FlxSprite(0, _windowHeight, hoverTileImg);
 			this.add(tileHover);
-			
+			trace("added hover piece....");
 			connected = true;
 			
 			// gather resources button is not visible unless you can gather something
@@ -707,9 +721,31 @@ package
 				}
 			);
 			
-
+			setCameras();
 			
-			trace("done setting up the board");
+			trace("done setting up the board, camera set up *** ");
+		}
+		
+		private function zoomInAction():void
+		{
+			_zoomedIn = true;
+			camMap= new FlxCamera(_mapOffsetX, _mapOffsetY, 320/2, 320/2, 2);
+			camMap.follow(myPlayer, FlxCamera.STYLE_TOPDOWN);
+			camMap.setBounds(0, _windowHeight, myMap.width, myMap.height, true);
+			camMap.deadzone = new FlxRect(32, 32, 48, 48);///new FlxRect(_viewSize * 2, _viewSize * 2, 320 - _viewSize * 4, 320 - _viewSize * 4);
+			FlxG.resetCameras(new FlxCamera(0, 0, _windowWidth, _windowHeight));
+			FlxG.addCamera(camMap);
+		}
+		
+		private function zoomOutAction():void 
+		{
+			_zoomedIn = false;
+			camMap= new FlxCamera(_mapOffsetX, _mapOffsetY, 320, 320);
+			camMap.follow(myPlayer, FlxCamera.STYLE_TOPDOWN);
+			camMap.setBounds(0, _windowHeight, myMap.width, myMap.height, true);
+			camMap.deadzone = new FlxRect(_viewSize * 2, _viewSize * 2, 320 - _viewSize * 4, 320 - _viewSize * 4);
+			FlxG.resetCameras(new FlxCamera(0, 0, _windowWidth, _windowHeight));
+			FlxG.addCamera(camMap);
 		}
 		
 		//Determines whether the mouse is within the game map board, return true if it is or false if it is outside the board
