@@ -72,11 +72,14 @@ package
 		public function canCast(player:Player):Boolean
 		{
 			var canCast:Boolean = true;
-			if (player.AP < this._cost)
+			if (player.AP < this._cost) {
 				canCast = false;
+				trace("not enough AP to cast");
+			}
 				
 			// if lumber cost exists for ability, check if player has enough
-			if (player.amountLumber > _neededLumber) {
+			if (player.amountLumber < _neededLumber) {
+				trace("not enough lumber to cast");
 				canCast = false;
 			}
 			

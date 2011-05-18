@@ -429,7 +429,6 @@ package
 						var selectedYTile:int = getTileY();// (myMouse.y - _mapOffsetY) / _tileSize
 						//TO DO: ADD ALERT MESSAGE!!!
 						if (checkActiveAbilityRange(selectedXTile, selectedYTile) && activeAbility.canCast(myPlayer)) {
-							trace("can cast ability");
 							activeAbility.cast(selectedXTile, selectedYTile , connection);
 							
 							// pay for ability
@@ -442,7 +441,7 @@ package
 							activeAbility.visible = false;
 							setActiveAbility(null);
 							abilitySelected = false;
-						} else ("can't cast ability!");
+						}
 					//CLICK MOVING
 					}else if (tileHover.visible) {
 
@@ -687,7 +686,6 @@ package
 			
 			lyrHUD.add(resources);
 			lyrHUD.add(resourcesText);
-			//lyrHUD.add(gatherLumberButton);
 			lyrHUD.add(lvl);
 			lyrHUD.add(experience);
 			lyrHUD.add(abilities);
@@ -704,8 +702,9 @@ package
 
 			tileHover = new FlxSprite(0, _windowHeight, hoverTileImg);
 			lyrHUD.add(tileHover);
-			trace("added hover piece....");
 			lyrSprites.add(lyrMonster);
+			
+			lyrTop.add(gatherLumberButton);
 			
 			this.add(lyrBackground);
 			this.add(lyrStage);
@@ -713,7 +712,6 @@ package
 			this.add(lyrBattle);
 			this.add(lyrTop);
 			this.add(lyrSprites);
-			this.add(gatherLumberButton);
 			
 			connected = true;
 			
