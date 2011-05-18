@@ -51,7 +51,7 @@ package
 			// to ["Lumber:0", "Cherry:3", "Seed:2"]
 			if (resourcesString != null)
 			{
-				trace("resourcesString: " + resourcesString);
+				trace("resourcesString from server: " + resourcesString);
 				var resourcesArray:Array = resourcesString.split("/");
 				var resource:Array;
 				for (var i:int = 0; i < resourcesArray.length; i++)
@@ -82,6 +82,7 @@ package
 			addAnimation("walk" + RIGHT, [9, 10, 11], 15, true);
 			facing = FlxSprite.DOWN;
 		}
+		
 		
 		//Public function that can be called to move the position of the player based on a tile change
 		//thus to move one tile to the right send (1,0) as arugments, one to left is (-1,0)
@@ -127,10 +128,13 @@ package
 		}
 		//Find AP Cost of the tile at the given location.
 		private function findCost(proposedX:Number, proposedY:Number):Number {
-			if (PlayState.myMap.getTile(proposedX, proposedY) == 1) {
+			if (PlayState.myMap.getTile(proposedX, proposedY) == HILL_TILE) {
 				return 3;
-			}else {
-				return 1;
+			}
+			
+			// this is a grass tile
+			else {
+				return 0;
 			}
 		}
 		

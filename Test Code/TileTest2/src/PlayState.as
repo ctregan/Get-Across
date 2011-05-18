@@ -84,7 +84,7 @@ package
 		private var connection:Connection; //connection to server
 		
 		// buttons for side menu
-		public static var gatherResourcesButton:FlxButton;
+		public static var gatherLumberButton:FlxButton;
 		
 		
 		private var win:Boolean = false; //This variable will indicate if a user has won or not
@@ -130,7 +130,6 @@ package
 		var camOffsetX:int = 0;
 		var camOffsetY:int = 0;
 		var currentZoomView:int = 1;
-		private var gatherResourceButton:FlxButton;
 		
 		private var timer;				// object used for delays.
 		
@@ -254,8 +253,8 @@ package
 					playerName = name;
 					// add player to screen --
 					trace("create player sprite: " + posX + " " + posY);
-					trace("playerInfo: AP to start with: " + playerAP);
-					trace("resources to start with: " + playerAP);
+					//trace("playerInfo: AP to start with: " + playerAP);
+					//trace("resources to start with: " + playerAP);
 					if (posX < 0) posX = 0;
         			if (posY < 0) posY = 0;
 					myPlayer = new Player(posX, posY, 0, _windowHeight, _tileSize, playerAP, resourcesString);
@@ -372,12 +371,12 @@ package
 			if (connected == true) {
 				if (myPlayer != null && myMap.getTile(myPlayer.xPos, myPlayer.yPos) == CHERRY_TILE)
 				{
-					gatherResourcesButton.x = myPlayer.x + 20;
-					gatherResourcesButton.y = myPlayer.y - 20;
-					gatherResourcesButton.visible = true;
+					gatherLumberButton.x = myPlayer.x + 20;
+					gatherLumberButton.y = myPlayer.y - 20;
+					gatherLumberButton.visible = true;
 				}
 				else { 
-					gatherResourcesButton.visible = false;
+					gatherLumberButton.visible = false;
 				}
 				counter -= FlxG.elapsed;
 				if (counter <= 0)
@@ -394,39 +393,56 @@ package
 				//Player moves only one character, detect keys presses here
 
 				if (myPlayer != null && !win) {
+					
+					/*** DEBUG CHEATS ***/
 					if (myPlayer.AP <= 20 && FlxG.keys.justPressed("A")) {
 						myPlayer.AP++;
 						connection.send("updateStat", "AP", myPlayer.AP);
 					}
+					
+					if (FlxG.keys.justPressed("L")) {
+						myPlayer.amountLumber++;
+						connection.send("updateStat", "lumber", myPlayer.amountLumber);
+						resourcesText.text = "Lumber: " + myPlayer.amountLumber;
+					}
+					
+					/*** END DEBUG CHEATS ***/
+					
 					if (FlxG.keys.justPressed("DOWN") && !myPlayer.isMoving && !myPlayer.inBattle) {
 						myPlayer.facing = FlxSprite.DOWN;
 						win = myPlayer.movePlayer(0, 1, _tileSize, connection);
-						connection.send("move", 0, 1);
+						//connection.send("move", 0, 1);
 					}else if (FlxG.keys.justPressed("UP") && !myPlayer.isMoving && !myPlayer.inBattle) {
 						myPlayer.facing = FlxSprite.UP;
 						win = myPlayer.movePlayer(0, -1, _tileSize, connection);
-						connection.send("move", 0, -1);
+						//connection.send("move", 0, -1);
 					}else if (FlxG.keys.justPressed("RIGHT") && !myPlayer.isMoving && !myPlayer.inBattle) {
 						myPlayer.facing = FlxSprite.RIGHT;
 						win = myPlayer.movePlayer(1, 0, _tileSize, connection);
-						connection.send("move", 1, 0);
+						//connection.send("move", 1, 0);
 					}else if (FlxG.keys.justPressed("LEFT") && !myPlayer.isMoving && !myPlayer.inBattle) {
 						myPlayer.facing = FlxSprite.LEFT;
 						win = myPlayer.movePlayer( -1, 0, _tileSize, connection);
-						connection.send("move", -1, 0);
+						//connection.send("move", -1, 0);
 					}else if (myMouse.justPressed() &&  mouseWithinTileMap() && abilitySelected) {
 						var selectedXTile:int = getTileX();// (myMouse.x - _mapOffsetX) / _tileSize
 						var selectedYTile:int = getTileY();// (myMouse.y - _mapOffsetY) / _tileSize
 						//TO DO: ADD ALERT MESSAGE!!!
-						if (checkActiveAbilityRange(selectedXTile, selectedYTile)) {
+						if (checkActiveAbilityRange(selectedXTile, selectedYTile) && activeAbility.canCast(myPlayer)) {
+							trace("can cast ability");
 							activeAbility.cast(selectedXTile, selectedYTile , connection);
+							
+							// pay for ability
 							myPlayer.AP -= activeAbility._cost;
+							myPlayer.amountLumber -= activeAbility._neededLumber;
+							
+							connection.send("updateStat", "AP", myPlayer.AP);
+							connection.send("updateStat", "lumber", myPlayer.amountLumber);
+							
 							activeAbility.visible = false;
 							setActiveAbility(null);
 							abilitySelected = false;
-							trace("cast bridge!  new AP: " + myPlayer.AP);
-							connection.send("updateStat", "AP", myPlayer.AP);
-						}
+						} else ("can't cast ability!");
 					//CLICK MOVING
 					}else if (tileHover.visible) {
 
@@ -442,7 +458,7 @@ package
 						//var yTemp:int = Math.floor((myMouse.y - _mapOffsetY + camOffsetY - _windowHeight) / _viewSize / currentZoomView);	
 						var yTemp:int = getTileY();// Math.floor((myMouse.y - _mapOffsetY) / _viewSize / currentZoomView + (camOffsetY - _windowHeight) / _viewSize );// the tile number
 						var yTempCoord:int = yTemp * _tileSize + _windowHeight;									// the coordinate of that tile
-						trace("camera offset:" + camOffsetX + "," + camOffsetY + " actualcoord:" + xTemp + "," + yTemp + " coord:" + xTempCoord + "," + yTempCoord);
+						//trace("camera offset:" + camOffsetX + "," + camOffsetY + " actualcoord:" + xTemp + "," + yTemp + " coord:" + xTempCoord + "," + yTempCoord);
 						tileHover.x = xTempCoord;
 						tileHover.y = yTempCoord;
 						
@@ -460,12 +476,12 @@ package
 								// check for condition....
 								
 								if (xTemp < myPlayer.xPos) myPlayer.facing = FlxSprite.LEFT;
-								else if (xTemp > myPlayer.xPos) myPlayer.facing =FlxSprite.RIGHT;
-								else if (yTemp < myPlayer.yPos) myPlayer.facing =FlxSprite.UP;
-								else if (yTemp > myPlayer.yPos) myPlayer.facing =FlxSprite.DOWN;
+								else if (xTemp > myPlayer.xPos) myPlayer.facing = FlxSprite.RIGHT;
+								else if (yTemp < myPlayer.yPos) myPlayer.facing = FlxSprite.UP;
+								else if (yTemp > myPlayer.yPos) myPlayer.facing = FlxSprite.DOWN;
 								
 								win = myPlayer.movePlayer(xTemp - myPlayer.xPos, yTemp - myPlayer.yPos, _tileSize, connection)
-								connection.send("move",xTemp - myPlayer.xPos, yTemp - myPlayer.yPos);
+								//connection.send("move",xTemp - myPlayer.xPos, yTemp - myPlayer.yPos);
 							}
 						} else {
 							// if not within reach, set color to red
@@ -518,15 +534,15 @@ package
 		private function tileInformation(type:Number):String
 		{
 			if (type == HILL_TILE) {
-				return "Hill (Travel Cost = 3AP)";
+				return "Hill (Travel Cost = 3 AP)";
 			}else if (type == TREE_TILE) {
-				return "Tree (Travel Cost = 1AP)";
+				return "Tree (Travel Cost = 1 AP)";
 			}else if (type == CHERRY_TILE) {
-				return "Cherry Tree (Travel Cost = 1AP)";
+				return "Cherry Tree (Travel Cost = 1 AP)";
 			}else if (type == WATER_TILE || type == 6 || type == 7) {
 				return "Water (Impassible without help)";
 			}else if (type == GRASS_TILE) {
-				return "Land (Travel Cost = 1AP)";
+				return "Land (Travel Cost = 0 AP)";
 			}else if (type == WIN_TILE) {
 				return "End Point (Reach here to win!)";
 			}else{
@@ -656,7 +672,7 @@ package
 			//Right Side HUD
 			resources = new FlxText(_resourceTextOffsetX, _resourceTextOffsetY, 150, "Resources:", true);			
 			resourcesText = new FlxText(_resourceTextOffsetX, _resourceTextOffsetY + 10,150, "", true);
-			gatherResourcesButton = new FlxButton(_resourceTextOffsetX, _resourceTextOffsetY + 15, "Gather lumber!", gatherResource);
+			gatherLumberButton = new FlxButton(_resourceTextOffsetX, _resourceTextOffsetY + 15, "Gather lumber!", gatherResource);
 
 			goals = new FlxText(_goalsBoxOffsetX, _goalsBoxOffsetY, 100, "Goals:\nReach the Red Star", true); 
 			goals.frameHeight = 75;			
@@ -671,7 +687,7 @@ package
 			
 			lyrHUD.add(resources);
 			lyrHUD.add(resourcesText);
-			lyrHUD.add(gatherResourcesButton);
+			//lyrHUD.add(gatherLumberButton);
 			lyrHUD.add(lvl);
 			lyrHUD.add(experience);
 			lyrHUD.add(abilities);
@@ -681,7 +697,8 @@ package
 			lyrHUD.add(errorMessage);
 			lyrHUD.add(mouseLocation);
 
-			lyrHUD.add(new FlxButtonPlus(540, 15, mainMenu, null, "Main Menu"));			lyrHUD.add(zoomInButton);
+			lyrHUD.add(new FlxButtonPlus(540, 15, mainMenu, null, "Main Menu"));
+			lyrHUD.add(zoomInButton);
 			lyrHUD.add(zoomOutButton);
 			lyrBackground.add(background);
 
@@ -696,12 +713,12 @@ package
 			this.add(lyrBattle);
 			this.add(lyrTop);
 			this.add(lyrSprites);
+			this.add(gatherLumberButton);
 			
-
 			connected = true;
 			
 			// gather resources button is not visible unless you can gather something
-			gatherResourcesButton.visible = false;
+			gatherLumberButton.visible = false;
 			
 			// ask server for data about this player
 			// server will send back data so client can create this player's sprite

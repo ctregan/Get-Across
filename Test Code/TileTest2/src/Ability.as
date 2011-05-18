@@ -21,6 +21,9 @@ package
 		private var _xOffset:int;
 		private var _yOffset:int;
 		private var _object:DatabaseObject;
+		
+		// resources this ability costs
+		public var _neededLumber:int;
 			
 		public function Ability(tileSize:int, xOffset:int, yOffset:int, caster:Player, object:DatabaseObject) 
 		{
@@ -28,11 +31,12 @@ package
 			_xOffset = xOffset;
 			_yOffset = yOffset;
 			_range = object.Range;
-			_cost = object.cost;
-			_object = object
+			_cost = object.Cost;
+			_object = object;
 			_caster = caster;
+			_neededLumber = object.Lumber;
 			
-			var img:Class = range1
+			var img:Class = range1;
 			if (_range == 1) {
 				img = range1;
 				
@@ -59,9 +63,24 @@ package
 		}
 		
 		//Returns the range of the ability
-		public function  getRange():int
+		public function getRange():int
 		{
 			return _range;
+		}
+		
+		// returns true if player has enough AP & resources to cast this ability
+		public function canCast(player:Player):Boolean
+		{
+			var canCast:Boolean = true;
+			if (player.AP < this._cost)
+				canCast = false;
+				
+			// if lumber cost exists for ability, check if player has enough
+			if (player.amountLumber > _neededLumber) {
+				canCast = false;
+			}
+			
+			return canCast;
 		}
 		
 		public function cast(tileX:int, tileY:int, connection:Connection) 
@@ -69,7 +88,6 @@ package
 			if (_object.Effect.Type == "Terrain" && PlayState.myMap.getTile(tileX,tileY) == _object.Effect.From) {
 				PlayState.myMap.setTile(tileX, tileY, _object.Effect.To)
 				connection.send("MapTileChanged", tileX, tileY, _object.Effect.To);
-				//connection.send("QuestMapUpdate", PlayState.myMap.getMapData())
 				connection.send("QuestMapUpdate", PlayState.myMap.getMapData());
 			}else if (_object.Effect.Type == "Sprite" && PlayState.myMap.getTile(tileX,tileY) == _object.Effect.From) {
 				PlayState.lyrSprites.add(new EffectSprite((tileX * _tileSize ) + _xOffset, (tileY * _tileSize) + _yOffset, _object.Effect.Image, _object.Effect.Range, _tileSize));
