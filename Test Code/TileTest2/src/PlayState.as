@@ -627,28 +627,28 @@ package
 			//Background
 			
 			//Weak Attack Button
-			lyrBattle.add(new FlxButton(22, 284, "text", function() { 
+			lyrBattle.add(new FlxButton(22, 284, "Weak Attack", function() { 
 				if (myPlayer.inBattle) {
 					myPlayer.combatant.attack(1,myPlayer, connection);
 				}
 			}))
-			lyrBattle.add(new FlxText(24, 286, 100, "Weak Attack"));
+			//lyrBattle.add(new FlxText(24, 286, 100, "Weak Attack"));
 			//Medium Attack Button
-			lyrBattle.add(new FlxButton(22, 314, "text", function() { 
+			lyrBattle.add(new FlxButton(22, 314, "Medium Attack", function() { 
 				if (myPlayer.inBattle) {
 					myPlayer.combatant.attack(2,myPlayer, connection);
 				}
 			}))
 			
-			lyrBattle.add(new FlxText(24, 316, 100, "Medium Attack"));
+			//lyrBattle.add(new FlxText(24, 316, 100, "Medium Attack"));
 			//Strong Attack Button
-			lyrBattle.add(new FlxButton(22, 344, "text", function() { 
-			lyrBattle.add(new FlxButton(22, 344, "text", function() { 
+			//lyrBattle.add(new FlxButton(22, 344, "text", function() { 
+			lyrBattle.add(new FlxButton(22, 344, "Strong Attack", function() { 
 				if (myPlayer.inBattle) {
 					myPlayer.combatant.attack(3,myPlayer, connection);
 				}
 			}))
-			lyrBattle.add(new FlxText(24, 346, 100, "Strong Attack"));
+			//lyrBattle.add(new FlxText(24, 346, 100, "Strong Attack"));
 			//Initially the battle hud is invisible, it will be visible when a user enters combat
 			lyrBattle.visible = false;
 			
@@ -684,8 +684,12 @@ package
 			lyrHUD.add(new FlxButtonPlus(540, 15, mainMenu, null, "Main Menu"));			lyrHUD.add(zoomInButton);
 			lyrHUD.add(zoomOutButton);
 			lyrBackground.add(background);
-			
+
+			tileHover = new FlxSprite(0, _windowHeight, hoverTileImg);
+			lyrHUD.add(tileHover);
+			trace("added hover piece....");
 			lyrSprites.add(lyrMonster);
+			
 			this.add(lyrBackground);
 			this.add(lyrStage);
 			this.add(lyrHUD);
@@ -693,9 +697,7 @@ package
 			this.add(lyrTop);
 			this.add(lyrSprites);
 			
-			tileHover = new FlxSprite(0, _windowHeight, hoverTileImg);
-			this.add(tileHover);
-			trace("added hover piece....");
+
 			connected = true;
 			
 			// gather resources button is not visible unless you can gather something
