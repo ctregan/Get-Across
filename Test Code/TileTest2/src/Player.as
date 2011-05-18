@@ -142,8 +142,12 @@ package
 		
 		//Sees if the desired move for the player is valid.
 		public function checkMove(proposedX:Number, proposedY:Number):Boolean {
-			if (PlayState.myMap.getTile(proposedX, proposedY) == WATER_TILE ) {
+			var proposedTileType:int = PlayState.myMap.getTile(proposedX, proposedY)
+			if ( proposedTileType == WATER_TILE || proposedTileType == 6 || proposedTileType == 7) {
 				errorMessage = "Invalid Move, can't cross water";
+				return false;
+			}else if (proposedTileType == 10) {
+				errorMessage = "Invalid Move, Must First Open the Gate";
 				return false;
 			}else if (AP < findCost(proposedX, proposedY)) {
 				errorMessage = "Invalid Move, insufficient AP";

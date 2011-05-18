@@ -30,6 +30,7 @@ namespace GetAcross {
         private int numPlayers;
         private Tile[,] field;
         private String levelKey;
+        private String mapType; //Indicates which database table the map data should be loaded from (static vs user)
         private String playerConnectUserId;
         //private int player.AP;       // server's variable to keep track of clientside player AP amount
         private String questID;    // id of the quest player is in
@@ -46,6 +47,14 @@ namespace GetAcross {
             field = new Tile[10,10];
             numPlayers = 0;
             levelKey = RoomData["key"];
+            if (RoomData["type"] == "user")
+            {
+                mapType = "UserMaps";
+            }
+            else
+            {
+                mapType = "StaticMaps";
+            }
             PreloadPlayerObjects = true;
             startSessionTime = DateTime.Now;
 
@@ -141,7 +150,7 @@ namespace GetAcross {
                             Console.WriteLine("questPlayers contents: " + questPlayers.ToString());
                             Console.WriteLine("Level key: " + levelKey);
                             //Add Static Map to Quest, to be updated later
-                            PlayerIO.BigDB.Load("StaticMaps", levelKey, 
+                            PlayerIO.BigDB.Load(mapType, levelKey, 
                                 delegate(DatabaseObject staticMap)
                                 {
                                     newQuest.Set("StaticMapKey", staticMap.Key);
@@ -210,7 +219,7 @@ namespace GetAcross {
                                 delegate(DatabaseObject questObject)
                                 {
                                     String resources = ""; // player's resources, to pass to client
-
+                                    levelKey = questObject.GetString("StaticMapKey");
                                     if (questObject != null)
                                     {
                                         // extract players playing this quest
@@ -380,7 +389,7 @@ namespace GetAcross {
                     }
                 case "win":
                     {
-                        PlayerIO.BigDB.Load("StaticMaps", levelKey,
+                        PlayerIO.BigDB.Load(mapType, levelKey,
                             delegate(DatabaseObject result)
                             {
                                 // todo: change these based on what you got in the level
@@ -443,7 +452,7 @@ namespace GetAcross {
                 case "QuestMapUpdate":
                     {
                         questMap = message.GetString(0);
-                        /*player.GetPlayerObject(
+                        player.GetPlayerObject(
                             delegate(DatabaseObject updatedPlayerObject){
                                 PlayerIO.BigDB.Load("NewQuests", questID,
                                      delegate(DatabaseObject dbo)
@@ -451,19 +460,20 @@ namespace GetAcross {
                                             dbo.Set("tileValues", message.GetString(0));
                                             dbo.Save();
                                         });
-                            });*/
+                            });
                         break;
                     }
                 case "MonsterAPChange":
                     {
                         int newAp = message.GetInt(0);
                         int monsterIndex = message.GetInt(1);
-                       /* PlayerIO.BigDB.Load("newQuests", questID,
+                        PlayerIO.BigDB.Load("newQuests", questID,
                             delegate(DatabaseObject dbo)
                             {
                                 DatabaseArray monsters = dbo.GetArray("Monsters");
                                 monsters.GetObject(monsterIndex).Set("AP", newAp);
-                            */
+                                dbo.Save();
+                            });
                         //CHARLIE TO DO - Make this data reflected in the database too.
                         Broadcast("MonsterAPChange", player.Id, newAp, monsterIndex);
                         break;
