@@ -37,16 +37,27 @@ package
 		{
 			myPlayer = ob;
 			characterInfo = new Label("Level: " + ob.level + "	Class: " + ob.role + "	Coin: " + ob.coin, 12, TextFormatAlign.CENTER);
+			tutorialButton = new TextButton("Start Tutorial", startTutorial);
 			tutorialLevel = ob.tutorial;
-			continueButton = new TextButton("Continue Last Quest", continueQuest);
+			if (tutorialLevel <= 5) {
+				continueButton = new TextButton("Continue Tutorial", continueQuest);
+			}else{
+				continueButton = new TextButton("Continue Last Quest", continueQuest);
+				tutorialButton.visible = false;
+				tutorialButton.enabled = false;
+				
+			}
 			//Try to load questID, if no quest then that button is invisible
 			try {
 				_questID = ob.questID;
+				if (_questID == "noQuest") {
+					continueButton.enabled = false;
+				}
 			}catch (e:Error)
 			{
 				continueButton.enabled = false;
 			}
-			tutorialButton = new TextButton("Tutorial", startTutorial);
+			
 			mainMenu = new Box().fill(0xFFFFFF, 0.8, 0)
 			mainMenu.add(new Box().fill(0x00000, .5, 15).margin(10, 10, 10, 10).minSize(_windowWidth, _windowHeight).add(
 				new Box().fill(0xffffff,1,5).margin(10,10,10,10).minSize(300,0).add(
@@ -86,10 +97,15 @@ package
 		//Callback function for when Start Tutorial Button is Pressed
 		private function startTutorial():void
 		{
-			var _levelKey:String = "Tutorial_" + tutorialLevel
-			//var lobby:Lobby = new Lobby(myClient, "GetAcross", "Tutorial_" + tutorialLevel, handleJoin, handleError)
-			//FlxG.stage.addChild(lobby);
-			//FlxG.state = new QuestLobby(myClient);
+			var prompt:InGamePrompt = new InGamePrompt(FlxG.stage, "Would you like to start the tutorial? All previous tutorial progress will be lost", function() { startNewTutorialAccept() } );
+		}
+		//Callback when the user wants to start new tutorial
+		private function startNewTutorialAccept():void 
+		{
+			myPlayer.tutorial = 1;
+			myPlayer.questID = "noQuest"
+			myPlayer.save();
+			var _levelKey:String = "Tutorial_1"
 			myClient.multiplayer.createRoom(
 				null,								//Room id, null for auto generted
 				"GetAcross",							//RoomType to create, bounce is a simple bounce server
@@ -98,10 +114,7 @@ package
 				joinRoom,							//Create handler
 				handleError					//Error handler										   
 			)
-			//Show lobby (parsing true hides the cancel button)
-			//this.Hide(null);
 		}
-
 		//Callback function for when New Game Button is pressed
 		private function newGame():void
 		{
@@ -113,13 +126,16 @@ package
 				});
 			}else {
 				startNewGameAccept();
-				
 			}
 		}
+		
+		//If the Start new game prompt is accepted and the users desires to delete their old quest
 		private function startNewGameAccept():void {
-			myPlayer.questID = null;
-			myPlayer.save(false,false)
-			FlxG.switchState(new LevelChooseState(myClient));
+			myPlayer.questID = "noQuest";
+			myPlayer.save(false,false,function ():void 
+			{
+				FlxG.switchState(new LevelChooseState(myClient));
+			})
 			FlxG.stage.removeChild(mainMenu);
 			this.kill();
 		}

@@ -2,6 +2,7 @@ package
 {
 	import flash.display.Sprite;
 	import org.flixel.*
+	import org.flixel.plugin.photonstorm.FlxButtonPlus;
 	import org.flixel.plugin.photonstorm.FlxHealthBar;
 	import org.flixel.system.input.*;// data.FlxMouse;
 	//import org.flixel.data.FlxPanel;
@@ -114,7 +115,6 @@ package
 		private var _resourceTextOffsetY:int = 250;
 		
 		private static var myClient:Client;
-		private static var myConnection:Connection;
 		private static var playerName:String;
 		private static var playerAP:int;
 		private var _APcounterMax:int = 10;	// seconds to pass until player gets AP incremented
@@ -145,7 +145,7 @@ package
 
 			this.client = client;
 			myClient = client;
-			this.connection = myConnection = connection;
+			this.connection = connection;
 			
 			//Connection successful, load board and player
 			connection.addMessageHandler("init", function(m:Message, iAm:int, name:String, level:String, startAP:int, levelKey:String, resources:String) {
@@ -273,7 +273,7 @@ package
 										myAbility.visible = false;
 										lyrStage.add(myAbility);
 										trace("Loaded Ability " + test.Name + "\n");
-										lyrHUD.add(new AbilityButton(_cardBoxOffsetX, _cardBoxOffsetY + yButtonPlacementModifier, myAbility))
+										lyrHUD.add(new AbilityButton(_cardBoxOffsetX, _cardBoxOffsetY + yButtonPlacementModifier, myAbility, test.Name))
 										yButtonPlacementModifier += 30
 									}
 								})
@@ -378,7 +378,7 @@ package
 					// increment player's AP if it's not the max yet
 					if (myPlayer.AP < 20)
 						myPlayer.AP++;
-					myConnection.send("updateStat", "AP", myPlayer.AP);
+					connection.send("updateStat", "AP", myPlayer.AP);
 				}
 				//Update HUD Information
 				secCounter.text = counter.toPrecision(3) + " seconds until more AP";
@@ -387,7 +387,7 @@ package
 				if (myPlayer != null && !win) {
 					if (myPlayer.AP <= 20 && FlxG.keys.justPressed("A")) {
 						myPlayer.AP++;
-						myConnection.send("updateStat", "AP", myPlayer.AP);
+						connection.send("updateStat", "AP", myPlayer.AP);
 					}
 					if (FlxG.keys.justPressed("DOWN") && !myPlayer.isMoving && !myPlayer.inBattle) {
 						myPlayer.facing = FlxSprite.DOWN;
@@ -657,6 +657,7 @@ package
 			lyrHUD.add(location);
 			lyrHUD.add(errorMessage);
 			lyrHUD.add(mouseLocation);
+			lyrHUD.add(new FlxButtonPlus(540, 15, mainMenu, null, "Main Menu"));
 			lyrBackground.add(background);
 			
 			lyrSprites.add(lyrMonster);
@@ -733,7 +734,12 @@ package
 		private function getTileIdentity(x:int,y:int):uint {
 			return myMap.getTile((x - _mapOffsetX) / _tileSize, (y - _mapOffsetY) / _tileSize);
 		}
-		
+		//Callback function for the mainMenu Button
+		private function mainMenu():void {
+			connection.disconnect();
+			this.kill();
+			FlxG.switchState(new MenuState(myClient));
+		}
 		public function gatherResource():void
 		{
 			// increase player's amount of lumber
@@ -744,9 +750,9 @@ package
 			myMap.setTile(myPlayer.xPos, myPlayer.yPos, GRASS_TILE);
 			
 			// tell server about new map, new values for player
-			myConnection.send("MapTileChanged", myPlayer.xPos, myPlayer.yPos, GRASS_TILE);
-			myConnection.send("QuestMapUpdate", myMap.getMapData());
-			myConnection.send("updateStat", "lumber", myPlayer.amountLumber);
+			connection.send("MapTileChanged", myPlayer.xPos, myPlayer.yPos, GRASS_TILE);
+			connection.send("QuestMapUpdate", myMap.getMapData());
+			connection.send("updateStat", "lumber", myPlayer.amountLumber);
 		}
 		//***************************************************
 		//*****************PLAYERIO Functions****************

@@ -13,11 +13,10 @@ package sample.ui.components{
 		private var _ability:Ability;
 		private var _rangeShow:Boolean;
 		
-		function AbilityButton(xPixel:int, yPixel:int, ability:Ability) {
+		function AbilityButton(xPixel:int, yPixel:int, ability:Ability, abilityName:String) {
 			_ability = ability;
 			_rangeShow = false;
-			//add(new FlxText(xPixel + 2, yPixel + 2, width - 2, text));
-			super(xPixel, yPixel, buttonClick,null, "ability");
+			super(xPixel, yPixel, buttonClick,null,abilityName);
 		}
 		
 		public function buttonClick():void 
