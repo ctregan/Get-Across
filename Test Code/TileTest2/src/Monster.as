@@ -11,8 +11,8 @@ package
 	{
 		[Embed(source = "data/monster1.png")] public var monster_weak:Class;
 		public var _ap:int
-		private var _xTile:int
-		private var _yTile:int
+		public var _xTile:int
+		public var _yTile:int
 		private var _monsterIndex:int //The Index of the Monster within the level's database table.
 		public var healthBar:FlxHealthBar;
 		
