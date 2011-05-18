@@ -108,7 +108,7 @@ package
 				velocity.x = 0;*/
 				this.x = desiredX;
 				this.y = desiredY;
-				//connection.send("move", xChange, yChange);
+				connection.send("move", xChange, yChange);
 				//trace("x:" + xPos + " y:" + yPos + " change_x:" + xChange + " change_y:" + yChange + " tile_size:" + tileSize + " type:" + PlayState.myMap.getTile(xPos, yPos));
 				if (PlayState.myMap.getTile(xPos, yPos) == WIN_TILE) {
 					trace("at win!");
