@@ -247,7 +247,10 @@ namespace GetAcross {
                                             DatabaseObject resourcesObject = thisPlayer.GetObject("resources");
                                             Console.WriteLine("resources object: " + resourcesObject.ToString());
                                             if (resourcesObject.Contains("lumber"))
-                                                resources += "Lumber:" + resourcesObject.GetInt("lumber");
+                                            {
+                                                amountLumber = resourcesObject.GetInt("lumber");
+                                                resources += "Lumber:" + amountLumber;                                        
+                                            }
                                             
                                             Console.WriteLine("resources string: " + resources);
                                         }
