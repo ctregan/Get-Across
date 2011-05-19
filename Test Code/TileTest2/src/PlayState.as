@@ -71,9 +71,6 @@ package
 		public static var lyrMonster:FlxGroup;
 		public static var lyrTop:FlxGroup;
 		
-		private static var _windowWidth:int = 700;
-		private static var _windowHeight:int = 400;
-		
 		private static var abilitySelected:Boolean = false; //Indicates whether an ability is activated
 		private static var activeAbility:Ability; //Which ability is currently chosen
 		
@@ -124,7 +121,7 @@ package
 		
 		private var camMap:FlxCamera;
 		
-		private var _windowHeight:int = 400;
+		private var _windowHeight:int = 500;
 		private var _windowWidth:int = 700
 		
 		var camOffsetX:int = 0;
