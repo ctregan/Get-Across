@@ -415,11 +415,25 @@ namespace GetAcross {
                                 }
                                 else if (player.PlayerObject.GetInt("tutorial") == 2)
                                 {
+                                    DatabaseArray abilities = new DatabaseArray();
+                                    abilities.Add("Planter_RedFlower");
+                                    player.PlayerObject.Set("abilities", abilities);
                                     player.PlayerObject.Set("tutorial", 3);
                                 }
                                 else if (player.PlayerObject.GetInt("tutorial") == 3)
                                 {
                                     player.PlayerObject.Set("tutorial", 4);
+                                }
+                                else if (player.PlayerObject.GetInt("tutorial") == 4)
+                                {
+                                    DatabaseArray abilities = new DatabaseArray();
+                                    abilities.Add("Cook_MonsterBacon");
+                                    player.PlayerObject.Set("abilities", abilities);
+                                    player.PlayerObject.Set("tutorial", 5);
+                                }
+                                else if(player.PlayerObject.GetInt("tutorial") == 5)
+                                {
+                                    player.PlayerObject.Set("tutorial", 6);
                                 }
 
                                 player.PlayerObject.Set("xp", player.PlayerObject.GetInt("xp", 0) + gainedxp);
