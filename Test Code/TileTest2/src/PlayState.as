@@ -35,7 +35,7 @@ package
 		//[Embed(source = "data/map_data.txt", mimeType = "application/octet-stream")] public var data_map:Class; //Tile Map array
 		[Embed(source = "data/testTileSet2_32.png")] public var data_tiles:Class; //Tile Set Image
 		[Embed(source = "data/Cursor.png")] public var cursor_img:Class; //Mouse Cursor
-		[Embed(source = "data/hoverTileImg.png")] public var hoverTileImg:Class;
+		[Embed(source = "data/arrows_32.png")] public var hoverTileImg:Class;
 		[Embed(source = "data/noTileImg.png")] public var hoverTileImgNo:Class;
 		private var apInfo:FlxText; //Text field to reflect the numner of AP left
 		private var myPlayer:Player;
@@ -121,7 +121,7 @@ package
 		
 		private var camMap:FlxCamera;
 		
-		private var _windowHeight:int = 500;
+		private var _windowHeight:int = 400;
 		private var _windowWidth:int = 700
 		
 		var camOffsetX:int = 0;
@@ -454,12 +454,11 @@ package
 							abilitySelected = false;
 						}
 					//CLICK MOVING
-					}else if (tileHover.visible) {
-
+										
+					}else if (mouseWithinTileMap()) {
+						tileHover.visible = mouseWithinTileMap();
 						if (camMap && camMap.scroll) camOffsetX = camMap.scroll.x;
-
 						if (camMap && camMap.scroll) camOffsetY = camMap.scroll.y;
-						
 						if (_zoomedIn) currentZoomView = 2;	
 						else  currentZoomView = 1;	
 						var xTemp:int = getTileX();// Math.floor((myMouse.x - _mapOffsetX) / _viewSize / currentZoomView + camOffsetX / _viewSize);						
@@ -480,28 +479,52 @@ package
 						var canGo:Boolean = myPlayer.checkMove(xTemp, yTemp, _tileSize);
 						
 						if (absDis < 2 && absDis > 0 && canGo) {	// one away
-							tileHover.loadGraphic(hoverTileImg);
+							//tileHover.loadGraphic(hoverTileImg);
+							tileHover.visible = true;
+							if (xTemp < myPlayer.xPos) {
+								tileHover.frame = 2;
+							}
+							else if (xTemp > myPlayer.xPos) {
+								tileHover.frame = 0;
+							}
+							else if (yTemp < myPlayer.yPos) {
+								tileHover.frame = 3;
+							}
+							else if (yTemp > myPlayer.yPos) {
+								tileHover.frame = 1;
+							}							
+							
+							
 							if (myMouse.justPressed() && abilitySelected == false && !myPlayer.isMoving && !myPlayer.inBattle) {
 								trace("okay to move");
 								// check for condition....
 								
-								if (xTemp < myPlayer.xPos) myPlayer.facing = FlxSprite.LEFT;
-								else if (xTemp > myPlayer.xPos) myPlayer.facing = FlxSprite.RIGHT;
-								else if (yTemp < myPlayer.yPos) myPlayer.facing = FlxSprite.UP;
-								else if (yTemp > myPlayer.yPos) myPlayer.facing = FlxSprite.DOWN;
+								if (xTemp < myPlayer.xPos) {
+									myPlayer.facing = FlxSprite.LEFT; 
+								}
+								else if (xTemp > myPlayer.xPos) {
+									myPlayer.facing = FlxSprite.RIGHT; 
+								}
+								else if (yTemp < myPlayer.yPos) {
+									myPlayer.facing = FlxSprite.UP; 
+								}
+								else if (yTemp > myPlayer.yPos) {
+									myPlayer.facing = FlxSprite.DOWN; 
+								}
 								
 								win = myPlayer.movePlayer(xTemp - myPlayer.xPos, yTemp - myPlayer.yPos, _tileSize, connection)
 								//connection.send("move",xTemp - myPlayer.xPos, yTemp - myPlayer.yPos);
 							} else fireNotification(myPlayer.xPos + 20, myPlayer.yPos - 20, "Invalid move!", "loss");
 						} else {
 							// if not within reach, set color to red
-							tileHover.loadGraphic(hoverTileImgNo);
+							//tileHover.loadGraphic(hoverTileImgNo);
+							tileHover.visible = false;
 						}
 					}else if(!myPlayer.isMoving) {
 						myPlayer.play("idle" + myPlayer.facing);
 					}
 					
-					tileHover.visible = mouseWithinTileMap();
+
 					
 
 					
@@ -720,7 +743,12 @@ package
 			lyrHUD.add(zoomOutButton);
 			lyrBackground.add(background);
 
-			tileHover = new FlxSprite(0, _windowHeight, hoverTileImg);
+			tileHover = new FlxSprite(0, _windowHeight);
+			tileHover.loadGraphic(hoverTileImg, true, false, 32, 32);
+			tileHover.addAnimation("LEFT", [2], 0, false);
+			tileHover.addAnimation("DOWN", [1], 0, false);
+			tileHover.addAnimation("RIGHT", [0], 0, false);
+			tileHover.addAnimation("UP", [3], 0, false);
 			lyrHUD.add(tileHover);
 			lyrSprites.add(lyrMonster);
 			lyrHUD.add(gatherLumberButton);
