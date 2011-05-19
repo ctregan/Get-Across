@@ -20,6 +20,7 @@ package
 		public static const CHERRY_TILE:int = 3;
 		public static const WATER_TILE:int = 4;
 		public static const WIN_TILE:int = 5;
+		public static const BRIDGE_TILE:int = 9;
 		
 		[Embed(source = "data/character1.png")] public var player_avatar:Class;
 		public var AP:Number; //Amount of AP
@@ -38,6 +39,7 @@ package
 		
 		// player's resources
 		public var amountLumber:int;
+		public var amountCherry:int;
 		
 		public function Player(startX:Number, startY:Number, xOffset:int, yOffset:int, tileSize:int, startAP:int, resourcesString:String) 
 		{
@@ -64,7 +66,11 @@ package
 					{
 						case "Lumber":
 							amountLumber = resource[1];
-							PlayState.resourcesText.text += "Lumber: " + amountLumber + "\n";
+							PlayState.amountLumberText.text = "Lumber: " + amountLumber + "\n";
+							break;
+						case "Cherry":
+							amountCherry = resource[1];
+							PlayState.amountCherryText.text = "Cherryies: " + amountCherry + "\n";
 							break;
 					}
 					

@@ -56,7 +56,7 @@ package
 		private var lvl:FlxText;
 		private var experience:FlxText;
 		private var resources:FlxText;
-		public static var resourcesText:FlxText;
+		
 		private var background:Background;
 		private var playerStartX: int = 0;	// starting x position of this player
 		private var playerStartY: int = 0;	// starting y position of this player
@@ -82,6 +82,7 @@ package
 		
 		// buttons for side menu
 		public static var gatherLumberButton:FlxButtonPlus;
+		public static var gatherCherryButton:FlxButtonPlus;
 		
 		
 		private var win:Boolean = false; //This variable will indicate if a user has won or not
@@ -110,8 +111,8 @@ package
 		private var _lvlTextOffsetY:int = 5;
 		private var _experienceTextOffsetX:int = 70;
 		private var _experienceTextOffsetY:int = 5;
-		private var _resourceTextOffsetX:int = 540;
-		private var _resourceTextOffsetY:int = 250;
+		private static var _resourceTextOffsetX:int = 540;
+		private static var _resourceTextOffsetY:int = 250;
 		
 		private static var myClient:Client;
 		private static var playerName:String;
@@ -127,6 +128,9 @@ package
 		var camOffsetX:int = 0;
 		var camOffsetY:int = 0;
 		var currentZoomView:int = 1;
+		public static var amountLumberText:FlxText = new FlxText(_resourceTextOffsetX, _resourceTextOffsetY, 150, "", true);
+		public static var amountCherryText:FlxText = new FlxText(_resourceTextOffsetX, _resourceTextOffsetY + 20, 150, "", true);
+		
 		
 		private var timer;				// object used for delays.
 		
@@ -368,16 +372,24 @@ package
 		{
 			
 			if (connected == true) {
-				if (myPlayer != null && myMap.getTile(myPlayer.xPos, myPlayer.yPos) == CHERRY_TILE)
-				{
-					gatherLumberButton.x = 540;
-					gatherLumberButton.y = 340;
-					gatherLumberButton.visible = true;
-					//trace("lumber button: " + gatherLumberButton.x + "," + gatherLumberButton.y);
+				if (myPlayer != null) {
+					if (myMap.getTile(myPlayer.xPos, myPlayer.yPos) == CHERRY_TILE)
+					{
+						gatherLumberButton.x = gatherCherryButton.x = 540;
+						gatherLumberButton.y = 340;
+						gatherCherryButton.y = 310;
+						gatherLumberButton.visible = gatherCherryButton.visible = true;
+					}
+					else { 
+						gatherLumberButton.visible = gatherCherryButton.visible = false;
+					}
+					
+					if (amountLumberText != null) {
+						amountLumberText.text = "Lumber: " + myPlayer.amountLumber;
+						amountCherryText.text = "Cherry: " + myPlayer.amountCherry;
+					}
 				}
-				else { 
-					gatherLumberButton.visible = false;
-				}
+				
 				counter -= FlxG.elapsed;
 				if (counter <= 0)
 				{
@@ -405,11 +417,12 @@ package
 					if (FlxG.keys.justPressed("L")) {
 						myPlayer.amountLumber++;
 						connection.send("updateStat", "lumber", myPlayer.amountLumber);
-						resourcesText.text = "Lumber: " + myPlayer.amountLumber;
+						amountLumberText.text = "Lumber: " + myPlayer.amountLumber;
 					}
-					
-					if (FlxG.mouse.justReleased()) {
-						//trace("mouse: " + FlxG.mouse.x + "," + FlxG.mouse.y);
+					if (FlxG.keys.justPressed("C")) {
+						myPlayer.amountCherry++;
+						connection.send("updateStat", "cherry", myPlayer.amountCherry);
+						amountCherryText.text = "Cherry: " + myPlayer.amountCherry;
 					}
 					/*** END DEBUG CHEATS ***/
 					
@@ -447,8 +460,6 @@ package
 							
 							connection.send("updateStat", "AP", myPlayer.AP);
 							connection.send("updateStat", "lumber", myPlayer.amountLumber);
-							
-							resourcesText.text = "Lumber: " + myPlayer.amountLumber;
 							activeAbility.visible = false;
 							setActiveAbility(null);
 							abilitySelected = false;
@@ -712,10 +723,11 @@ package
 			
 			//render game background
 			//Right Side HUD
-			resources = new FlxText(_resourceTextOffsetX, _resourceTextOffsetY, 150, "Resources:", true);			
-			resourcesText = new FlxText(_resourceTextOffsetX, _resourceTextOffsetY + 10,150, "", true);
-			gatherLumberButton = new FlxButtonPlus(_resourceTextOffsetX, _resourceTextOffsetY + 15, gatherResource, null, "Gather lumber!");
-
+			//resources = new FlxText(_resourceTextOffsetX, _resourceTextOffsetY, 150, "Resources:", true);			
+			amountLumberText.setFormat(null, 12);
+			amountCherryText.setFormat(null, 12);
+			gatherLumberButton = new FlxButtonPlus(0,0, function():void { gatherResource("lumber"); }, null, "Gather lumber!");
+			gatherCherryButton = new FlxButtonPlus(0,0, function():void { gatherResource("cherry"); }, null, "Gather cherry!");
 			goals = new FlxText(_goalsBoxOffsetX, _goalsBoxOffsetY, 100, "Goals:\nReach the Red Star", true); 
 			goals.frameHeight = 75;			
 			errorMessage = new FlxText(_errorMessageOffsetX, _errorMessageOffsetY, 120, "Errors Appear Here", true);
@@ -728,7 +740,8 @@ package
 			background = new Background();
 			
 			lyrHUD.add(resources);
-			lyrHUD.add(resourcesText);
+			lyrHUD.add(amountLumberText);
+			lyrHUD.add(amountCherryText);
 			lyrHUD.add(lvl);
 			lyrHUD.add(experience);
 			lyrHUD.add(abilities);
@@ -752,6 +765,7 @@ package
 			lyrHUD.add(tileHover);
 			lyrSprites.add(lyrMonster);
 			lyrHUD.add(gatherLumberButton);
+			lyrHUD.add(gatherCherryButton);
 			
 			this.add(lyrBackground);
 			this.add(lyrStage);
@@ -763,7 +777,7 @@ package
 
 
 			// gather resources button is not visible unless you can gather something
-			gatherLumberButton.visible = false;
+			gatherLumberButton.visible = gatherCherryButton.visible = false;
 			// ask server for data about this player
 			// server will send back data so client can create this player's sprite
 			connection.send("playerInfo");
@@ -851,11 +865,27 @@ package
 			this.kill();
 			FlxG.switchState(new MenuState(myClient));
 		}
-		public function gatherResource():void
+		public function gatherResource(resourceType:String):void
 		{
-			// increase player's amount of lumber
-			myPlayer.amountLumber++;
-			resourcesText.text = "Lumber: " + myPlayer.amountLumber;
+			// increase player's amount of given resource
+			switch (resourceType)
+			{
+				case "lumber":
+					myPlayer.amountLumber++;
+					connection.send("updateStat", "lumber", myPlayer.amountLumber);
+					fireNotification(myPlayer.x + 20, myPlayer.y - 20, "+1 Lumber", "gain");
+					break;
+				case "cherry":
+					myPlayer.amountCherry++;
+					connection.send("updateStat", "cherry", myPlayer.amountCherry);
+					fireNotification(myPlayer.x + 20, myPlayer.y - 20, "+1 Cherry", "gain");
+					break;
+			}
+			
+			myPlayer.AP--;
+			connection.send("updateStat", "AP", myPlayer.AP);
+			fireNotification(myPlayer.x + 20, myPlayer.y, "-1 AP", "loss");
+			
 			
 			// remove tree from tile, and tell server
 			myMap.setTile(myPlayer.xPos, myPlayer.yPos, GRASS_TILE);
@@ -863,7 +893,6 @@ package
 			// tell server about new map, new values for player
 			connection.send("MapTileChanged", myPlayer.xPos, myPlayer.yPos, GRASS_TILE);
 			connection.send("QuestMapUpdate", myMap.getMapData());
-			connection.send("updateStat", "lumber", myPlayer.amountLumber);
 		}
 		
 		public static function fireNotification(xPos:int, yPos:int, message:String, messageType:String):void

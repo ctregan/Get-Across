@@ -39,6 +39,7 @@ namespace GetAcross {
 
         // variables to keep track of player resources, map
         public int amountLumber = 0;
+        public int amountCherry = 0;
         public String questMap = "";
 
 		// This method is called when an instance of your game is created
@@ -251,6 +252,11 @@ namespace GetAcross {
                                                 amountLumber = resourcesObject.GetInt("lumber");
                                                 resources += "Lumber:" + amountLumber;                                        
                                             }
+                                            if (resourcesObject.Contains("cherry"))
+                                            {
+                                                amountCherry = resourcesObject.GetInt("cherry");
+                                                resources += "/Cherry:" + amountCherry;
+                                            }
                                             
                                             Console.WriteLine("resources string: " + resources);
                                         }
@@ -305,12 +311,14 @@ namespace GetAcross {
                             {
                                 DatabaseObject resourceCount = thisPlayer.GetObject("resources");
                                 resourceCount.Set("lumber", amountLumber);
+                                resourceCount.Set("cherry", amountCherry);
                             }
 
                             else
                             {
                                 DatabaseObject resourceCount = new DatabaseObject();
                                 resourceCount.Set("lumber", amountLumber);
+                                resourceCount.Set("cherry", amountCherry);
                                 thisPlayer.Set("resources", resourceCount);
                             }
                         }
@@ -378,15 +386,20 @@ namespace GetAcross {
                 case "updateStat":
                     {
                         String statType = message.GetString(0);
-                        if (statType == "AP")
+                        switch (statType)
                         {
-                            player.AP = message.GetInt(1);
-                            Console.WriteLine("server: player's AP increased! " + player.AP);
-                        }
-                        else if (statType == "lumber")
-                        {
-                            amountLumber = message.GetInt(1);
-                            Console.WriteLine("server: player's lumber increased! " + amountLumber);
+                            case "AP":
+                                player.AP = message.GetInt(1);
+                                Console.WriteLine("server: player's AP changed! " + player.AP);
+                                break;
+                            case "lumber":
+                                amountLumber = message.GetInt(1);
+                                Console.WriteLine("server: player's lumber changed! " + amountLumber);
+                                break;
+                            case "cherry":
+                                amountCherry = message.GetInt(1);
+                                Console.WriteLine("server: player's cherry changed! " + amountCherry);
+                                break;
                         }
                         break;
                     }
