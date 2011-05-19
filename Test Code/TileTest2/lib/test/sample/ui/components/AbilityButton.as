@@ -11,7 +11,7 @@ package sample.ui.components{
 		protected var _width:Number
 		protected var _height:Number
 		private var _ability:Ability;
-		private var _rangeShow:Boolean;
+		public var _rangeShow:Boolean;
 		
 		function AbilityButton(xPixel:int, yPixel:int, ability:Ability, abilityName:String) {
 			_ability = ability;
@@ -25,7 +25,10 @@ package sample.ui.components{
 				PlayState.setActiveAbility(_ability);
 				_ability.visible = true;
 				_rangeShow = true;
-				this.borderColor = 0xFF0000;
+			}else {
+				_ability.visible = false;
+				_rangeShow = false;
+				PlayState.setActiveAbility(null);
 			}
 		}
 		
@@ -33,9 +36,6 @@ package sample.ui.components{
 		{
 			if (_rangeShow) {
 				this.buttonHighlight.visible = true;
-			}else if (!PlayState.getAbilitySelected) {
-				_rangeShow = false;
-				this.buttonHighlight.visible = false;
 			}
 			super.update();
 		}

@@ -88,24 +88,15 @@ package
 		//thus to move one tile to the right send (1,0) as arugments, one to left is (-1,0)
 		//NOW RETURNS A BOOLEAN, True if the move has caused the user to reach the end, False if not
 		public function movePlayer(xChange:Number, yChange:Number, tileSize:int, connection:Connection):Boolean {
-			if (checkMove(xPos + xChange, yPos + yChange)) {
+			if (checkMove(xPos + xChange, yPos + yChange, tileSize)) {
 				isMoving = true;
 				xPos = xPos + xChange;
 				yPos = yPos + yChange;
-				AP = AP - findCost(xPos, yPos);
+				AP = AP - findCost(xPos, yPos, tileSize,true);
 				play("walk" + facing);
 				var desiredX:int = this.x + (tileSize * xChange);
 				var desiredY:int = this.y + (tileSize * yChange);
-				/*while (this.x > desiredX + 1 || this.x < desiredX - 1) {
-					velocity.x = .5 * xChange;
-					super.update();
-				}
-				while (this.y > desiredY + 1 || this.y < desiredY - 1) {
-					velocity.y = .5 * yChange;
-					super.update();
-				}
-				velocity.y = 0;
-				velocity.x = 0;*/
+
 				this.x = desiredX;
 				this.y = desiredY;
 				connection.send("move", xChange, yChange);
@@ -126,15 +117,26 @@ package
 			
 			return false;
 		}
-		//Find AP Cost of the tile at the given location.
-		private function findCost(proposedX:Number, proposedY:Number):Number {
-			if (PlayState.myMap.getTile(proposedX, proposedY) == HILL_TILE) {
-				return 3;
+		//Find AP Cost of the tile at the given location. If tureMove flag is high, then the player will actually move when results are passed
+		private function findCost(proposedX:Number, proposedY:Number, tileSize:int, trueMove:Boolean):Number {
+			var sprites:Array = PlayState.lyrSprites.members
+			for (var x in sprites) {
+				try {
+					var eSprite:EffectSprite = EffectSprite(sprites[x]);
+					if (eSprite.type == "redflower" && eSprite.inRange(proposedX, proposedY))  {
+						if(trueMove){
+							eSprite.uses++;
+						}
+						return 0;
+					}
+				}catch (e:Error) {
+					
+				}
 			}
-			
-			// this is a grass tile
-			else {
-				return 0;
+			if (PlayState.myMap.getTile(proposedX, proposedY) == 1) {
+				return 3;
+			}else {
+				return 1;
 			}
 		}
 		
@@ -145,7 +147,7 @@ package
 		}
 		
 		//Sees if the desired move for the player is valid.
-		public function checkMove(proposedX:Number, proposedY:Number):Boolean {
+		public function checkMove(proposedX:Number, proposedY:Number, tileSize:int):Boolean {
 			var proposedTileType:int = PlayState.myMap.getTile(proposedX, proposedY)
 			if ( proposedTileType == WATER_TILE || proposedTileType == 6 || proposedTileType == 7) {
 				errorMessage = "Invalid Move, can't cross water";
@@ -153,7 +155,7 @@ package
 			}else if (proposedTileType == 10) {
 				errorMessage = "Invalid Move, Must First Open the Gate";
 				return false;
-			}else if (AP < findCost(proposedX, proposedY)) {
+			}else if (AP < findCost(proposedX, proposedY, tileSize, false)) {
 				errorMessage = "Invalid Move, insufficient AP";
 				return false;
 			}else if (proposedX >= PlayState.myMap.widthInTiles || proposedX < 0 || proposedY < 0 || proposedY >= PlayState.myMap.heightInTiles) {

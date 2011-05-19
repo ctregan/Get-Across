@@ -276,11 +276,13 @@ package
 									var yButtonPlacementModifier:int = 0;
 									for (var z:String in dbarr) {
 										var test:DatabaseObject = dbarr[z]
-										var myAbility:Ability = new Ability(_tileSize, 0, _windowHeight, myPlayer, test);
+										var myAbility:Ability = new Ability(_tileSize, myPlayer, test);
 										myAbility.visible = false;
 										lyrStage.add(myAbility);
 										trace("Loaded Ability " + test.Name + "\n");
-										lyrHUD.add(new AbilityButton(_cardBoxOffsetX, _cardBoxOffsetY + yButtonPlacementModifier, myAbility, test.Name))
+										var tempButton:AbilityButton = new AbilityButton(_cardBoxOffsetX, _cardBoxOffsetY + yButtonPlacementModifier, myAbility, test.Name)
+										lyrHUD.add(tempButton)
+										myAbility.setButton(tempButton);
 										yButtonPlacementModifier += 30
 									}
 								})
@@ -466,7 +468,7 @@ package
 						// then go
 						var absDis:int = Math.abs(myPlayer.xPos - xTemp) + Math.abs(myPlayer.yPos - yTemp);
 						// have to check if the move is possible beforehand... 
-						var canGo:Boolean = myPlayer.checkMove(xTemp, yTemp);
+						var canGo:Boolean = myPlayer.checkMove(xTemp, yTemp, _tileSize);
 						
 						if (absDis < 2 && absDis > 0 && canGo) {	// one away
 							tileHover.loadGraphic(hoverTileImg);

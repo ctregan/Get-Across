@@ -3,8 +3,10 @@ package
 	import flash.display.Sprite;
 	import org.flixel.FlxSprite;
 	import org.flixel.FlxState;
+	import org.flixel.plugin.photonstorm.FlxButtonPlus;
 	import playerio.Connection;
 	import playerio.DatabaseObject;
+	import sample.ui.components.AbilityButton;
 	/**
 	 * ...
 	 * @author Charlie Regan
@@ -18,18 +20,15 @@ package
 		private var _effect:String;
 		private var _caster:Player;
 		private var _tileSize:int;
-		private var _xOffset:int;
-		private var _yOffset:int;
 		private var _object:DatabaseObject;
+		private var _parentButton:AbilityButton;
 		
 		// resources this ability costs
 		public var _neededLumber:int;
 			
-		public function Ability(tileSize:int, xOffset:int, yOffset:int, caster:Player, object:DatabaseObject) 
+		public function Ability(tileSize:int, caster:Player, object:DatabaseObject) 
 		{
 			_tileSize = tileSize;
-			_xOffset = xOffset;
-			_yOffset = yOffset;
 			_range = object.Range;
 			_cost = object.Cost;
 			_object = object;
@@ -51,11 +50,16 @@ package
 		
 		override public function update():void 
 		{
-			this.x = _caster.x - _tileSize
-			this.y = _caster.y - _tileSize
+			this.x = _caster.x - (_tileSize * _range)
+			this.y = _caster.y - (_tileSize * _range)
 			super.update();
 		}
 		
+		//Sets the abilities button so that it can be deactivated once this ability has been cast
+		public function setButton(btn:AbilityButton):void 
+		{
+			_parentButton = btn;
+		}
 		//Returns the cost of the ability
 		public function getCost():int 
 		{
@@ -93,8 +97,10 @@ package
 				connection.send("MapTileChanged", tileX, tileY, _object.Effect.To);
 				connection.send("QuestMapUpdate", PlayState.myMap.getMapData());
 			}else if (_object.Effect.Type == "Sprite" && PlayState.myMap.getTile(tileX,tileY) == _object.Effect.From) {
-				PlayState.lyrSprites.add(new EffectSprite((tileX * _tileSize ) + _xOffset, (tileY * _tileSize) + _yOffset, _object.Effect.Image, _object.Effect.Range, _tileSize));
+				PlayState.lyrSprites.add(new EffectSprite(tileX,tileY, _object.Effect.Image, _object.Effect.Range, _tileSize));
 			}
+			_parentButton._rangeShow = false;
+			_parentButton.buttonHighlight.visible = false;
 		}
 	}
 

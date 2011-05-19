@@ -39,7 +39,10 @@ package
 			characterInfo = new Label("Level: " + ob.level + "	Class: " + ob.role + "	Coin: " + ob.coin, 12, TextFormatAlign.CENTER);
 			tutorialButton = new TextButton("Start Tutorial", startTutorial);
 			tutorialLevel = ob.tutorial;
-			if (tutorialLevel <= 5) {
+			if (tutorialLevel <= 1) {
+				continueButton = new TextButton("Continue Tutorial", continueQuest);
+				continueButton.visible = false;
+			}else if(tutorialLevel <= 5) {
 				continueButton = new TextButton("Continue Tutorial", continueQuest);
 			}else{
 				continueButton = new TextButton("Continue Last Quest", continueQuest);
