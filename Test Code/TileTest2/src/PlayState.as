@@ -70,7 +70,6 @@ package
 		public static var lyrBattle:FlxGroup;
 		public static var lyrMonster:FlxGroup;
 		public static var lyrTop:FlxGroup;
-		public static var lyrPlayerMenu:FlxGroup;
 		
 		private static var _windowWidth:int = 700;
 		private static var _windowHeight:int = 400;
@@ -642,7 +641,6 @@ package
 			lyrBattle = new FlxGroup;
 			lyrMonster = new FlxGroup;
 			lyrTop = new FlxGroup;
-			lyrPlayerMenu = new FlxGroup;
 			myMouse = FlxG.mouse;
 			
 			//Tile Map
@@ -847,7 +845,7 @@ package
 		{
 			// send notificatioin that AP was lost
 			var note:Notification = new Notification(xPos, yPos, message, messageType);
-			lyrPlayerMenu.add(note);
+			lyrHUD.add(note);
 		}
 		
 		//***************************************************

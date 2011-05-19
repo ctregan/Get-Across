@@ -135,10 +135,15 @@ package
 					
 				}
 			}
-			if (PlayState.myMap.getTile(proposedX, proposedY) == 1) {
-				return 3;
-			}else {
-				return 1;
+			
+			// return cost of tile
+			switch (PlayState.myMap.getTile(proposedX, proposedY))
+			{
+				case HILL_TILE:
+					return 3;
+					break;
+				default:
+					return 0;
 			}
 		}
 		
