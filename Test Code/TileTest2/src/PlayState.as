@@ -70,6 +70,7 @@ package
 		public static var lyrBattle:FlxGroup;
 		public static var lyrMonster:FlxGroup;
 		public static var lyrTop:FlxGroup;
+		public static var lyrPlayerMenu:FlxGroup;
 		
 		private static var _windowWidth:int = 700;
 		private static var _windowHeight:int = 400;
@@ -376,6 +377,7 @@ package
 					gatherLumberButton.x = 540;
 					gatherLumberButton.y = 340;
 					gatherLumberButton.visible = true;
+					//trace("lumber button: " + gatherLumberButton.x + "," + gatherLumberButton.y);
 				}
 				else { 
 					gatherLumberButton.visible = false;
@@ -386,9 +388,11 @@ package
 					// After 180 seconds has passed, the timer will reset.
 					counter = _APcounterMax;
 					// increment player's AP if it's not the max yet
-					if (myPlayer.AP < 20)
+					if (myPlayer.AP < 20) {
 						myPlayer.AP++;
-					connection.send("updateStat", "AP", myPlayer.AP);
+						connection.send("updateStat", "AP", myPlayer.AP);
+						fireNotification(myPlayer.x + 20, myPlayer.y - 20, "+1 AP", "gain");
+					}
 				}
 				//Update HUD Information
 				secCounter.text = counter.toPrecision(3) + " seconds until more AP";
@@ -408,6 +412,9 @@ package
 						resourcesText.text = "Lumber: " + myPlayer.amountLumber;
 					}
 					
+					if (FlxG.mouse.justReleased()) {
+						//trace("mouse: " + FlxG.mouse.x + "," + FlxG.mouse.y);
+					}
 					/*** END DEBUG CHEATS ***/
 					
 					if (FlxG.keys.justPressed("DOWN") && !myPlayer.isMoving && !myPlayer.inBattle) {
@@ -434,8 +441,13 @@ package
 							activeAbility.cast(selectedXTile, selectedYTile , connection);
 							
 							// pay for ability
-							myPlayer.AP -= activeAbility._cost;
+							var cost:int = activeAbility._cost;
+							myPlayer.AP -= cost;
 							myPlayer.amountLumber -= activeAbility._neededLumber;
+							var resourceNote:String = "";
+							if (cost > 0) resourceNote += "-" + cost + " AP\n";
+							if (cost > 0) resourceNote += "-" + activeAbility._neededLumber + " lumber";
+							PlayState.fireNotification(myPlayer.x + 20, myPlayer.y - 20, resourceNote, "loss");
 							
 							connection.send("updateStat", "AP", myPlayer.AP);
 							connection.send("updateStat", "lumber", myPlayer.amountLumber);
@@ -484,7 +496,7 @@ package
 								
 								win = myPlayer.movePlayer(xTemp - myPlayer.xPos, yTemp - myPlayer.yPos, _tileSize, connection)
 								//connection.send("move",xTemp - myPlayer.xPos, yTemp - myPlayer.yPos);
-							}
+							} else fireNotification(myPlayer.xPos + 20, myPlayer.yPos - 20, "Invalid move!", "loss");
 						} else {
 							// if not within reach, set color to red
 							tileHover.loadGraphic(hoverTileImgNo);
@@ -630,6 +642,7 @@ package
 			lyrBattle = new FlxGroup;
 			lyrMonster = new FlxGroup;
 			lyrTop = new FlxGroup;
+			lyrPlayerMenu = new FlxGroup;
 			myMouse = FlxG.mouse;
 			
 			//Tile Map
@@ -715,7 +728,6 @@ package
 			tileHover = new FlxSprite(0, _windowHeight, hoverTileImg);
 			lyrHUD.add(tileHover);
 			lyrSprites.add(lyrMonster);
-			
 			lyrHUD.add(gatherLumberButton);
 			
 			this.add(lyrBackground);
@@ -830,6 +842,14 @@ package
 			connection.send("QuestMapUpdate", myMap.getMapData());
 			connection.send("updateStat", "lumber", myPlayer.amountLumber);
 		}
+		
+		public static function fireNotification(xPos:int, yPos:int, message:String, messageType:String):void
+		{
+			// send notificatioin that AP was lost
+			var note:Notification = new Notification(xPos, yPos, message, messageType);
+			lyrPlayerMenu.add(note);
+		}
+		
 		//***************************************************
 		//*****************PLAYERIO Functions****************
 		//***************************************************

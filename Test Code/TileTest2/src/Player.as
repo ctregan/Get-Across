@@ -6,6 +6,7 @@ package
 	import playerio.BigDB;
 	import playerio.Connection; 
 	import flash.utils.Timer;
+	
 	/**
 	 * ...
 	 * @author Charlie Regan
@@ -92,7 +93,8 @@ package
 				isMoving = true;
 				xPos = xPos + xChange;
 				yPos = yPos + yChange;
-				AP = AP - findCost(xPos, yPos, tileSize,true);
+				var cost:int = findCost(xPos, yPos);
+				AP = AP - cost;
 				play("walk" + facing);
 				var desiredX:int = this.x + (tileSize * xChange);
 				var desiredY:int = this.y + (tileSize * yChange);
@@ -114,7 +116,7 @@ package
 			
 			// sends AP this player has to the server
 			connection.send("updateStat", "AP", AP);
-			
+			if (cost > 0) PlayState.fireNotification(this.x + 20, this.y - 20, "-" + cost + " AP", "loss");
 			return false;
 		}
 		//Find AP Cost of the tile at the given location. If tureMove flag is high, then the player will actually move when results are passed
@@ -151,15 +153,19 @@ package
 			var proposedTileType:int = PlayState.myMap.getTile(proposedX, proposedY)
 			if ( proposedTileType == WATER_TILE || proposedTileType == 6 || proposedTileType == 7) {
 				errorMessage = "Invalid Move, can't cross water";
+				//PlayState.fireNotification(this.x + 20, this.y - 20, "You can't cross water!", "loss");
 				return false;
 			}else if (proposedTileType == 10) {
+				//PlayState.fireNotification(this.x + 20, this.y - 20, "You have to open the gate first!", "loss");
 				errorMessage = "Invalid Move, Must First Open the Gate";
 				return false;
 			}else if (AP < findCost(proposedX, proposedY, tileSize, false)) {
 				errorMessage = "Invalid Move, insufficient AP";
+				//PlayState.fireNotification(this.x + 20, this.y - 20, "You don't have enough AP!  Wait a little bit for more!", "loss");
 				return false;
 			}else if (proposedX >= PlayState.myMap.widthInTiles || proposedX < 0 || proposedY < 0 || proposedY >= PlayState.myMap.heightInTiles) {
 				errorMessage = "Invalid Move, edge reached";
+				//PlayState.fireNotification(this.x + 20, this.y - 20, "You can't go beyond the map's edge!", "loss");
 				return false;
 			}
 			return true;
