@@ -39,24 +39,30 @@ package
 			characterInfo = new Label("Level: " + ob.level + "	Class: " + ob.role + "	Coin: " + ob.coin, 12, TextFormatAlign.CENTER);
 			tutorialButton = new TextButton("Start Tutorial", startTutorial);
 			tutorialLevel = ob.tutorial;
-			if (tutorialLevel <= 1) {
-				continueButton = new TextButton("Continue Tutorial", continueQuest);
-				continueButton.visible = false;
-			}else if(tutorialLevel <= 5) {
-				continueButton = new TextButton("Continue Tutorial", continueQuest);
-			}else{
-				continueButton = new TextButton("Continue Last Quest", continueQuest);
-				tutorialButton.visible = false;
-				tutorialButton.enabled = false;
-				try {
-					_questID = ob.questID;
+			try {
+				_questID = ob.questID;
+				if (tutorialLevel <= 1  && (_questID == "noQuest" || _questID == null)) {
+					continueButton = new TextButton("Continue Tutorial", continueQuest);
+					continueButton.visible = false;
+				}else if(tutorialLevel <= 5) {
+					continueButton = new TextButton("Continue Tutorial", continueQuest);
+				}else {
+					continueButton = new TextButton("Continue Last Quest", continueQuest);
+					tutorialButton.visible = false;
+					tutorialButton.enabled = false;
 					if (_questID == "noQuest") {
+						continueButton.visible = false;
 						continueButton.enabled = false;
+					}else {
+						continueButton.enabled = true;
+						continueButton.visible = true;
 					}
-				}catch (e:Error)
-				{
-					continueButton.enabled = false;
 				}
+			}
+			catch (e:Error)
+			{
+					continueButton.visible = false;
+					continueButton.enabled = false;
 			}
 			//Try to load questID, if no quest then that button is invisible
 			

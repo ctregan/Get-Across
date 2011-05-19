@@ -81,7 +81,7 @@ package
 		private var connection:Connection; //connection to server
 		
 		// buttons for side menu
-		public static var gatherLumberButton:FlxButton;
+		public static var gatherLumberButton:FlxButtonPlus;
 		
 		
 		private var win:Boolean = false; //This variable will indicate if a user has won or not
@@ -370,9 +370,10 @@ package
 			if (connected == true) {
 				if (myPlayer != null && myMap.getTile(myPlayer.xPos, myPlayer.yPos) == CHERRY_TILE)
 				{
-					gatherLumberButton.x = myPlayer.x + 20;
-					gatherLumberButton.y = myPlayer.y - 20;
+					gatherLumberButton.x = 540;
+					gatherLumberButton.y = 340;
 					gatherLumberButton.visible = true;
+					//trace("lumber button: " + gatherLumberButton.x + "," + gatherLumberButton.y);
 				}
 				else { 
 					gatherLumberButton.visible = false;
@@ -383,9 +384,11 @@ package
 					// After 180 seconds has passed, the timer will reset.
 					counter = _APcounterMax;
 					// increment player's AP if it's not the max yet
-					if (myPlayer.AP < 20)
+					if (myPlayer.AP < 20) {
 						myPlayer.AP++;
-					connection.send("updateStat", "AP", myPlayer.AP);
+						connection.send("updateStat", "AP", myPlayer.AP);
+						fireNotification(myPlayer.x + 20, myPlayer.y - 20, "+1 AP", "gain");
+					}
 				}
 				//Update HUD Information
 				secCounter.text = counter.toPrecision(3) + " seconds until more AP";
@@ -405,6 +408,9 @@ package
 						resourcesText.text = "Lumber: " + myPlayer.amountLumber;
 					}
 					
+					if (FlxG.mouse.justReleased()) {
+						//trace("mouse: " + FlxG.mouse.x + "," + FlxG.mouse.y);
+					}
 					/*** END DEBUG CHEATS ***/
 					
 					if (FlxG.keys.justPressed("DOWN") && !myPlayer.isMoving && !myPlayer.inBattle) {
@@ -431,12 +437,18 @@ package
 							activeAbility.cast(selectedXTile, selectedYTile , connection);
 							
 							// pay for ability
-							myPlayer.AP -= activeAbility._cost;
+							var cost:int = activeAbility._cost;
+							myPlayer.AP -= cost;
 							myPlayer.amountLumber -= activeAbility._neededLumber;
+							var resourceNote:String = "";
+							if (cost > 0) resourceNote += "-" + cost + " AP\n";
+							if (cost > 0) resourceNote += "-" + activeAbility._neededLumber + " lumber";
+							PlayState.fireNotification(myPlayer.x + 20, myPlayer.y - 20, resourceNote, "loss");
 							
 							connection.send("updateStat", "AP", myPlayer.AP);
 							connection.send("updateStat", "lumber", myPlayer.amountLumber);
 							
+							resourcesText.text = "Lumber: " + myPlayer.amountLumber;
 							activeAbility.visible = false;
 							setActiveAbility(null);
 							abilitySelected = false;
@@ -480,7 +492,7 @@ package
 								
 								win = myPlayer.movePlayer(xTemp - myPlayer.xPos, yTemp - myPlayer.yPos, _tileSize, connection)
 								//connection.send("move",xTemp - myPlayer.xPos, yTemp - myPlayer.yPos);
-							}
+							} else fireNotification(myPlayer.xPos + 20, myPlayer.yPos - 20, "Invalid move!", "loss");
 						} else {
 							// if not within reach, set color to red
 							tileHover.loadGraphic(hoverTileImgNo);
@@ -508,14 +520,20 @@ package
 					//Only show the battle hud if the player is in combat
 					lyrBattle.visible = myPlayer.inBattle;
 					 //Detect Monster collision, if a monster is overlapping your player then you are now in a fight
-					for (var monster in monsterArray) {
-						FlxG.overlap(monsterArray[monster], myPlayer, function() {
-							myPlayer.inBattle = true;
-							myPlayer.combatant = monsterArray[monster]
-							errorMessage.text = "BATTLE!";
-							lyrBattle.visible = true;
-						});
-					}
+					if(myPlayer.inBattle == false){
+						for (var monster in monsterArray) {
+							FlxG.overlap(monsterArray[monster], myPlayer, function() {
+								myPlayer.inBattle = true;
+								FlxG.flash(0xFFFFFF, 1,function ():void 
+								{
+									FlxG.stage.addChild(new Alert("YOU HAVE ENTERED BATTLE"));
+								});
+								myPlayer.combatant = monsterArray[monster]
+								errorMessage.text = "BATTLE!";
+								lyrBattle.visible = true;
+							});
+						}
+					 }
 					//Detect Button Collision
 					for (var button in buttonArray) {
 						FlxG.overlap(buttonArray[button], myPlayer, function ():void 
@@ -568,7 +586,7 @@ package
 		// input: new value of AP
 		public static function updateAP(newAP:int):void
 		{
-			myClient.bigDB.load("Quests", playerName, function(results:DatabaseObject):void {
+			myClient.bigDB.load("newQuests", playerName, function(results:DatabaseObject):void {
 				// make sure player exists in Quests
 				if (results != null) {
 					results.AP = newAP;
@@ -580,7 +598,7 @@ package
 		// increment AP value for this player in the Quests database
 		public static function incrementAP():void
 		{
-			myClient.bigDB.load("Quests", playerName, function(results:DatabaseObject):void {
+			myClient.bigDB.load("newQuests", playerName, function(results:DatabaseObject):void {
 				// make sure player exists in Quests
 				if (results != null) {
 					results.AP += 1;
@@ -641,27 +659,30 @@ package
 			//Background
 			
 			//Weak Attack Button
-			lyrBattle.add(new FlxButton(22, 284, "Weak Attack", function() { 
+			lyrBattle.add(new FlxButtonPlus(22, 254,  function() { 
 				if (myPlayer.inBattle) {
-					myPlayer.combatant.attack(1,myPlayer, connection);
+					myPlayer.combatant.attack(1, myPlayer, connection);
+					updateAP(playerAP - 1);
 				}
-			}))
+			}, null, "Weak Attack: 1 AP"))
 			//lyrBattle.add(new FlxText(24, 286, 100, "Weak Attack"));
 			//Medium Attack Button
-			lyrBattle.add(new FlxButton(22, 314, "Medium Attack", function() { 
+			lyrBattle.add(new FlxButtonPlus(22, 284, function() { 
 				if (myPlayer.inBattle) {
-					myPlayer.combatant.attack(2,myPlayer, connection);
+					myPlayer.combatant.attack(2, myPlayer, connection);
+					updateAP(playerAP - 3);
 				}
-			}))
+			}, null, "Medium Attack: 3 AP"))
 			
 			//lyrBattle.add(new FlxText(24, 316, 100, "Medium Attack"));
 			//Strong Attack Button
 			//lyrBattle.add(new FlxButton(22, 344, "text", function() { 
-			lyrBattle.add(new FlxButton(22, 344, "Strong Attack", function() { 
+			lyrBattle.add(new FlxButtonPlus(22, 314, function() { 
 				if (myPlayer.inBattle) {
-					myPlayer.combatant.attack(3,myPlayer, connection);
+					myPlayer.combatant.attack(3, myPlayer, connection);
+					updateAP(playerAP - 5);
 				}
-			}))
+			},null, "Strong Attack: 5 AP"))
 			//lyrBattle.add(new FlxText(24, 346, 100, "Strong Attack"));
 			//Initially the battle hud is invisible, it will be visible when a user enters combat
 			lyrBattle.visible = false;
@@ -670,7 +691,7 @@ package
 			//Right Side HUD
 			resources = new FlxText(_resourceTextOffsetX, _resourceTextOffsetY, 150, "Resources:", true);			
 			resourcesText = new FlxText(_resourceTextOffsetX, _resourceTextOffsetY + 10,150, "", true);
-			gatherLumberButton = new FlxButton(_resourceTextOffsetX, _resourceTextOffsetY + 15, "Gather lumber!", gatherResource);
+			gatherLumberButton = new FlxButtonPlus(_resourceTextOffsetX, _resourceTextOffsetY + 15, gatherResource, null, "Gather lumber!");
 
 			goals = new FlxText(_goalsBoxOffsetX, _goalsBoxOffsetY, 100, "Goals:\nReach the Red Star", true); 
 			goals.frameHeight = 75;			
@@ -702,21 +723,19 @@ package
 			tileHover = new FlxSprite(0, _windowHeight, hoverTileImg);
 			lyrHUD.add(tileHover);
 			lyrSprites.add(lyrMonster);
-			
-			lyrTop.add(gatherLumberButton);
+			lyrHUD.add(gatherLumberButton);
 			
 			this.add(lyrBackground);
 			this.add(lyrStage);
 			this.add(lyrHUD);
 			this.add(lyrBattle);
-			this.add(lyrTop);
 			this.add(lyrSprites);
+			this.add(lyrTop);
 			
-			connected = true;
-			
+
+
 			// gather resources button is not visible unless you can gather something
 			gatherLumberButton.visible = false;
-			
 			// ask server for data about this player
 			// server will send back data so client can create this player's sprite
 			connection.send("playerInfo");
@@ -740,6 +759,7 @@ package
 			);
 			
 			setCameras();
+			connected = true;
 			
 			trace("done setting up the board, camera set up *** ");
 		}
@@ -817,6 +837,14 @@ package
 			connection.send("QuestMapUpdate", myMap.getMapData());
 			connection.send("updateStat", "lumber", myPlayer.amountLumber);
 		}
+		
+		public static function fireNotification(xPos:int, yPos:int, message:String, messageType:String):void
+		{
+			// send notificatioin that AP was lost
+			var note:Notification = new Notification(xPos, yPos, message, messageType);
+			lyrHUD.add(note);
+		}
+		
 		//***************************************************
 		//*****************PLAYERIO Functions****************
 		//***************************************************

@@ -46,13 +46,14 @@ package
 		{
 			var sprites:Array = PlayState.lyrMonster.members
 			for (var index in sprites) {
-					if (inRange(sprites[x]._xTile, sprites[y]._yTile)) {
+					if (inRange(sprites[index]._xTile, sprites[index]._yTile)) {
 						sprites[index].x = this.x;
 						sprites[index].y = this.y;
 						this.kill();
 						return;
 					}
-				}	
+				}
+				kill();
 		}
 		
 		//Pass in a tile location and return if it is in range

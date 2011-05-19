@@ -57,20 +57,25 @@ package
 		 */
 		public function attack(type:int, player:Player, connection:Connection):void 
 		{
+			var damage:int;
 			if (type == 1) {
-				_ap -= Math.floor(Math.random()*(1+2-1))+1;
+				damage = Math.floor(Math.random()*(1+2-1))+1;
 			}else if (type == 2) {
-				_ap -= Math.floor(Math.random()*(1+4-3))+3;
+				damage = Math.floor(Math.random()*(1+4-3))+3;
 			}else if (type == 3) {
-				_ap -= Math.floor(Math.random()*(1+6-5))+5;
+				damage = Math.floor(Math.random()*(1+6-5))+5;
 			}
+			_ap -= damage;
 			
+			var note:String = "-" + damage;
 			if (_ap <= 0) {
 				this.kill();
 				healthBar.kill();
 				player.inBattle = false;
+				note += "\nMonster fell!";
 			}
 			connection.send("MonsterAPChange",  _ap, _monsterIndex)
+			PlayState.fireNotification(this.x + 20, this.y - 20, note, "loss");
 		}
 		
 	}
