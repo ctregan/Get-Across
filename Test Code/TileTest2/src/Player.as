@@ -93,7 +93,7 @@ package
 				isMoving = true;
 				xPos = xPos + xChange;
 				yPos = yPos + yChange;
-				var cost:int = findCost(xPos, yPos);
+				var cost:int = findCost(xPos, yPos, tileSize, true);
 				AP = AP - cost;
 				play("walk" + facing);
 				var desiredX:int = this.x + (tileSize * xChange);
