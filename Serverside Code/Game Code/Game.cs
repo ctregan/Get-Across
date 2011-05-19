@@ -428,9 +428,9 @@ namespace GetAcross {
                                 }
                                 else if (player.PlayerObject.GetInt("tutorial") == 2)
                                 {
-                                    DatabaseArray abilities = new DatabaseArray();
+                                    DatabaseArray abilities = player.PlayerObject.GetArray("abilities");
                                     abilities.Add("Planter_RedFlower");
-                                    player.PlayerObject.Set("abilities", abilities);
+                                    //player.PlayerObject.Set("abilities", abilities);
                                     player.PlayerObject.Set("tutorial", 3);
                                 }
                                 else if (player.PlayerObject.GetInt("tutorial") == 3)
@@ -439,9 +439,9 @@ namespace GetAcross {
                                 }
                                 else if (player.PlayerObject.GetInt("tutorial") == 4)
                                 {
-                                    DatabaseArray abilities = new DatabaseArray();
+                                    DatabaseArray abilities = player.PlayerObject.GetArray("abilities");
                                     abilities.Add("Cook_MonsterBacon");
-                                    player.PlayerObject.Set("abilities", abilities);
+                                    //player.PlayerObject.Set("abilities", abilities);
                                     player.PlayerObject.Set("tutorial", 5);
                                 }
                                 else if(player.PlayerObject.GetInt("tutorial") == 5)
@@ -504,7 +504,7 @@ namespace GetAcross {
                                 monsters.GetObject(monsterIndex).Set("AP", newAp);
                                 dbo.Save();
                             });
-                        //CHARLIE TO DO - Make this data reflected in the database too.
+            
                         Broadcast("MonsterAPChange", player.Id, newAp, monsterIndex);
                         break;
                     }
