@@ -167,7 +167,7 @@ package
 				//PlayState.fireNotification(this.x + 20, this.y - 20, "You can't cross water!", "loss");
 				return false;
 			}else if (proposedTileType == 10) {
-				//PlayState.fireNotification(this.x + 20, this.y - 20, "You have to open the gate first!", "loss");
+				PlayState.fireNotification(this.x + 20, this.y - 20, "You have to open the gate first!", "loss");
 				errorMessage = "Invalid Move, Must First Open the Gate";
 				return false;
 			}else if (AP < findCost(proposedX, proposedY, tileSize, false)) {

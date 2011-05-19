@@ -128,9 +128,8 @@ package
 		var camOffsetX:int = 0;
 		var camOffsetY:int = 0;
 		var currentZoomView:int = 1;
-		public static var amountLumberText:FlxText = new FlxText(_resourceTextOffsetX, _resourceTextOffsetY, 150, "", true);
-		public static var amountCherryText:FlxText = new FlxText(_resourceTextOffsetX, _resourceTextOffsetY + 20, 150, "", true);
-		
+		public static var amountLumberText:FlxText; //= new FlxText(_resourceTextOffsetX, _resourceTextOffsetY, 150, "Lumber: 0", true);
+		public static var amountCherryText:FlxText; //= new FlxText(_resourceTextOffsetX, _resourceTextOffsetY + 20, 150, "Cherry: 0", true);
 		
 		private var timer;				// object used for delays.
 		
@@ -384,10 +383,10 @@ package
 						gatherLumberButton.visible = gatherCherryButton.visible = false;
 					}
 					
-					if (amountLumberText != null) {
+					/*if (amountLumberText != null && amountCherryText != null) {
 						amountLumberText.text = "Lumber: " + myPlayer.amountLumber;
 						amountCherryText.text = "Cherry: " + myPlayer.amountCherry;
-					}
+					}*/
 				}
 				
 				counter -= FlxG.elapsed;
@@ -414,12 +413,12 @@ package
 						connection.send("updateStat", "AP", myPlayer.AP);
 					}
 					
-					if (FlxG.keys.justPressed("L")) {
+					if (FlxG.keys.justPressed("L") && amountLumberText != null) {
 						myPlayer.amountLumber++;
 						connection.send("updateStat", "lumber", myPlayer.amountLumber);
 						amountLumberText.text = "Lumber: " + myPlayer.amountLumber;
 					}
-					if (FlxG.keys.justPressed("C")) {
+					if (FlxG.keys.justPressed("C") && amountCherryText != null) {
 						myPlayer.amountCherry++;
 						connection.send("updateStat", "cherry", myPlayer.amountCherry);
 						amountCherryText.text = "Cherry: " + myPlayer.amountCherry;
@@ -459,6 +458,8 @@ package
 							activeAbility.visible = false;
 							setActiveAbility(null);
 							abilitySelected = false;
+							amountLumberText.text = "Lumber: " + myPlayer.amountLumber;
+							amountLumberText.text = "Cherry: " + myPlayer.amountCherry;
 						}
 					}	
 					//CLICK MOVING
@@ -716,10 +717,12 @@ package
 			//render game background
 			//Right Side HUD
 			//resources = new FlxText(_resourceTextOffsetX, _resourceTextOffsetY, 150, "Resources:", true);			
+			gatherLumberButton = new FlxButtonPlus(0,0, function():void { gatherResource("lumber"); }, null, "Gather lumber!");
+			gatherCherryButton = new FlxButtonPlus(0, 0, function():void { gatherResource("cherry"); }, null, "Gather cherry!");
+			amountLumberText = new FlxText(_resourceTextOffsetX, _resourceTextOffsetY, 150, "Lumber: 0", true);
+			amountCherryText = new FlxText(_resourceTextOffsetX, _resourceTextOffsetY + 20, 150, "Cherry: 0", true);
 			amountLumberText.setFormat(null, 12);
 			amountCherryText.setFormat(null, 12);
-			gatherLumberButton = new FlxButtonPlus(0,0, function():void { gatherResource("lumber"); }, null, "Gather lumber!");
-			gatherCherryButton = new FlxButtonPlus(0,0, function():void { gatherResource("cherry"); }, null, "Gather cherry!");
 			goals = new FlxText(_goalsBoxOffsetX, _goalsBoxOffsetY, 100, "Goals:\nReach the Red Star", true); 
 			goals.frameHeight = 75;			
 			errorMessage = new FlxText(_errorMessageOffsetX, _errorMessageOffsetY, 120, "Errors Appear Here", true);
@@ -866,18 +869,19 @@ package
 					myPlayer.amountLumber++;
 					connection.send("updateStat", "lumber", myPlayer.amountLumber);
 					fireNotification(myPlayer.x + 30, myPlayer.y - 20, "+1 Lumber", "gain");
+					amountLumberText.text = "Lumber: " + myPlayer.amountLumber;
 					break;
 				case "cherry":
 					myPlayer.amountCherry++;
 					connection.send("updateStat", "cherry", myPlayer.amountCherry);
 					fireNotification(myPlayer.x + 30, myPlayer.y - 20, "+1 Cherry", "gain");
+					amountCherryText.text = "Cherry: " + myPlayer.amountCherry;
 					break;
 			}
 			
 			myPlayer.AP--;
 			connection.send("updateStat", "AP", myPlayer.AP);
 			fireNotification(myPlayer.x + 30, myPlayer.y, "-1 AP", "loss");
-			
 			
 			// remove tree from tile, and tell server
 			myMap.setTile(myPlayer.xPos, myPlayer.yPos, GRASS_TILE);
