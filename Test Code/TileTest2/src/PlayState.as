@@ -402,12 +402,12 @@ package
 						fireNotification(myPlayer.x + 20, myPlayer.y - 20, "+1 AP", "gain");
 					}
 				}
+				
 				//Update HUD Information
 				secCounter.text = counter.toPrecision(3) + " seconds until more AP";
 				//Player moves only one character, detect keys presses here
 
 				if (myPlayer != null && !win) {
-					
 					/*** DEBUG CHEATS ***/
 					if (myPlayer.AP <= 20 && FlxG.keys.justPressed("A")) {
 						myPlayer.AP++;
@@ -429,33 +429,29 @@ package
 					if (FlxG.keys.justPressed("DOWN") && !myPlayer.isMoving && !myPlayer.inBattle) {
 						myPlayer.facing = FlxSprite.DOWN;
 						win = myPlayer.movePlayer(0, 1, _tileSize, connection);
-						//connection.send("move", 0, 1);
 					}else if (FlxG.keys.justPressed("UP") && !myPlayer.isMoving && !myPlayer.inBattle) {
 						myPlayer.facing = FlxSprite.UP;
 						win = myPlayer.movePlayer(0, -1, _tileSize, connection);
-						//connection.send("move", 0, -1);
 					}else if (FlxG.keys.justPressed("RIGHT") && !myPlayer.isMoving && !myPlayer.inBattle) {
 						myPlayer.facing = FlxSprite.RIGHT;
 						win = myPlayer.movePlayer(1, 0, _tileSize, connection);
-						//connection.send("move", 1, 0);
 					}else if (FlxG.keys.justPressed("LEFT") && !myPlayer.isMoving && !myPlayer.inBattle) {
 						myPlayer.facing = FlxSprite.LEFT;
 						win = myPlayer.movePlayer( -1, 0, _tileSize, connection);
-						//connection.send("move", -1, 0);
 					}else if (myMouse.justPressed() &&  mouseWithinTileMap() && abilitySelected) {
 						var selectedXTile:int = getTileX();// (myMouse.x - _mapOffsetX) / _tileSize
 						var selectedYTile:int = getTileY();// (myMouse.y - _mapOffsetY) / _tileSize
 						//TO DO: ADD ALERT MESSAGE!!!
-						if (checkActiveAbilityRange(selectedXTile, selectedYTile) && activeAbility.canCast(myPlayer)) {
+						if (checkActiveAbilityRange(selectedXTile, selectedYTile) && activeAbility.canCast(myPlayer, selectedXTile,selectedYTile)) {
+							// if could cast ability
 							activeAbility.cast(selectedXTile, selectedYTile , connection);
-							
 							// pay for ability
 							var cost:int = activeAbility._cost;
 							myPlayer.AP -= cost;
 							myPlayer.amountLumber -= activeAbility._neededLumber;
 							var resourceNote:String = "";
 							if (cost > 0) resourceNote += "-" + cost + " AP\n";
-							if (cost > 0) resourceNote += "-" + activeAbility._neededLumber + " lumber";
+							if (activeAbility._neededLumber > 0) resourceNote += "-" + activeAbility._neededLumber + " lumber";
 							PlayState.fireNotification(myPlayer.x + 20, myPlayer.y - 20, resourceNote, "loss");
 							
 							connection.send("updateStat", "AP", myPlayer.AP);
@@ -464,9 +460,9 @@ package
 							setActiveAbility(null);
 							abilitySelected = false;
 						}
+					}	
 					//CLICK MOVING
-										
-					}else if (mouseWithinTileMap()) {
+					else if (mouseWithinTileMap() && abilitySelected == false) {
 						tileHover.visible = mouseWithinTileMap();
 						if (camMap && camMap.scroll) camOffsetX = camMap.scroll.x;
 						if (camMap && camMap.scroll) camOffsetY = camMap.scroll.y;
@@ -534,10 +530,6 @@ package
 					}else if(!myPlayer.isMoving) {
 						myPlayer.play("idle" + myPlayer.facing);
 					}
-					
-
-					
-
 					
 					apInfo.text = "AP: " + myPlayer.AP;
 					location.text = "(" + myPlayer.xPos + "," + myPlayer.yPos + ")";
@@ -873,18 +865,18 @@ package
 				case "lumber":
 					myPlayer.amountLumber++;
 					connection.send("updateStat", "lumber", myPlayer.amountLumber);
-					fireNotification(myPlayer.x + 20, myPlayer.y - 20, "+1 Lumber", "gain");
+					fireNotification(myPlayer.x + 30, myPlayer.y - 20, "+1 Lumber", "gain");
 					break;
 				case "cherry":
 					myPlayer.amountCherry++;
 					connection.send("updateStat", "cherry", myPlayer.amountCherry);
-					fireNotification(myPlayer.x + 20, myPlayer.y - 20, "+1 Cherry", "gain");
+					fireNotification(myPlayer.x + 30, myPlayer.y - 20, "+1 Cherry", "gain");
 					break;
 			}
 			
 			myPlayer.AP--;
 			connection.send("updateStat", "AP", myPlayer.AP);
-			fireNotification(myPlayer.x + 20, myPlayer.y, "-1 AP", "loss");
+			fireNotification(myPlayer.x + 30, myPlayer.y, "-1 AP", "loss");
 			
 			
 			// remove tree from tile, and tell server
@@ -923,9 +915,6 @@ package
 		private function handleDisconnect():void{
 			trace("Disconnected from server")
 		}
-		
-
-		
 	}
 
 }

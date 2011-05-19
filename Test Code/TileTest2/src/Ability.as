@@ -73,32 +73,37 @@ package
 		}
 		
 		// returns true if player has enough AP & resources to cast this ability
-		public function canCast(player:Player):Boolean
+		public function canCast(player:Player, castToXTile:int,castToYTile:int):Boolean
 		{
 			var canCast:Boolean = true;
-			if (player.AP < this._cost) {
+			if ((_object.Effect.Type == "Terrain" || _object.Effect.Type == "Sprite") && PlayState.myMap.getTile(castToXTile,castToYTile) != _object.Effect.From) {
 				canCast = false;
-				trace("not enough AP to cast");
+				PlayState.fireNotification(player.x + 10, player.y - 20, "Can't cast ability here!", "loss");
 			}
-				
-			// if lumber cost exists for ability, check if player has enough
-			if (player.amountLumber < _neededLumber) {
-				trace("not enough lumber to cast");
+			else if (player.AP < this._cost) {
 				canCast = false;
+				PlayState.fireNotification(player.x + 20, player.y - 20, "Not enough AP!", "loss");
+			}
+			else if (player.amountLumber < _neededLumber) {
+				canCast = false;
+				PlayState.fireNotification(player.x + 20, player.y - 20, "Not enough lumber!", "loss");
 			}
 			
 			return canCast;
 		}
 		
-		public function cast(tileX:int, tileY:int, connection:Connection) 
+		public function cast(tileX:int, tileY:int, connection:Connection):void
 		{
 			if (_object.Effect.Type == "Terrain" && PlayState.myMap.getTile(tileX,tileY) == _object.Effect.From) {
 				PlayState.myMap.setTile(tileX, tileY, _object.Effect.To)
 				connection.send("MapTileChanged", tileX, tileY, _object.Effect.To);
 				connection.send("QuestMapUpdate", PlayState.myMap.getMapData());
-			}else if (_object.Effect.Type == "Sprite" && PlayState.myMap.getTile(tileX,tileY) == _object.Effect.From) {
-				PlayState.lyrSprites.add(new EffectSprite(tileX,tileY, _object.Effect.Image, _object.Effect.Range, _tileSize));
 			}
+			
+			else if (_object.Effect.Type == "Sprite" && PlayState.myMap.getTile(tileX,tileY) == _object.Effect.From) {
+				PlayState.lyrSprites.add(new EffectSprite(tileX, tileY, _object.Effect.Image, _object.Effect.Range, _tileSize));
+			}
+			
 			_parentButton._rangeShow = false;
 			_parentButton.buttonHighlight.visible = false;
 		}
