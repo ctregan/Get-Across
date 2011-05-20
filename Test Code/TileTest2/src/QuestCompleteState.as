@@ -21,6 +21,7 @@ package
 		private var characterInfo:Label
 		private var mainMenu:Box
 		private var nextLevelButton:TextButton
+		private var mainMenuButton:TextButton;
 		private var loader:Box
 		
 		public function QuestCompleteState(xp:int, coin:int, client:Client, nextLevel:String) 
@@ -30,10 +31,13 @@ package
 			super()
 			characterInfo = new Label("",12, TextFormatAlign.CENTER)
 			client.bigDB.loadMyPlayerObject(loadPlayerSuccess)
-			
+			mainMenuButton = new TextButton("Main Menu", continueButton);
 			nextLevelButton = new TextButton("Next Level", nextLevelCallback);
 			if (nextLevel == "") {
 				nextLevelButton.visible = false;
+			}else if (nextLevel == "Class_Choose") {
+				nextLevelButton = new TextButton("Choose Class", chooseClassCallback);
+				mainMenuButton.visible = false;
 			}
 			mainMenu = new Box().fill(0xFFFFFF, 0.8, 0)
 			mainMenu.add(new Box().fill(0x00000, .5, 15).margin(10, 10, 10, 10).minSize(FlxG.width, FlxG.height).add(
@@ -44,7 +48,7 @@ package
 							new Label("XP Gained: " + xp, 15, TextFormatAlign.LEFT, 0x0000FF),
 							new Label ("Coin Gained: " + coin, 15, TextFormatAlign.LEFT, 0x0000FF),
 							new Columns().spacing(10).margin(10).add(
-							new TextButton("Main Menu", continueButton),
+							mainMenuButton,
 							nextLevelButton)
 						).spacing(30)
 					)))
@@ -72,7 +76,12 @@ package
 		{
 			characterInfo.text = "Level: " + ob.level + "	Class: " + ob.role + "	Coin: " + ob.coin;
 		}
-		
+		//Callback for when players must choose a class
+		private function chooseClassCallback():void {
+			FlxG.stage.removeChild(mainMenu);
+			this.kill();
+			FlxG.switchState(new ClassChooseState(_client));
+		}
 		//Callback function for when the next level button is pressed
 		private function nextLevelCallback():void {
 			_client.multiplayer.createRoom(
