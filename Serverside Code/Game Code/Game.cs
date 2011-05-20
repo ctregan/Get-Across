@@ -409,15 +409,15 @@ namespace GetAcross {
                             delegate(DatabaseObject result)
                             {
                                 // todo: change these based on what you got in the level
-                                int gainedxp = 100;
-                                int gainedcoin = 100;
+                                int gainedxp = result.GetInt("XP");
+                                int gainedcoin = result.GetInt("Coin");
 
                                 if (result != null)
                                 {
                                     gainedxp = result.GetInt("XP", 0); //How much XP the Level was worth
                                     gainedcoin = result.GetInt("Coin", 0); //How mucg coin the level was worth
                                 }
-
+                                String nextLevel = "";
                                 //Check to see if player completed Tutorial level, in which case update their tutorial value
                                 if (player.PlayerObject.GetInt("tutorial") == 1)
                                 {
@@ -425,24 +425,26 @@ namespace GetAcross {
                                     abilities.Add("Crafter_Bridge");
                                     player.PlayerObject.Set("abilities" ,abilities);
                                     player.PlayerObject.Set("tutorial", 2);
+                                    nextLevel = "Tutorial_2";
                                 }
                                 else if (player.PlayerObject.GetInt("tutorial") == 2)
                                 {
                                     DatabaseArray abilities = player.PlayerObject.GetArray("abilities");
                                     abilities.Add("Planter_RedFlower");
-                                    //player.PlayerObject.Set("abilities", abilities);
                                     player.PlayerObject.Set("tutorial", 3);
+                                    nextLevel = "Tutorial_3";
                                 }
                                 else if (player.PlayerObject.GetInt("tutorial") == 3)
                                 {
                                     player.PlayerObject.Set("tutorial", 4);
+                                    nextLevel = "Tutorial_4";
                                 }
                                 else if (player.PlayerObject.GetInt("tutorial") == 4)
                                 {
                                     DatabaseArray abilities = player.PlayerObject.GetArray("abilities");
                                     abilities.Add("Cook_MonsterBacon");
-                                    //player.PlayerObject.Set("abilities", abilities);
                                     player.PlayerObject.Set("tutorial", 5);
+                                    nextLevel = "Tutorial_5";
                                 }
                                 else if(player.PlayerObject.GetInt("tutorial") == 5)
                                 {
@@ -453,7 +455,7 @@ namespace GetAcross {
                                 player.PlayerObject.Set("coin", player.PlayerObject.GetInt("coin", 0) + gainedcoin);
                                 player.PlayerObject.Save(delegate()
                                 {
-                                    Broadcast("win", player.Id, gainedxp, gainedcoin);
+                                    Broadcast("win", player.Id, gainedxp, gainedcoin, nextLevel);
                                 });
                                 
                                 

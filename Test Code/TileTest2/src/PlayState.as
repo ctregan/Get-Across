@@ -360,11 +360,11 @@ package
 			}
 		}
 		
-		private function cleanup(m:Message, userID:int, xp:int, coin:int):void 
+		private function cleanup(m:Message, userID:int, xp:int, coin:int, nextLevel:String):void 
 		{
 			connection.disconnect();
 			this.kill();
-			FlxG.switchState(new QuestCompleteState(xp, coin, client));
+			FlxG.switchState(new QuestCompleteState(xp, coin, client, nextLevel));
 			
 		}
 		override public function update():void 
