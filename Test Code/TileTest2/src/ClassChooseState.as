@@ -15,7 +15,9 @@ package
 	public class ClassChooseState extends FlxState
 	{
 		private var _client:Client;
-		[Embed(source = "data/Character.png")] public var character:Class;
+		[Embed(source = "data/Planter1.png")] public var planterImg:Class;
+		[Embed(source = "data/Cook1.png")] public var cookImg:Class;
+		[Embed(source = "data/Crafter1.png")] public var crafterImg:Class;
 		public function ClassChooseState(client:Client) 
 		{
 			_client = client;
@@ -27,7 +29,7 @@ package
 			****Cook Panel****
 			*/
 			add(new FlxText(90, 90, 100, "Cook").setFormat(null, 15, 0x000000));
-			add(new FlxSprite(75, 150, character));
+			add(new FlxSprite(75, 150, cookImg));
 			add(new FlxText(75, 275, 100, "Explanation Text"));
 			add(new FlxButtonPlus(75, 350, chooseClass, [ "Cook" ], "Choose Cook"));
 			
@@ -35,7 +37,7 @@ package
 			****Crafter Panel****
 			*/
 			add(new FlxText(315, 90, 100, "Crafter").setFormat(null, 15, 0x000000));
-			add(new FlxSprite(300, 150, character));
+			add(new FlxSprite(300, 150, crafterImg));
 			add(new FlxText(300, 275, 100, "Explanation Text"));
 			add(new FlxButtonPlus(300, 350, chooseClass, [ "Crafter" ], "Choose Crafter"));
 			
@@ -43,7 +45,7 @@ package
 			****Planter Panel****
 			*/
 			add(new FlxText(540, 90, 100, "Planter").setFormat(null, 15, 0x000000));
-			add(new FlxSprite(525, 150, character));
+			add(new FlxSprite(525, 150, planterImg));
 			add(new FlxText(525, 275, 100, "Explanation Text"));
 			add(new FlxButtonPlus(525, 350, chooseClass, [ "Planter" ], "Choose Planter"));
 			

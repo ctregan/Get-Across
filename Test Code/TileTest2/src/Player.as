@@ -22,7 +22,7 @@ package
 		public static const WIN_TILE:int = 5;
 		public static const BRIDGE_TILE:int = 9;
 		
-		[Embed(source = "data/character1.png")] public var player_avatar:Class;
+		[Embed(source = "data/character2.png")] public var player_avatar:Class;
 		public var AP:Number; //Amount of AP
 		public var level:Number;
 		public var coin:Number;
@@ -79,15 +79,24 @@ package
 			
 			super(((startX) * tileSize) + xOffset, ((startY) * tileSize) + yOffset);
 			loadGraphic(player_avatar, true, false, 32 , 32);
-			addAnimation("idle" + UP, [0], 0, false);
+			/*addAnimation("idle" + UP, [0], 0, false);
 			addAnimation("idle" + DOWN, [3], 0, false);
 			addAnimation("idle" + LEFT, [6], 0, false);
 			addAnimation("idle" + RIGHT, [9], 0, false);
 			addAnimation("walk" + UP, [0, 1, 2], 15, true);
             addAnimation("walk" + DOWN, [3,4,5], 15, true);
             addAnimation("walk" + LEFT, [6, 7, 8], 15, true);
-			addAnimation("walk" + RIGHT, [9, 10, 11], 15, true);
+			addAnimation("walk" + RIGHT, [9, 10, 11], 15, true);*/
 			facing = FlxSprite.DOWN;
+			
+			addAnimation("idle" + UP, [5], 0, false);
+			addAnimation("idle" + DOWN, [0], 0, false);
+			addAnimation("idle" + LEFT, [4], 0, false);
+			addAnimation("idle" + RIGHT, [3], 0, false);
+			addAnimation("walk" + UP, [0, 1, 2], 5, true);
+            addAnimation("walk" + DOWN, [0,1,2], 5, true);
+            addAnimation("walk" + LEFT, [0, 1, 2], 5, true);
+			addAnimation("walk" + RIGHT, [0, 1, 2], 5, true);
 		}
 		
 		
