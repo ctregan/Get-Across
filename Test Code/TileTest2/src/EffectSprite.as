@@ -48,7 +48,7 @@ package
 		
 		private function wait():void 
 		{
-			var sprites:Array = PlayState.lyrMonster.members
+			var sprites:Array = PlayState.lyrMonster.members;
 			for (var index in sprites) {
 					if (inRange(sprites[index]._xTile, sprites[index]._yTile)) {
 						//sprites[index].x = this.x;

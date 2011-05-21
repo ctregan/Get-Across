@@ -80,7 +80,7 @@ package
 			}
 			_ap -= damage;
 			
-			var note:String = "-" + damage + "to monster!";
+			var note:String = "-" + damage + " to monster!";
 			if (_ap <= 0) {
 				this.kill();
 				healthBar.kill();
