@@ -691,31 +691,6 @@ package
 			return Math.floor((myMouse.y - _mapOffsetY) / _viewSize / currentZoomView + (camOffsetY - _windowHeight) / _viewSize );
 		}
 		
-		// update AP value for this player in the Quests database
-		// input: new value of AP
-		public static function updateAP(newAP:int):void
-		{
-			myClient.bigDB.load("newQuests", playerName, function(results:DatabaseObject):void {
-				// make sure player exists in Quests
-				if (results != null) {
-					results.AP = newAP;
-					results.save();
-				}
-			});
-		}
-		
-		// increment AP value for this player in the Quests database
-		public static function incrementAP():void
-		{
-			myClient.bigDB.load("newQuests", playerName, function(results:DatabaseObject):void {
-				// make sure player exists in Quests
-				if (results != null) {
-					results.AP += 1;
-					results.save();
-				}
-			});
-		}
-		
 		//Returns whether an ability has been selected to be used by the player
 		public static function getAbilitySelected():Boolean 
 		{
@@ -773,7 +748,8 @@ package
 			lyrBattle.add(new FlxButtonPlus(540, 290,  function() { 
 				if (myPlayer.inBattle) {
 					myPlayer.combatant.attack(1, myPlayer);
-					updateAP(playerAP - 1);
+					myPlayer.AP--;
+					connection.send("updateStat", "AP", myPlayer.AP);
 				}
 			}, null, "Weak Attack: 1 AP", 120));
 			//lyrBattle.add(new FlxText(24, 286, 100, "Weak Attack"));
@@ -781,7 +757,8 @@ package
 			lyrBattle.add(new FlxButtonPlus(540, 320, function() { 
 				if (myPlayer.inBattle) {
 					myPlayer.combatant.attack(2, myPlayer);
-					updateAP(playerAP - 3);
+					myPlayer.AP -= 3;
+					connection.send("updateStat", "AP", myPlayer.AP);
 				}
 			}, null, "Medium Attack: 3 AP", 120));
 			
@@ -791,7 +768,8 @@ package
 			lyrBattle.add(new FlxButtonPlus(540, 350, function() { 
 				if (myPlayer.inBattle) {
 					myPlayer.combatant.attack(3, myPlayer);
-					updateAP(playerAP - 5);
+					myPlayer.AP -= 5;
+					connection.send("updateStat", "AP", myPlayer.AP);
 				}
 			},null, "Strong Attack: 5 AP", 120));
 			//lyrBattle.add(new FlxText(24, 346, 100, "Strong Attack"));
@@ -866,7 +844,7 @@ package
 				function(dbo:DatabaseObject) {					
 					trace("level key: " + levelKey);
 					// if map has intro messages, fill them in
-					if (dbo.Messages != null)
+					if (dbo != null && dbo.Messages != null)
 					{
 						trace("message object: " + dbo.toString());
 						var messages:Array = dbo.Messages;
