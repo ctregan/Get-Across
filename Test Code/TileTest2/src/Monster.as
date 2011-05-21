@@ -15,13 +15,17 @@ package
 		public var _yTile:int
 		private var _monsterIndex:int //The Index of the Monster within the level's database table.
 		public var healthBar:FlxHealthBar;
+		private var _tileSize:int;
+		private var _connection:Connection
 		
-		public function Monster(type:String, ap:int, monsterIndex:int, xTile:int, yTile:int, xOffset:int, yOffset:int, tileSize:int) 
+		public function Monster(type:String, ap:int, monsterIndex:int, xTile:int, yTile:int, xOffset:int, yOffset:int, tileSize:int, connection:Connection) 
 		{
 			_ap = ap;
 			_xTile = xTile
 			_yTile = yTile
+			_tileSize = tileSize
 			_monsterIndex = monsterIndex
+			_connection = connection
 			
 			super(((xTile) * tileSize) + xOffset, ((yTile) * tileSize) + yOffset);
 			loadGraphic(monster_weak, true, false, 32 , 32);
@@ -49,13 +53,22 @@ package
 			}
 		}
 		
+		public function move(tileX:int, tileY:int):void 
+		{
+			this.x += (tileX - _xTile) * _tileSize
+			this.y += (tileY - _yTile) * _tileSize
+			_xTile = tileX;
+			_yTile = tileY;
+			_connection.send("SpriteMove", "Monsters", _xTile, _yTile, _monsterIndex);
+		}
+		
 		//Attempts to attack monster and does damage based on "type"
 		/*
 		 * 1 = Weak Attack (1-2 AP)
 		 * 2 = Medium Attack  (3-4 AP)
 		 * 3 = Strong Attack (5-6 AP)
 		 */
-		public function attack(type:int, player:Player, connection:Connection):void 
+		public function attack(type:int, player:Player):void 
 		{
 			var damage:int;
 			if (type == 1) {
@@ -74,7 +87,7 @@ package
 				player.inBattle = false;
 				note += "\nMonster fell!";
 			}
-			connection.send("MonsterAPChange",  _ap, _monsterIndex)
+			_connection.send("MonsterAPChange",  _ap, _monsterIndex)
 			PlayState.fireNotification(this.x + 20, this.y - 20, note, "loss");
 		}
 		

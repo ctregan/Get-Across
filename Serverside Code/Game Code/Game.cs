@@ -510,6 +510,24 @@ namespace GetAcross {
                         Broadcast("MonsterAPChange", player.Id, newAp, monsterIndex);
                         break;
                     }
+                case "SpriteMove":
+                    {
+                        String type = message.GetString(0);
+                        int newXTile = message.GetInt(1);
+                        int newYTile = message.GetInt(2);
+                        int monsterIndex = message.GetInt(3);
+
+                        PlayerIO.BigDB.Load("newQuests", questID,
+                            delegate(DatabaseObject dbo)
+                            {
+                                DatabaseArray sprites = dbo.GetArray(type);
+                                DatabaseObject sprite = sprites.GetObject(monsterIndex);
+                                sprite.Set("xTile", newXTile);
+                                sprite.Set("yTile", newYTile);
+                                dbo.Save();
+                            });
+                        break;
+                    }
 			}
 		}
 

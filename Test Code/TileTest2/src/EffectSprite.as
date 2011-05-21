@@ -37,18 +37,23 @@ package
 			
 			if(type == "bacon"){
 				var myTimer:Timer = new Timer(1000);
-				myTimer.addEventListener(TimerEvent.TIMER, wait)
+				myTimer.addEventListener(TimerEvent.TIMER, function (event:TimerEvent):void 
+				{
+					wait()
+					myTimer.stop();
+				});
 				myTimer.start();
 			}
 		}
 		
-		private function wait(event:TimerEvent):void 
+		private function wait():void 
 		{
 			var sprites:Array = PlayState.lyrMonster.members
 			for (var index in sprites) {
 					if (inRange(sprites[index]._xTile, sprites[index]._yTile)) {
-						sprites[index].x = this.x;
-						sprites[index].y = this.y;
+						//sprites[index].x = this.x;
+						//sprites[index].y = this.y;
+						Monster(sprites[index]).move(xTile, yTile);
 						this.kill();
 						return;
 					}

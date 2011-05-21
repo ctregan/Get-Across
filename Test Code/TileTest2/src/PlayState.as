@@ -178,7 +178,7 @@ package
 								for (var z in monsters) {
 									//Dont add a monster that is dead
 									if(monsters[z].AP > 0){
-										var myMonsterSprite:Monster = new Monster(monsters[z].Type, monsters[z].AP, z, monsters[z].xTile, monsters[z].yTile,0, _windowHeight, _tileSize);
+										var myMonsterSprite:Monster = new Monster(monsters[z].Type, monsters[z].AP, z, monsters[z].xTile, monsters[z].yTile,0, _windowHeight, _tileSize, connection);
 										monsterArray.push(myMonsterSprite);
 										lyrMonster.add(myMonsterSprite);
 										lyrHUD.add(myMonsterSprite.healthBar);
@@ -688,7 +688,7 @@ package
 			//Weak Attack Button
 			lyrBattle.add(new FlxButtonPlus(22, 254,  function() { 
 				if (myPlayer.inBattle) {
-					myPlayer.combatant.attack(1, myPlayer, connection);
+					myPlayer.combatant.attack(1, myPlayer);
 					updateAP(playerAP - 1);
 				}
 			}, null, "Weak Attack: 1 AP"))
@@ -696,7 +696,7 @@ package
 			//Medium Attack Button
 			lyrBattle.add(new FlxButtonPlus(22, 284, function() { 
 				if (myPlayer.inBattle) {
-					myPlayer.combatant.attack(2, myPlayer, connection);
+					myPlayer.combatant.attack(2, myPlayer);
 					updateAP(playerAP - 3);
 				}
 			}, null, "Medium Attack: 3 AP"))
@@ -706,7 +706,7 @@ package
 			//lyrBattle.add(new FlxButton(22, 344, "text", function() { 
 			lyrBattle.add(new FlxButtonPlus(22, 314, function() { 
 				if (myPlayer.inBattle) {
-					myPlayer.combatant.attack(3, myPlayer, connection);
+					myPlayer.combatant.attack(3, myPlayer);
 					updateAP(playerAP - 5);
 				}
 			},null, "Strong Attack: 5 AP"))
