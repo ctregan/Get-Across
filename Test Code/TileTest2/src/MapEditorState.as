@@ -14,7 +14,7 @@ package
 	 */
 	public class MapEditorState extends FlxState
 	{
-		[Embed(source = "data/testTileSet2_32.png")] public var data_tiles:Class; //Tile Set Image
+		[Embed(source = "data/testTileSet3_32.png")] public var data_tiles:Class; //Tile Set Image
 		[Embed(source = "data/Selected.png")] public var select:Class; 
 		private static var TILE_VALUES:Array = ["Grass", "Hill", "Tree", "Cherry Tree", "River", "Star"];
 		private static var _tileSize:int = 32;

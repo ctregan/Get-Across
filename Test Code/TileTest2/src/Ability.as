@@ -77,7 +77,7 @@ package
 		public function canCast(player:Player, castToXTile:int,castToYTile:int):Boolean
 		{
 			var canCast:Boolean = true;
-			if ((_object.Effect.Type == "Terrain" || _object.Effect.Type == "Sprite") && PlayState.myMap.getTile(castToXTile,castToYTile) != _object.Effect.From) {
+			if ((_object.Effect.Type == "Terrain" || _object.Effect.Type == "Sprite") && (PlayState.myMap.getTile(castToXTile,castToYTile) != _object.Effect.From && (_object.Effect.From2 == null || PlayState.myMap.getTile(castToXTile,castToYTile) != _object.Effect.From2))) {
 				canCast = false;
 				PlayState.fireNotification(player.x + 20, player.y + 20, "Can't cast ability here!", "loss");
 			}
@@ -95,12 +95,16 @@ package
 		
 		public function cast(tileX:int, tileY:int, connection:Connection):void
 		{
-			if (_object.Effect.Type == "Terrain" && PlayState.myMap.getTile(tileX,tileY) == _object.Effect.From) {
+			var tileType:int = PlayState.myMap.getTile(tileX,tileY)
+			if (_object.Effect.Type == "Terrain" &&  tileType == _object.Effect.From) {
 				PlayState.myMap.setTile(tileX, tileY, _object.Effect.To)
 				connection.send("MapTileChanged", tileX, tileY, _object.Effect.To);
 				connection.send("QuestMapUpdate", PlayState.myMap.getMapData());
+			}else if (_object.Effect.Type == "Terrain" && _object.Effect.From2 != null && tileType == _object.Effect.From2) {
+				PlayState.myMap.setTile(tileX, tileY, _object.Effect.To2)
+				connection.send("MapTileChanged", tileX, tileY, _object.Effect.To2);
+				connection.send("QuestMapUpdate", PlayState.myMap.getMapData());
 			}
-			
 			else if (_object.Effect.Type == "Sprite" && PlayState.myMap.getTile(tileX,tileY) == _object.Effect.From) {
 				//PlayState.lyrEffects.add(new EffectSprite(tileX, tileY, _object.Effect.Image, _object.Effect.Range, _tileSize));
 				connection.send("AddSprite", "Effects", tileX, tileY, _object.Effect.Image, _object.Effect.Range);

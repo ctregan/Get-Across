@@ -18,12 +18,13 @@ package
 		public static const HILL_TILE:int = 1;
 		public static const TREE_TILE:int = 2;
 		public static const CHERRY_TILE:int = 3;
-		public static const WATER_TILE:int = 4;
-		public static const WIN_TILE:int = 5;
-		public static const WATER_TILE2:int = 6;
-		public static const WATER_TILE3:int = 7;
-		public static const BRIDGE_TILE:int = 9;
-		public static const GATE_TILE:int = 10;
+		public static const WATER_TILE:int = 8;
+		public static const WIN_TILE:int = 4;
+		public static const WATER_TILE2:int = 13;
+		public static const WATER_TILE3:int = 9;
+		public static const BRIDGE_TILE_UP:int = 6;
+		public static const BRIDGE_TILE_LEFT:int = 7;
+		public static const GATE_TILE:int = 14;
 		
 		[Embed(source = "data/character2.png")] public var player_avatar:Class;
 		public var AP:Number; //Amount of AP
@@ -177,7 +178,7 @@ package
 		//Sees if the desired move for the player is valid.
 		public function checkMove(proposedX:Number, proposedY:Number, tileSize:int):Boolean {
 			var proposedTileType:int = PlayState.myMap.getTile(proposedX, proposedY)
-			if ( proposedTileType == WATER_TILE || proposedTileType == WATER_TILE2 || proposedTileType == WATER_TILE3) {
+			if ( proposedTileType >= WATER_TILE && proposedTileType <= WATER_TILE2) {
 				errorMessage = "Invalid Move, can't cross water";
 				//PlayState.fireNotification(this.x + 20, this.y - 20, "You can't cross water!", "loss");
 				return false;

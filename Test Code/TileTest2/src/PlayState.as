@@ -25,15 +25,20 @@ package
 	public class PlayState extends FlxState
 	{
 		//Tile Value Constants, if tileSet changes, need to update these!!
-		private const GRASS_TILE:int = 0;
-		private const HILL_TILE:int = 1;
-		private const TREE_TILE:int = 2;
-		private const CHERRY_TILE:int = 3;
-		private const WATER_TILE:int = 4;
-		private const WIN_TILE:int = 5;
+		public static const GRASS_TILE:int = 0;
+		public static const HILL_TILE:int = 1;
+		public static const TREE_TILE:int = 2;
+		public static const CHERRY_TILE:int = 3;
+		public static const WATER_TILE:int = 8;
+		public static const WIN_TILE:int = 4;
+		public static const WATER_TILE2:int = 13;
+		public static const WATER_TILE3:int = 9;
+		public static const BRIDGE_TILE_UP:int = 6;
+		public static const BRIDGE_TILE_LEFT:int = 7;
+		public static const GATE_TILE:int = 14;
 		
 		//[Embed(source = "data/map_data.txt", mimeType = "application/octet-stream")] public var data_map:Class; //Tile Map array
-		[Embed(source = "data/testTileSet2_32.png")] public var data_tiles:Class; //Tile Set Image
+		[Embed(source = "data/testTileSet3_32.png")] public var data_tiles:Class; //Tile Set Image
 		[Embed(source = "data/Cursor.png")] public var cursor_img:Class; //Mouse Cursor
 		[Embed(source = "data/arrows_32.png")] public var hoverTileImg:Class;
 		[Embed(source = "data/noTileImg.png")] public var hoverTileImgNo:Class;
