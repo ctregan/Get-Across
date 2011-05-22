@@ -136,13 +136,13 @@ package
 		}
 		//Find AP Cost of the tile at the given location. If tureMove flag is high, then the player will actually move when results are passed
 		private function findCost(proposedX:Number, proposedY:Number, tileSize:int, trueMove:Boolean):Number {
-			var sprites:Array = PlayState.lyrSprites.members
+			var sprites:Array = PlayState.lyrEffects.members
 			for (var x in sprites) {
 				try {
 					var eSprite:EffectSprite = EffectSprite(sprites[x]);
 					if (eSprite.type == "redflower" && eSprite.inRange(proposedX, proposedY))  {
 						if(trueMove){
-							eSprite.uses++;
+							eSprite.addUse(true);
 						}
 						return 0;
 					}

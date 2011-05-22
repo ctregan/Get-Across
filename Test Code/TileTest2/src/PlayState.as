@@ -42,6 +42,7 @@ package
 		private var playersArray:Array = []; //Array of all players on board
 		private var monsterArray:Array = [];
 		private var buttonArray:Array = []; //Array of all buttons on the board
+		private var effectArray:Array = []; //Array of all effect sprites currently on the board
 		
 		private var myMouse:Mouse; //Mouse
 		private var errorMessage:FlxText; //Text Field to reflect any errors
@@ -70,6 +71,7 @@ package
 		public static var lyrBattle:FlxGroup;
 		public static var lyrMonster:FlxGroup;
 		public static var lyrTop:FlxGroup;
+		public static var lyrEffects:FlxGroup;
 		
 		private static var abilitySelected:Boolean = false; //Indicates whether an ability is activated
 		private static var activeAbility:Ability; //Which ability is currently chosen
@@ -143,11 +145,6 @@ package
 			super();
 			trace("Sucessfully connected to the multiplayer server");
 			
-			infoBox = new InfoBox(resetGame,joinGame);
-			//addChild(infoBox);
-			
-			infoBox.Show("waiting");						
-
 			this.client = client;
 			myClient = client;
 			this.connection = connection;
@@ -172,7 +169,6 @@ package
 						trace("board made");
 						//Load Monster
 						try {
-							//monsterArray = new Array[ob.MonsterCount];
 							var monsters:Array = ob.Monsters
 							if(monsters != null){
 								for (var z in monsters) {
@@ -203,6 +199,20 @@ package
 							}
 						}catch (e:Error) {
 							trace("Button Loading Error: " + e);
+						}
+						
+						//Load Effect Sprites
+						try {
+							var effectSprites:Array = ob.Effects
+							if (effectSprites != null) {
+								for (var z in effectSprites) {
+									var myEffectSprite:EffectSprite = new EffectSprite(effectSprites[z].xTile, effectSprites[z].yTile, effectSprites[z].Type, effectSprites[z].Range, _tileSize, effectSprites[z].Uses, connection, z);
+									effectArray.push(myEffectSprite);
+									lyrEffects.add(myEffectSprite);
+								}
+							}
+						}catch (e:Error) {
+							trace("Effect Sprite Loading Error: " + e);
 						}
 					}
 					
@@ -325,6 +335,7 @@ package
 			{
 				monsterArray[monsterIndex]._ap = newAP;
 			})
+			//Load and alert the player of all messages associated with that level
 			connection.addMessageHandler("AlertMessages", function(m:Message, levelKey:String):void
 			{
 				client.bigDB.load("StaticMaps", levelKey,
@@ -342,6 +353,20 @@ package
 					}
 				);
 			})
+			//A new effect sprite has been added to the field
+			connection.addMessageHandler("AddSprite", function (m:Message, xTile:int, yTile:int, type:String, range:int):void 
+			{
+				var newEffectSprite:EffectSprite = new EffectSprite(xTile, yTile, type, range, _tileSize, 0, connection, effectArray.length);
+				lyrEffects.add(newEffectSprite);
+				effectArray.push(newEffectSprite);
+			})
+			//Updates the use for a certain item
+			connection.addMessageHandler("SpriteUse", function (m:Message,userID:int, index:int):void 
+			{
+				if (userID != imPlayer) {
+					EffectSprite(effectArray[index]).addUse(false);
+				}
+			});
 		
 		}
 		
@@ -549,16 +574,20 @@ package
 					 //Detect Monster collision, if a monster is overlapping your player then you are now in a fight
 					if(myPlayer.inBattle == false){
 						for (var monster in monsterArray) {
-							FlxG.overlap(monsterArray[monster], myPlayer, function() {
-								myPlayer.inBattle = true;
-								FlxG.flash(0xFFFFFF, 1,function ():void 
-								{
-									FlxG.stage.addChild(new Alert("YOU HAVE ENTERED BATTLE"));
+							
+								FlxG.overlap(monsterArray[monster], myPlayer, function() {
+									if(Monster(monsterArray[monster]).moving == false){
+										myPlayer.inBattle = true;
+										trace("Monster at " + monsterArray[monster].x + "," + monsterArray[monster].y + "   Player at " + myPlayer.x + "," + myPlayer.y);
+										FlxG.flash(0xFFFFFF, 1,function ():void 
+										{
+											FlxG.stage.addChild(new Alert("YOU HAVE ENTERED BATTLE"));
+										});
+										myPlayer.combatant = monsterArray[monster]
+										errorMessage.text = "BATTLE!";
+										lyrBattle.visible = true;
+									}
 								});
-								myPlayer.combatant = monsterArray[monster]
-								errorMessage.text = "BATTLE!";
-								lyrBattle.visible = true;
-							});
 						}
 					 }
 					//Detect Button Collision
@@ -664,6 +693,7 @@ package
 			lyrBackground = new FlxGroup;
 			lyrBattle = new FlxGroup;
 			lyrMonster = new FlxGroup;
+			lyrEffects = new FlxGroup;
 			lyrTop = new FlxGroup;
 			myMouse = FlxG.mouse;
 			
@@ -759,6 +789,7 @@ package
 			tileHover.addAnimation("UP", [3], 0, false);
 			lyrHUD.add(tileHover);
 			lyrSprites.add(lyrMonster);
+			lyrSprites.add(lyrEffects);
 			lyrHUD.add(gatherLumberButton);
 			lyrHUD.add(gatherCherryButton);
 			

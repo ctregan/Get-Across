@@ -17,6 +17,7 @@ package
 		public var healthBar:FlxHealthBar;
 		private var _tileSize:int;
 		private var _connection:Connection
+		public var moving:Boolean = false;
 		
 		public function Monster(type:String, ap:int, monsterIndex:int, xTile:int, yTile:int, xOffset:int, yOffset:int, tileSize:int, connection:Connection) 
 		{
@@ -45,6 +46,7 @@ package
 		
 		override public function update():void 
 		{
+			
 			super.update();
 			this.health = _ap
 			if (_ap <= 0) {
@@ -55,11 +57,16 @@ package
 		
 		public function move(tileX:int, tileY:int):void 
 		{
-			this.x += (tileX - _xTile) * _tileSize
+			moving = true;
 			this.y += (tileY - _yTile) * _tileSize
+			trace("Monster move y to " + this.y);
+			this.x += (tileX - _xTile) * _tileSize
+			trace("Monster move x to " + this.x);
+			
 			_xTile = tileX;
 			_yTile = tileY;
 			_connection.send("SpriteMove", "Monsters", _xTile, _yTile, _monsterIndex);
+			moving = false;
 		}
 		
 		//Attempts to attack monster and does damage based on "type"

@@ -528,6 +528,59 @@ namespace GetAcross {
                             });
                         break;
                     }
+                case "AddSprite":
+                    {
+                        String type = message.GetString(0);               
+                        int xTile = message.GetInt(1);
+                        int yTile = message.GetInt(2);
+                        String name = message.GetString(3);
+                        int range = message.GetInt(4);
+
+                        DatabaseObject newSprite = new DatabaseObject();
+                        newSprite.Set("xTile", xTile);
+                        newSprite.Set("yTile", yTile);
+                        newSprite.Set("Type", name);
+                        newSprite.Set("Uses", 0);
+                        newSprite.Set("Range", range);
+
+                        Broadcast("AddSprite", xTile, yTile, name, range);
+                        PlayerIO.BigDB.Load("newQuests", questID,
+                            delegate(DatabaseObject dbo)
+                            {
+                                if (dbo.Contains(type))
+                                {
+                                    DatabaseArray sprites = dbo.GetArray(type);
+                                    sprites.Add(newSprite);
+
+                                }
+                                else
+                                {
+                                    DatabaseArray sprites = new DatabaseArray();
+                                    sprites.Add(newSprite);
+                                    dbo.Set(type, sprites);
+                                }
+                                dbo.Save();
+
+                            });
+                        break;
+                    }
+                case "SpriteUse":
+                    {
+                    
+                        int index = message.GetInt(0);
+                        int uses = message.GetInt(1);
+                        Console.WriteLine("Sprite " + index + " Is being used for the " + uses + " time");
+                        Broadcast("SpriteUse", player.Id, index);
+                        PlayerIO.BigDB.Load("newQuests", questID,
+                            delegate(DatabaseObject dbo)
+                            {
+                                DatabaseArray sprites = dbo.GetArray("Effects");
+                                DatabaseObject sprite = sprites.GetObject(index);
+                                sprite.Set("Uses", uses);
+                                dbo.Save();
+                            });
+                        break;
+                    }
 			}
 		}
 

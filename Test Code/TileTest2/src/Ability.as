@@ -101,7 +101,8 @@ package
 			}
 			
 			else if (_object.Effect.Type == "Sprite" && PlayState.myMap.getTile(tileX,tileY) == _object.Effect.From) {
-				PlayState.lyrSprites.add(new EffectSprite(tileX, tileY, _object.Effect.Image, _object.Effect.Range, _tileSize));
+				//PlayState.lyrEffects.add(new EffectSprite(tileX, tileY, _object.Effect.Image, _object.Effect.Range, _tileSize));
+				connection.send("AddSprite", "Effects", tileX, tileY, _object.Effect.Image, _object.Effect.Range);
 			}
 			
 			_parentButton._rangeShow = false;
