@@ -9,6 +9,8 @@ package
 	import playerio.*
 	import sample.ui.components.*
 	import sample.ui.*
+	import flash.events.TimerEvent
+	import flash.utils.Timer
 	
 	import flash.text.TextFormatAlign
 	import flash.text.TextFormat
@@ -42,11 +44,15 @@ package
 			client.bigDB.loadMyPlayerObject(loadPlayerSuccess);
 			mainMenuButton = new TextButton("Main Menu", continueButton);
 			nextLevelButton = new TextButton("Next Level", nextLevelCallback);
+			mainMenuButton.visible = false;
+			nextLevelButton.visible = false;
 			if (nextLevel == "") {
 				nextLevelButton.visible = false;
+				nextLevelButton.enabled = false;
 			}else if (nextLevel == "Class_Choose") {
 				nextLevelButton = new TextButton("Choose Class", chooseClassCallback);
 				mainMenuButton.visible = false;
+				mainMenuButton.enabled = false;
 			}
 			
 			// initialize labels for player info to show at the end
@@ -124,9 +130,13 @@ package
 			add(xpSprite);
 			add(xpBar);
 			add(xpText);
-			
-			for (var i:int; i < _xpGain; i++) {
+			var count:int = 0;
+			var myTimer:Timer = new Timer(100);
+			myTimer.addEventListener(TimerEvent.TIMER, function (event:TimerEvent):void 
+			{
 				xpSprite.health++;
+				count++;
+				
 				if (xpSprite.health >= neededXP) {
 					FlxG.flash(0xffffff, 1, function() {
 						FlxG.stage.addChild(new Alert("You Have Leveled Up!"));
@@ -135,9 +145,17 @@ package
 					neededXP = needXP(ob.level + 1);
 					xpBar.setRange(needXP(ob.level), neededXP)
 					ob.save();
+				}else if(count == _xpGain){
+					myTimer.stop();
+					levelLabel.text = "Level " + ob.level;
+					classLabel.text = "Class: " + ob.role;
+					coinLabel.text = "Coins: " + ob.coin;
+					mainMenuButton.visible = true;
+					nextLevelButton.visible = true;
 				}
 				xpText.text = xpSprite.health.toString() + " XP / " + neededXP.toString() + " XP";
-			}
+			});
+			myTimer.start();
 			// labels for player info
 			levelLabel.text = "Level " + ob.level;
 			classLabel.text = "Class: " + ob.role;
