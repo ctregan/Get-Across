@@ -18,7 +18,7 @@ package
 		[Embed(source = "data/testTileSet3_32.png")] public var data_tiles:Class; //Tile Set Image
 		[Embed(source = "data/Selected.png")] public var select:Class; 
 		private static var TILE_VALUES:Array = ["Grass", "Hill", "Tree", "Cherry Tree", "River", "Star"];
-		private var STAR_TILE:int = 5;
+		private var STAR_TILE:int = 4;
 		private static var _tileSize:int = 32;
 	
 		private var _name:String
@@ -64,7 +64,7 @@ package
 			title = new FlxText(200, 5, 600, "Map Editor", true).setFormat(null, 20,0xff488921);
 			add(title);
 			
-			instructions = new FlxText(400, 50, 300, "<-- Use this palette to choose your tile, then click on the map to place.\n\nOnce you are done, hit upload to save the map!", true).setFormat(null, 15);
+			instructions = new FlxText(400, 75, 300, "<-- Use this palette to choose your tile, then click on the map to place.\n\nOnce you are done, hit upload to save the map!", true).setFormat(null, 15);
 			add(instructions);
 			
 			mapInfo = new FlxText(400, 230, 300, "texttext", true).setFormat(null, 15);
