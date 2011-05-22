@@ -73,7 +73,7 @@ package
 			else{
 				FlxG.stage.removeChild(base);
 				this.kill();
-				//FlxG.switchState(new MapEditorState(nameInput.text, heightInput.text, widthInput.text, _myClient));
+				FlxG.switchState(new MapEditorState(nameInput.text, heightInput.text, widthInput.text, _myClient));
 			}
 		}
 		
