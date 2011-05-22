@@ -71,7 +71,7 @@ package
 			
 			// labels for other information
 			var questTextFormat:TextFormat = new TextFormat("Abscissa", 30, 0xff488921);
-			var questLabel:Label = new Label("Quest Cmplete!", 30, TextFormatAlign.CENTER, 0xff488921);
+			var questLabel:Label = new Label("quest complete!", 30, TextFormatAlign.CENTER, 0xff488921);
 			questLabel.setTextFormat(questTextFormat);
 			
 			var xpGainedTextFormat:TextFormat = new TextFormat("Abscissa", 20, 0xff488921);

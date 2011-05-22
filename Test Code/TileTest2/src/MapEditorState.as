@@ -33,7 +33,7 @@ package
 		private var _myClient:Client
 		private var mainMenu:Box;
 		private var instructions:FlxText;
-		private var mapInfo:FlxText;
+		private var brushInfo:FlxText;
 		
 		public function MapEditorState(name:String, height:String, width:String, myClient:Client) 
 		{
@@ -61,14 +61,14 @@ package
 			FlxG.mouse.show();
 			myMouse = FlxG.mouse;
 			
-			title = new FlxText(200, 5, 600, "Map Editor", true).setFormat(null, 20,0xff488921);
+			title = new FlxText(200, 5, 600, "Map Editor", true).setFormat(null, 25,0xff488921);
 			add(title);
 			
-			instructions = new FlxText(400, 75, 300, "<-- Use this palette to choose your tile, then click on the map to place.\n\nOnce you are done, hit upload to save the map!", true).setFormat(null, 15);
+			instructions = new FlxText(400, 75, 300, "^^ Use this palette to choose your tile, then click on the map to place.\n\nOnce you are done, hit upload to save the map!", true).setFormat(null, 15, 0x33591d);
 			add(instructions);
 			
-			mapInfo = new FlxText(400, 230, 300, "texttext", true).setFormat(null, 15);
-			add(mapInfo);
+			brushInfo = new FlxText(400, 230, 300, "", true).setFormat(null, 15,0xff33591d);
+			add(brushInfo);
 			
 			palet = new FlxSprite(20, 40, data_tiles)
 			add(palet);
@@ -102,9 +102,58 @@ package
 				selectedTile.x = (tileBrush * _tileSize) + palet.x;
 			}
 			
-			if (!mapHasEnd())
-				mapInfo.text = "This map still needs an endpoint!";
-			else mapInfo.text = "";
+			// update information about selected tile
+			switch (tileBrush)
+			{
+				case 0:
+					brushInfo.text = "You currently have GRASS selected.\n\nGrass takes no AP to cross."
+					break;
+				case 1:
+					brushInfo.text = "You currently have HILL selected.\n\nHills take 3 AP to cross."
+					break;
+				case 2:
+					brushInfo.text = "You currently have TREE selected.\n\nTree takes no AP to cross.  It looks pretty cool, though."
+					break;
+				case 3:
+					brushInfo.text = "You currently have CHERRY TREE selected.\n\nHarvest lumber or cherries from cherry tree for 1 AP.  Make sure players can access cherry trees to make bridges or food!"
+					break;
+				case 4:
+					brushInfo.text = "You currently have STAR selected.\n\nPlayers need to reach this to win the level.  Make sure your map has one!"
+					break;
+				case 5:
+					brushInfo.text = "You currently have YELLOW SQUARE selected.\n\nIt takes no AP to cross.  I'm not sure why we have this.";
+					break;
+				case 6:
+					brushInfo.text = "You currently have VERTICAL BRIDGE selected.\n\nBridge allow players to cross over water for 1 AP."
+					break;
+				case 7:
+					brushInfo.text = "You currently have HORIZONTAL BRIDGE selected.\n\nBridge allow players to cross over water for 1 AP."
+					break;
+				case 8:
+					brushInfo.text = "You currently have WATER selected.\n\nPlayers can't cross water unless they build a bridge."
+					break;
+				case 9:
+					brushInfo.text = "You currently have WATER selected.\n\nPlayers can't cross water unless they build a bridge."
+					break;
+				case 10:
+					brushInfo.text = "You currently have WATER selected.\n\nPlayers can't cross water unless they build a bridge."
+					break;
+				case 11:
+					brushInfo.text = "You currently have WATER selected.\n\nPlayers can't cross water unless they build a bridge."
+					break;
+				case 12:
+					brushInfo.text = "You currently have WATER selected.\n\nPlayers can't cross water unless they build a bridge."
+					break;
+				case 13:
+					brushInfo.text = "You currently have WATER selected.\n\nPlayers can't cross water unless they build a bridge."
+					break;
+				case 14:
+					brushInfo.text = "You currently have WALL selected.\n\nPlayers can't get across walls."
+					break;
+				default:
+					brushInfo.text = "You currently have a tile selected to paint with!  Go you, yeah!!"
+					break;
+			}
 		}
 		//Changes the brush value to whatever tile value is sent in
 		private function switchBrush(tileValue:int) {
@@ -137,16 +186,20 @@ package
 		
 		//Sends the data to the database and saves
 		private function sendMapData():void {
-			var newMap:DatabaseObject = new DatabaseObject();
-			newMap.Name = _name;
-			newMap.Creator = _myClient.connectUserId;
-			newMap.tileValues = map.getMapData();
-			newMap.XP = 0;
-			newMap.Coin = 0;
-			newMap.MonsterCount = 0;
-			_myClient.bigDB.createObject("UserMaps", null, newMap, function() {
-				FlxG.stage.addChild(new Alert("Map Uploaded"));
-			});
+			if (!mapHasEnd())
+				FlxG.stage.addChild(new Alert("No one can complete this map if it doesn't have a goal!\n\nAdd a goal tile (the one with the red star) to the map!"));
+			else {
+				var newMap:DatabaseObject = new DatabaseObject();
+				newMap.Name = _name;
+				newMap.Creator = _myClient.connectUserId;
+				newMap.tileValues = map.getMapData();
+				newMap.XP = 0;
+				newMap.Coin = 0;
+				newMap.MonsterCount = 0;
+				_myClient.bigDB.createObject("UserMaps", null, newMap, function() {
+					FlxG.stage.addChild(new Alert("Map Uploaded"));
+				});
+			}
 		}
 		
 		// returns true if map contains a star/end tile
