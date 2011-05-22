@@ -448,6 +448,7 @@ namespace GetAcross {
                                 }
                                 else if(player.PlayerObject.GetInt("tutorial") == 5)
                                 {
+                                    nextLevel = "Class_Choose";
                                     player.PlayerObject.Set("tutorial", 6);
                                 }
 

@@ -73,20 +73,21 @@ package
 		}
 		
 		// returns true if player has enough AP & resources to cast this ability
+		// input: player, x & y of tile to cast to, x & y of pixels the player clicked
 		public function canCast(player:Player, castToXTile:int,castToYTile:int):Boolean
 		{
 			var canCast:Boolean = true;
 			if ((_object.Effect.Type == "Terrain" || _object.Effect.Type == "Sprite") && PlayState.myMap.getTile(castToXTile,castToYTile) != _object.Effect.From) {
 				canCast = false;
-				PlayState.fireNotification(player.x + 10, player.y - 20, "Can't cast ability here!", "loss");
+				PlayState.fireNotification(player.x + 20, player.y + 20, "Can't cast ability here!", "loss");
 			}
 			else if (player.AP < this._cost) {
 				canCast = false;
-				PlayState.fireNotification(player.x + 20, player.y - 20, "Not enough AP!", "loss");
+				PlayState.fireNotification(player.x + 20, player.y + 20, "Not enough AP!", "loss");
 			}
 			else if (player.amountLumber < _neededLumber) {
 				canCast = false;
-				PlayState.fireNotification(player.x + 20, player.y - 20, "Not enough lumber!", "loss");
+				PlayState.fireNotification(player.x + 20, player.y + 20, "Not enough lumber!", "loss");
 			}
 			
 			return canCast;

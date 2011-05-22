@@ -20,7 +20,10 @@ package
 		public static const CHERRY_TILE:int = 3;
 		public static const WATER_TILE:int = 4;
 		public static const WIN_TILE:int = 5;
+		public static const WATER_TILE2:int = 6;
+		public static const WATER_TILE3:int = 7;
 		public static const BRIDGE_TILE:int = 9;
+		public static const GATE_TILE:int = 10;
 		
 		[Embed(source = "data/character2.png")] public var player_avatar:Class;
 		public var AP:Number; //Amount of AP
@@ -70,7 +73,7 @@ package
 							break;
 						case "Cherry":
 							amountCherry = resource[1];
-							PlayState.amountCherryText.text = "Cherryies: " + amountCherry + "\n";
+							PlayState.amountCherryText.text = "Cherries: " + amountCherry + "\n";
 							break;
 					}
 					
@@ -104,7 +107,10 @@ package
 		//thus to move one tile to the right send (1,0) as arugments, one to left is (-1,0)
 		//NOW RETURNS A BOOLEAN, True if the move has caused the user to reach the end, False if not
 		public function movePlayer(xChange:Number, yChange:Number, tileSize:int, connection:Connection):Boolean {
-			if (checkMove(xPos + xChange, yPos + yChange, tileSize)) {
+			// see if player has enough AP to move; if not, fire notification
+			if (AP < findCost(xPos + xChange, yPos + yChange, tileSize, false))
+				PlayState.fireNotification(this.x + 20, this.y - 20, "Not enough AP to move here!", "loss");
+			else if (checkMove(xPos + xChange, yPos + yChange, tileSize)) {
 				isMoving = true;
 				xPos = xPos + xChange;
 				yPos = yPos + yChange;
@@ -171,17 +177,13 @@ package
 		//Sees if the desired move for the player is valid.
 		public function checkMove(proposedX:Number, proposedY:Number, tileSize:int):Boolean {
 			var proposedTileType:int = PlayState.myMap.getTile(proposedX, proposedY)
-			if ( proposedTileType == WATER_TILE || proposedTileType == 6 || proposedTileType == 7) {
+			if ( proposedTileType == WATER_TILE || proposedTileType == WATER_TILE2 || proposedTileType == WATER_TILE3) {
 				errorMessage = "Invalid Move, can't cross water";
 				//PlayState.fireNotification(this.x + 20, this.y - 20, "You can't cross water!", "loss");
 				return false;
-			}else if (proposedTileType == 10) {
+			}else if (proposedTileType == GATE_TILE) {
 				PlayState.fireNotification(this.x + 20, this.y - 20, "You have to open the gate first!", "loss");
 				errorMessage = "Invalid Move, Must First Open the Gate";
-				return false;
-			}else if (AP < findCost(proposedX, proposedY, tileSize, false)) {
-				errorMessage = "Invalid Move, insufficient AP";
-				//PlayState.fireNotification(this.x + 20, this.y - 20, "You don't have enough AP!  Wait a little bit for more!", "loss");
 				return false;
 			}else if (proposedX >= PlayState.myMap.widthInTiles || proposedX < 0 || proposedY < 0 || proposedY >= PlayState.myMap.heightInTiles) {
 				errorMessage = "Invalid Move, edge reached";
