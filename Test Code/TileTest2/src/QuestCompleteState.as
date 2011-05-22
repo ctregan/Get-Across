@@ -19,6 +19,9 @@ package
 		private var _client:Client
 		private var _nextLevel:String
 		private var characterInfo:Label
+		private var levelLabel:Label;
+		private var classLabel:Label;
+		private var coinLabel:Label;
 		private var mainMenu:Box
 		private var nextLevelButton:TextButton
 		private var mainMenuButton:TextButton;
@@ -26,11 +29,12 @@ package
 		
 		public function QuestCompleteState(xp:int, coin:int, client:Client, nextLevel:String) 
 		{
-			_client = client
+			_client = client;
 			_nextLevel = nextLevel;
-			super()
-			characterInfo = new Label("",12, TextFormatAlign.CENTER)
-			client.bigDB.loadMyPlayerObject(loadPlayerSuccess)
+			super();
+			add(new Background("Map"));
+			characterInfo = new Label("", 12, TextFormatAlign.CENTER);
+			client.bigDB.loadMyPlayerObject(loadPlayerSuccess);
 			mainMenuButton = new TextButton("Main Menu", continueButton);
 			nextLevelButton = new TextButton("Next Level", nextLevelCallback);
 			if (nextLevel == "") {
@@ -39,19 +43,47 @@ package
 				nextLevelButton = new TextButton("Choose Class", chooseClassCallback);
 				mainMenuButton.visible = false;
 			}
-			mainMenu = new Box().fill(0xFFFFFF, 0.8, 0)
-			mainMenu.add(new Box().fill(0x00000, .5, 15).margin(10, 10, 10, 10).minSize(FlxG.width, FlxG.height).add(
+			
+			// initialize labels for player info to show at the end
+			var playerInfoTextSize:int = 17;
+			var levelTextFormat:TextFormat = new TextFormat("Abscissa", playerInfoTextSize, 0xff488921);
+			levelLabel = new Label("Level: ", playerInfoTextSize, TextFormatAlign.CENTER, 0xff488921);
+			levelLabel.setTextFormat(levelTextFormat);
+			
+			var classTextFormat:TextFormat = new TextFormat("Abscissa", playerInfoTextSize, 0xff488921);
+			classLabel = new Label("Class: ", playerInfoTextSize, TextFormatAlign.CENTER, 0xff488921);
+			classLabel.setTextFormat(classTextFormat);
+			
+			var coinTextFormat:TextFormat = new TextFormat("Abscissa", playerInfoTextSize, 0xff488921);
+			coinLabel = new Label("Coins: ", playerInfoTextSize, TextFormatAlign.CENTER, 0xff488921);
+			coinLabel.setTextFormat(coinTextFormat);
+			
+			// labels for other information
+			var questTextFormat:TextFormat = new TextFormat("Abscissa", 30, 0xff488921);
+			var questLabel:Label = new Label("quest complete!", 30, TextFormatAlign.CENTER, 0xff488921);
+			questLabel.setTextFormat(questTextFormat);
+			
+			var xpGainedTextFormat:TextFormat = new TextFormat("Abscissa", 20, 0xff488921);
+			var xpGainedLabel:Label = new Label("Gained " + xp + " XP!", 20, TextFormatAlign.LEFT, 0xff4af266);
+			xpGainedLabel.setTextFormat(xpGainedTextFormat);
+			
+			var coinsGainedTextFormat:TextFormat = new TextFormat("Abscissa", 20, 0xff488921);
+			var coinsGainedLabel:Label = new Label("Gained " + coin + " coins!", 20, TextFormatAlign.LEFT, 0xff4af266);
+			coinsGainedLabel.setTextFormat(coinsGainedTextFormat);
+			
+			mainMenu = new Box().fill(0xFFFFFF, 0.8, 0);
+			mainMenu.add(new Box().fill(0x00000, 0.3, 15).margin(10, 10, 10, 10).minSize(FlxG.width / 2, FlxG.height).add(
 				new Box().fill(0xffffff,1,5).margin(10,10,10,10).minSize(300,0).add(
 						new Rows(
-							new Label("Quest Complete!", 30, TextFormatAlign.CENTER),
-							characterInfo,
-							new Label("XP Gained: " + xp, 15, TextFormatAlign.LEFT, 0x0000FF),
-							new Label ("Coin Gained: " + coin, 15, TextFormatAlign.LEFT, 0x0000FF),
-							new Columns().spacing(10).margin(10).add(
+							questLabel,
+							new Columns(levelLabel, classLabel, coinLabel),
+							xpGainedLabel,
+							coinsGainedLabel,
+							new Columns().spacing(8).margin(10).add(
 							mainMenuButton,
 							nextLevelButton)
 						).spacing(30)
-					)))
+					)));
 			FlxG.stage.addChild(mainMenu);
 			
 			loader = new Box().fill(0xffffff,.8).add(
@@ -59,8 +91,8 @@ package
 			).add(
 				new Box().margin(20).add(new Label("Please wait while we connect to the server.", 12))
 			)
-			loader.width = FlxG.stage.stageWidth
-			loader.height = FlxG.stage.stageHeight
+			loader.width = FlxG.stage.stageWidth;
+			loader.height = FlxG.stage.stageHeight;
 		}
 		
 		//Callback function for the continue button
@@ -74,8 +106,12 @@ package
 		//Callback function called when Player data object has been successfully loaded
 		private function loadPlayerSuccess(ob:DatabaseObject):void 
 		{
-			characterInfo.text = "Level: " + ob.level + "	Class: " + ob.role + "	Coin: " + ob.coin;
+			// labels for player info
+			levelLabel.text = "Level " + ob.level;
+			classLabel.text = "Class: " + ob.role;
+			coinLabel.text = "Coins: " + ob.coin;
 		}
+		
 		//Callback for when players must choose a class
 		private function chooseClassCallback():void {
 			FlxG.stage.removeChild(mainMenu);

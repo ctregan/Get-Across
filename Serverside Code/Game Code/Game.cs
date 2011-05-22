@@ -102,6 +102,10 @@ namespace GetAcross {
                 player.characterClass = "Novice";
                 numPlayers++;
 
+                // make sure player has abilities at the levels they should have them
+                //if (player.PlayerObject.a
+
+
                 // if player is not attached to a quest, give them a new quest ID
                 PlayerIO.BigDB.Load("PlayerObjects", player.ConnectUserId,
                     delegate(DatabaseObject result)
@@ -423,7 +427,7 @@ namespace GetAcross {
                                 {
                                     DatabaseArray abilities = new DatabaseArray();
                                     abilities.Add("Crafter_Bridge");
-                                    player.PlayerObject.Set("abilities" ,abilities);
+                                    player.PlayerObject.Set("abilities", abilities);
                                     player.PlayerObject.Set("tutorial", 2);
                                     nextLevel = "Tutorial_2";
                                 }
@@ -446,7 +450,7 @@ namespace GetAcross {
                                     player.PlayerObject.Set("tutorial", 5);
                                     nextLevel = "Tutorial_5";
                                 }
-                                else if(player.PlayerObject.GetInt("tutorial") == 5)
+                                else if (player.PlayerObject.GetInt("tutorial") == 5)
                                 {
                                     nextLevel = "Class_Choose";
                                     player.PlayerObject.Set("tutorial", 6);
@@ -457,26 +461,26 @@ namespace GetAcross {
                                 player.PlayerObject.Save(delegate()
                                 {
                                     Broadcast("win", player.Id, gainedxp, gainedcoin, nextLevel);
+
+                                    // quest is finished; remove this quest from the table
+                                    // todo: what happens if another player is playing this quest?
+                                    PlayerIO.BigDB.DeleteKeys("NewQuests", questID, null);
+                                    Console.WriteLine("deleted newquest key");
+                                    PlayerIO.BigDB.Load("PlayerObjects", player.ConnectUserId,
+                                        delegate(DatabaseObject thisPlayer)
+                                        {
+                                            thisPlayer.Set("questID", "noQuest");
+                                            thisPlayer.Save();
+                                        }
+                                    );
                                 });
-                                
-                                
+
+
                             },
                             delegate(PlayerIOError error)
                             {
                                 Console.WriteLine(error.ToString());
                             });
-                        
-                        // quest is finished; remove this quest from the table
-                        // todo: what happens if another player is playing this quest?
-                        PlayerIO.BigDB.DeleteKeys("NewQuests", questID, null);
-                        Console.WriteLine("deleted newquest key");
-                        PlayerIO.BigDB.Load("PlayerObjects", player.ConnectUserId,
-                            delegate(DatabaseObject thisPlayer)
-                            {
-                                thisPlayer.Set("questID", "noQuest");
-                                thisPlayer.Save();
-                            }
-                        );
 
                         break;
                     }

@@ -3,6 +3,7 @@ package
 	import playerio.*
 	import sample.ui.*
 	import org.flixel.*
+	import flash.text.*;
 	import sample.ui.components.*
 	import flash.text.TextFormatAlign
 
@@ -12,7 +13,7 @@ package
 	 */
 	public class MenuState extends FlxState
 	{
-		private var characterInfo:Label //Will Hold Player Info Loaded from DB
+		//private var characterInfo:Label //Will Hold Player Info Loaded from DB
 		private var mainMenu:Box
 		private var myClient:Client;
 		private var tutorialButton:TextButton;
@@ -27,8 +28,9 @@ package
 		
 		public function MenuState(client:Client) 
 		{
-			myClient = client
-			super()
+			myClient = client;
+			super();
+			add(new Background("Map"));
 			client.bigDB.loadMyPlayerObject(loadPlayerSuccess)
 		}
 		
@@ -36,7 +38,22 @@ package
 		private function loadPlayerSuccess(ob:DatabaseObject):void 
 		{
 			myPlayer = ob;
-			characterInfo = new Label("Level: " + ob.level + "	Class: " + ob.role + "	Coin: " + ob.coin, 12, TextFormatAlign.CENTER);
+			
+			var playerInfoTextSize:int = 20;
+			var levelTextFormat:TextFormat = new TextFormat("Abscissa", playerInfoTextSize, 0xff488921);
+			var levelLabel:Label = new Label("Level: " + ob.level, playerInfoTextSize, TextFormatAlign.CENTER, 0xff488921);
+			levelLabel.setTextFormat(levelTextFormat);
+			
+			var classTextFormat:TextFormat = new TextFormat("Abscissa", playerInfoTextSize, 0xff488921);
+			var classLabel:Label = new Label("Class: " + ob.role, playerInfoTextSize, TextFormatAlign.CENTER, 0xff488921);
+			classLabel.setTextFormat(classTextFormat);
+			
+			var coinTextFormat:TextFormat = new TextFormat("Abscissa", playerInfoTextSize, 0xff488921);
+			var coinLabel:Label = new Label("Coins: " + ob.coin, playerInfoTextSize, TextFormatAlign.CENTER, 0xff488921);
+			coinLabel.setTextFormat(coinTextFormat);
+			
+			
+			//characterInfo = new Label("Level: " + ob.level + "	Class: " + ob.role + "	Coin: " + ob.coin, 12, TextFormatAlign.CENTER);
 			tutorialButton = new TextButton("Start Tutorial", startTutorial);
 			tutorialLevel = ob.tutorial;
 			try {
@@ -66,13 +83,16 @@ package
 			}
 			//Try to load questID, if no quest then that button is invisible
 			
+			var titleTextFormat:TextFormat = new TextFormat("Abscissa", 40, 0xff488921);
+			var titleLabel:Label = new Label("welcome!", 40, TextFormatAlign.CENTER, 0xff488921);
+			titleLabel.setTextFormat(titleTextFormat);
 			
 			mainMenu = new Box().fill(0xFFFFFF, 0.8, 0)
-			mainMenu.add(new Box().fill(0x00000, .5, 15).margin(10, 10, 10, 10).minSize(_windowWidth, _windowHeight).add(
+			mainMenu.add(new Box().fill(0x00000, .3, 15).margin(10, 10, 10, 10).minSize(_windowWidth / 2, _windowHeight).add(
 				new Box().fill(0xffffff,1,5).margin(10,10,10,10).minSize(300,0).add(
 						new Rows(
-							new Label("Main Menu", 30, TextFormatAlign.CENTER),
-							characterInfo,
+							titleLabel,
+							new Columns(levelLabel, classLabel, coinLabel),
 							continueButton,
 							tutorialButton,
 							new TextButton("New Game", newGame),
@@ -86,8 +106,8 @@ package
 			).add(
 				new Box().margin(20).add(new Label("Please wait while we connect to the server.", 12))
 			)
-			loader.width = FlxG.stage.stageWidth
-			loader.height = FlxG.stage.stageHeight
+			loader.width = FlxG.stage.stageWidth;
+			loader.height = FlxG.stage.stageHeight;
 		}
 		
 		//Callback function for when Continue Button is pressed
@@ -110,7 +130,7 @@ package
 		//Callback function for when Start Tutorial Button is Pressed
 		private function startTutorial():void
 		{
-			var prompt:InGamePrompt = new InGamePrompt(FlxG.stage, "Would you like to start the tutorial? All previous tutorial progress will be lost", function() { startNewTutorialAccept() } );
+			var prompt:InGamePrompt = new InGamePrompt(FlxG.stage, "Would you like to start the tutorial?  Warning: All previous tutorial progress will be lost!", function() { startNewTutorialAccept() } );
 		}
 		//Callback when the user wants to start new tutorial
 		private function startNewTutorialAccept():void 
@@ -132,7 +152,7 @@ package
 		private function newGame():void
 		{
 			if (tutorialLevel <= 5) {
-				FlxG.stage.addChild(new Alert("To Acess This Option You Must Finish All 5 Tutorial Levels"));
+				FlxG.stage.addChild(new Alert("To Access This Option You Must Finish All 5 Tutorial Levels"));
 			}else if (continueButton.enabled == true) {
 				var prompt:InGamePrompt = new InGamePrompt(FlxG.stage, "You will lose your old quest data if you start a new game. You sure?", function() {
 					startNewGameAccept();
@@ -155,7 +175,7 @@ package
 		//Callback function for when Random Map Button is pressed
 		private function randomMap():void
 		{
-			FlxG.stage.addChild(new Alert("This Feature has not yet been implemented"));
+			FlxG.stage.addChild(new Alert("This Feature has not yet been implemented!"));
 		}
 		//Callback function for Map Editor Button
 		private function mapEditor():void 

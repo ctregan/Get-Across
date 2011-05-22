@@ -1,9 +1,15 @@
 package  
 {
 	import flash.display.DisplayObject;
+	import flash.display.Graphics;
+	import flash.display.Loader;
+	import flash.display.Sprite;
+	import flash.net.URLRequest;
 	import flash.text.TextField;
+	import flash.text.TextFormat;
 	import flash.ui.Mouse;
 	import flash.ui.MouseCursor;
+	import org.flixel.plugin.photonstorm.PNGEncoder;
 	//import org.flixel.data.FlxPanel;
 	import org.flixel.FlxButton;
 	import org.flixel.FlxGroup;
@@ -38,17 +44,24 @@ package
 		public function LoginState() 
 		{
 			super();
-			mainMenu = new Box().fill(0xFFFFFF, 0.8, 0)
-			mainMenu.add(new Box().fill(0x00000, .5, 15).margin(10, 10, 10, 10).minSize(_windowWidth, _windowHeight).add(
+			var titleTextFormat:TextFormat = new TextFormat("Abscissa", 60, 0xff488921);
+			var titleLabel:Label = new Label("get across", 50, TextFormatAlign.CENTER, 0xff488921);
+			titleLabel.setTextFormat(titleTextFormat);
+			
+			var loginButton: TextButton = new TextButton("Login", openLogin);
+			var createAccountButton:TextButton = new TextButton("Create Account", openAccountCreate);
+			loginButton.useHandCursor = createAccountButton.useHandCursor = true;
+			mainMenu = new Box().fill(0xFFFFFF, 1, 0)
+			mainMenu.add(new Box().fill(0xffffff, 0.5, 15).margin(5, 5, 5, 5).minSize(_windowWidth/2, _windowHeight).add(
 				new Box().fill(0xffffff,1,5).margin(10,10,10,10).minSize(300,0).add(
 						new Rows(
-							new Label("Get Across", 30, TextFormatAlign.CENTER),
-							new TextButton("Login", openLogin),
-							new TextButton("Create Account", openAccountCreate)
+							titleLabel,
+							loginButton,
+							createAccountButton
 						).spacing(30)
-					)))
-					
-			FlxG.stage.addChild(mainMenu)
+				)));
+			add(new Background("Map"));
+			FlxG.stage.addChild(mainMenu);
 		}
 		//Create a login box over the main menu
 		private function openLogin():void 
