@@ -180,8 +180,7 @@ package
 		//Callback function for Map Editor Button
 		private function mapEditor():void 
 		{
-			//FlxG.switchState(new OptionState(myClient));
-			FlxG.switchState(new ClassChooseState(myClient));
+			FlxG.switchState(new OptionState(myClient));
 			FlxG.stage.removeChild(mainMenu);
 			this.kill();
 		}

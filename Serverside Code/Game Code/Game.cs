@@ -455,16 +455,24 @@ namespace GetAcross {
                                     nextLevel = "Class_Choose";
                                     player.PlayerObject.Set("tutorial", 6);
                                 }
+                                int experience = player.PlayerObject.GetInt("xp");
+                                /*int level = player.PlayerObject.GetInt("level");
+                      
 
-                                player.PlayerObject.Set("xp", player.PlayerObject.GetInt("xp", 0) + gainedxp);
+                                //Check to see if the player has enough XP to level up
+                                if (experience + gainedxp >= levelXP(level + 1))
+                                {
+                                    player.PlayerObject.Set("level", level + 1);
+                                }*/
+                                player.PlayerObject.Set("xp", experience + gainedxp);
                                 player.PlayerObject.Set("coin", player.PlayerObject.GetInt("coin", 0) + gainedcoin);
                                 player.PlayerObject.Save(delegate()
                                 {
-                                    Broadcast("win", player.Id, gainedxp, gainedcoin, nextLevel);
+                                    Broadcast("win", gainedxp, gainedcoin, nextLevel);
 
                                     // quest is finished; remove this quest from the table
                                     // todo: what happens if another player is playing this quest?
-                                    PlayerIO.BigDB.DeleteKeys("NewQuests", questID, null);
+                                    PlayerIO.BigDB.DeleteKeys("NewQuests", questID);
                                     Console.WriteLine("deleted newquest key");
                                     PlayerIO.BigDB.Load("PlayerObjects", player.ConnectUserId,
                                         delegate(DatabaseObject thisPlayer)
@@ -588,6 +596,14 @@ namespace GetAcross {
                     }
 			}
 		}
+
+        //Returns the amount of XP need for the provided level
+        private int levelXP(int currentLevel)
+        {
+            double levelOneXp = 50.0; //XP need to gain first level
+            double percentIncrease = 1.2; //20% increase each level
+            return Convert.ToInt32(Math.Floor(Math.Pow(percentIncrease, currentLevel) * levelOneXp));
+        }
 
 		Point debugPoint;
 

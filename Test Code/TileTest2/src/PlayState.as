@@ -405,11 +405,11 @@ package
 			}
 		}
 		
-		private function cleanup(m:Message, userID:int, xp:int, coin:int, nextLevel:String):void 
+		private function cleanup(m:Message, xpGain:int, coinGain:int, nextLevel:String):void 
 		{
 			connection.disconnect();
 			this.kill();
-			FlxG.switchState(new QuestCompleteState(xp, coin, client, nextLevel));
+			FlxG.switchState(new QuestCompleteState(xpGain, coinGain, client, nextLevel));
 			
 		}
 		override public function update():void 
