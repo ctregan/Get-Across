@@ -145,7 +145,7 @@ package
 					neededXP = needXP(ob.level + 1);
 					xpBar.setRange(needXP(ob.level), neededXP)
 					ob.save();
-				}else if(count == _xpGain){
+				}else if(count >= _xpGain){
 					myTimer.stop();
 					levelLabel.text = "Level " + ob.level;
 					classLabel.text = "Class: " + ob.role;

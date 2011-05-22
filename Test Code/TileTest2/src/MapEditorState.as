@@ -8,6 +8,7 @@ package
 	import playerio.Client;
 	import playerio.DatabaseObject;
 	import sample.ui.Alert;
+	import sample.ui.components.*
 	/**
 	 * ...
 	 * @author Charlie Regan
@@ -17,6 +18,7 @@ package
 		[Embed(source = "data/testTileSet3_32.png")] public var data_tiles:Class; //Tile Set Image
 		[Embed(source = "data/Selected.png")] public var select:Class; 
 		private static var TILE_VALUES:Array = ["Grass", "Hill", "Tree", "Cherry Tree", "River", "Star"];
+		private var STAR_TILE:int = 5;
 		private static var _tileSize:int = 32;
 	
 		private var _name:String
@@ -26,18 +28,22 @@ package
 		private var tileBrush:int = 0;
 		private var myMouse:Mouse
 		private var palet:FlxSprite
-		private var message:FlxText
+		private var title:FlxText
 		private var selectedTile:FlxSprite
 		private var _myClient:Client
+		private var mainMenu:Box;
+		private var instructions:FlxText;
+		private var mapInfo:FlxText;
 		
 		public function MapEditorState(name:String, height:String, width:String, myClient:Client) 
 		{
+			
 			_height = int(height);
 			_width = int(width);
-			_name = name
-			_myClient = myClient
+			_name = name;
+			_myClient = myClient;
 			
-			FlxG.stage.addChild(new Alert("Welcome to the Map Editor, Use the palet to chose your tile and click on the map to place. Once you are done hit upload"));
+			FlxG.stage.addChild(new Alert("Welcome to the Map Editor! Use the palette to choose your tile, then click on the map to place.\n\nOnce you are done, hit upload!"));
 			//Make an all grass map
 			var initialMapData:String = "";
 			for (var h:int = 0; h < _height; h++) {
@@ -50,11 +56,19 @@ package
 				}
 			}
 			
+			add(new Background("Faded"));
+			
 			FlxG.mouse.show();
 			myMouse = FlxG.mouse;
 			
-			message = new FlxText(200, 5, 600, "Map Editor", true).setFormat(null, 20)
-			add(message);
+			title = new FlxText(200, 5, 600, "Map Editor", true).setFormat(null, 20,0xff488921);
+			add(title);
+			
+			instructions = new FlxText(400, 50, 300, "<-- Use this palette to choose your tile, then click on the map to place.\n\nOnce you are done, hit upload to save the map!", true).setFormat(null, 15);
+			add(instructions);
+			
+			mapInfo = new FlxText(400, 230, 300, "texttext", true).setFormat(null, 15);
+			add(mapInfo);
 			
 			palet = new FlxSprite(20, 40, data_tiles)
 			add(palet);
@@ -70,9 +84,6 @@ package
 			map.x = 75;
 			map.y = 80;
 			add(map);
-			
-		
-			
 		}
 		
 		override public function update():void 
@@ -90,6 +101,10 @@ package
 				tileBrush = (myMouse.x - palet.x) / _tileSize;
 				selectedTile.x = (tileBrush * _tileSize) + palet.x;
 			}
+			
+			if (!mapHasEnd())
+				mapInfo.text = "This map still needs an endpoint!";
+			else mapInfo.text = "";
 		}
 		//Changes the brush value to whatever tile value is sent in
 		private function switchBrush(tileValue:int) {
@@ -122,17 +137,22 @@ package
 		
 		//Sends the data to the database and saves
 		private function sendMapData():void {
-			//TO DO - SEND THIS TO DATABASE AND SAVE
 			var newMap:DatabaseObject = new DatabaseObject();
 			newMap.Name = _name;
-			newMap.Creator = _myClient.connectUserId
+			newMap.Creator = _myClient.connectUserId;
 			newMap.tileValues = map.getMapData();
-			newMap.XP = 0
-			newMap.Coin = 0
-			newMap.MonsterCount = 0
+			newMap.XP = 0;
+			newMap.Coin = 0;
+			newMap.MonsterCount = 0;
 			_myClient.bigDB.createObject("UserMaps", null, newMap, function() {
 				FlxG.stage.addChild(new Alert("Map Uploaded"));
 			});
+		}
+		
+		// returns true if map contains a star/end tile
+		private function mapHasEnd():Boolean {
+			var starTiles:Array = map.getTileInstances(STAR_TILE);
+			return (starTiles != null);
 		}
 	}
 
