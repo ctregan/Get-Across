@@ -39,7 +39,7 @@ package
 		{
 			myPlayer = ob;
 			
-			var playerInfoTextSize:int = 20;
+			var playerInfoTextSize:int = 15;
 			var levelTextFormat:TextFormat = new TextFormat("Abscissa", playerInfoTextSize, 0xff488921);
 			var levelLabel:Label = new Label("Level: " + ob.level, playerInfoTextSize, TextFormatAlign.CENTER, 0xff488921);
 			levelLabel.setTextFormat(levelTextFormat);
