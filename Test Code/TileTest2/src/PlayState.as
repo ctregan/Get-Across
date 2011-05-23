@@ -295,11 +295,12 @@ package
 					var tempButton:AbilityButton;
 					var abilityText:FlxText;
 					var spaceBetweenAbilities:int = 90;
-					client.bigDB.loadMyPlayerObject(function(db:DatabaseObject) {
+					client.bigDB.loadMyPlayerObject(function(db:DatabaseObject):void {
 						try {
+							lvl.text = "Level: " + db.level;
 							var abilityArray:Array = db.abilities;
 							if (abilityArray != null || abilityArray.length > 0) {
-								client.bigDB.loadKeys("Abilities", db.abilities, function(dbarr:Array) {
+								client.bigDB.loadKeys("Abilities", db.abilities, function(dbarr:Array):void {
 									var yButtonPlacementModifier:int = 0;
 									for (var z:String in dbarr) {
 										abilityObject = dbarr[z];

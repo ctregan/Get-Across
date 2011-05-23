@@ -36,7 +36,7 @@ package
 			super();
 			add(new Background("Map"));
 			client.bigDB.loadMyPlayerObject(loadPlayerSuccess);
-			playerClassImg = new FlxSprite(400, 150, null);
+			playerClassImg = new FlxSprite(400, 150, monsterImg);
 			add(playerClassImg);
 		}
 		
