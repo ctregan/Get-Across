@@ -268,7 +268,7 @@ package
 			
 			
 			//Recieve Info from server about your saved character
-			connection.addMessageHandler("playerInfo", function(m:Message, posX:int, posY:int, name:String) {
+			connection.addMessageHandler("playerInfo", function(m:Message, posX:int, posY:int, name:String, playerClass:String ) {
 				if (myPlayer == null) {
 					playerName = name;
 					// add player to screen --
@@ -277,7 +277,7 @@ package
 					//trace("resources to start with: " + playerAP);
 					if (posX < 0) posX = 0;
         			if (posY < 0) posY = 0;
-					myPlayer = new Player(posX, posY, 0, _windowHeight, _tileSize, playerAP, resourcesString);
+					myPlayer = new Player(posX, posY, 0, _windowHeight, _tileSize, playerAP, resourcesString, playerClass);
 					playersArray[imPlayer - 1] = myPlayer;
 					
 					var playerHealthBar:FlxHealthBar = new FlxHealthBar(myPlayer, 100, 20, 0, 20, true);
@@ -338,7 +338,7 @@ package
 			connection.addMessageHandler("UserJoined", function(m:Message, userID:int, posX:int, posY:int) {
 				if (userID != imPlayer) {
 					// create other player; AP doesn't matter, so default to 20
-					playersArray[userID-1] = new Player(posX, posY, 0,_windowHeight , _tileSize, 20, null);
+					playersArray[userID-1] = new Player(posX, posY, 0,_windowHeight , _tileSize, 20, null, "Novice");
 					if (playersArray[userID-1] != null && lyrSprites != null) lyrSprites.add(playersArray[userID-1]);
 				}
 			})
