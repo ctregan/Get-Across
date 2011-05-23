@@ -32,7 +32,7 @@ package com.Logging
 	 * If you are using JSON encoding, do not create getters protected/private properties that you do not want to encode.
 	 * 
 	 */
-	public class Message 
+	public class LogMessage 
 	{
 		//----------- Header Variables (schema specific) --------------------------------------------------------
 		//required, probably only set once
@@ -61,7 +61,7 @@ package com.Logging
 		protected var _action:ClientAction;		//non-buffered action
 		
 		//----------- Constructor -------------------------------------------------------------------------------
-		public function Message(useBuffer:Boolean)
+		public function LogMessage(useBuffer:Boolean)
 		{
 			_isBufferable = useBuffer;
 			_actionBuffer = new Array();

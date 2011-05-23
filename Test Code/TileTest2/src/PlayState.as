@@ -1,6 +1,7 @@
 package  
 {
 	import flash.display.Sprite;
+	import flash.sampler.NewObjectSample;
 	import org.flixel.*
 	import org.flixel.plugin.photonstorm.FlxButtonPlus;
 	import org.flixel.plugin.photonstorm.FlxHealthBar;
@@ -18,6 +19,9 @@ package
 	import sample.ui.Chat
 	import flash.text.TextFormatAlign
 	import flash.utils.*;
+	
+	import com.Logging.*;
+	
 	/**
 	 * ...
 	 * @author Charlie Regan
@@ -144,6 +148,9 @@ package
 		
 		private var thingsSet:Number = 0;
 		
+		private var logClient:CGSClient;
+		private var action:ClientAction;
+		
 		public function PlayState(connection:Connection, client:Client):void
 		{
 
@@ -153,6 +160,13 @@ package
 			this.client = client;
 			myClient = client;
 			this.connection = connection;
+
+			var startTime:Date = new Date();
+			// make stuff and send to server
+			action = new ClientAction();
+
+			// Connect to the logging database
+			logClient = new CGSClient(CGSClientConstants.URL, 5, 1);
 			
 			//Connection successful, load board and player
 			connection.addMessageHandler("init", function(m:Message, iAm:int, name:String, level:String, startAP:int, levelKey:String, resources:String) {
@@ -166,6 +180,7 @@ package
 					//Recieve Tile Array from database to be turned into string with line breaks between each line
 					if (ob != null)
 					{
+
 						var mapString:String = ob.tileValues;
 						connection.send("QuestMapUpdate", mapString);
 						mapString = mapString.split("|").join("\n");
@@ -428,7 +443,7 @@ package
 						gatherLumberButton.x = gatherCherryButton.x = 540;
 						gatherLumberButton.y = 340;
 						gatherCherryButton.y = 310;
-						gatherLumberButton.visible = gatherCherryButton.visible = true;
+						gatherLumberButton.visible = gatherCherryButton.visible = true;						
 					}
 					else { 
 						gatherLumberButton.visible = gatherCherryButton.visible = false;
@@ -445,6 +460,18 @@ package
 						myPlayer.AP++;
 						connection.send("updateStat", "AP", myPlayer.AP);
 						fireNotification(myPlayer.x + 20, myPlayer.y - 20, "+1 AP", "gain");
+						// Connect to the logging database
+						//logClient.SetUid(function f(d:String):void {
+						//	logClient.SetDqid(function f(d:String):void {
+						//		logClient.ReportLevel(d, 1, function g(d:String):void {
+									
+						action.ts = new Date().getTime();
+						action.aid = ClientActionType.AP_GAIN;
+						logClient.LogAction(action);
+						action.detail = null;
+						//		});
+						//	});
+						//});						
 					}
 				}
 				
@@ -497,22 +524,32 @@ package
 							monster++;
 						}
 					 }
-					
+					action.ts = new Date().getTime();
+					action.detail = new Object();
+					action.detail["x1"] = myPlayer.xPos;
+					action.detail["y1"] = myPlayer.yPos;		
+					var moved:Boolean = false;
 					// handle player movement with arrow keys
 					if (FlxG.keys.justPressed("DOWN") && !myPlayer.isMoving && !myPlayer.inBattle) {
-						myPlayer.facing = FlxSprite.DOWN;
-						win = myPlayer.movePlayer(0, 1, _tileSize, connection);
+						myPlayer.facing = FlxSprite.DOWN;	
+						win = myPlayer.movePlayer(0, 1, _tileSize, connection);	
+						moved = true;
 					}else if (FlxG.keys.justPressed("UP") && !myPlayer.isMoving && !myPlayer.inBattle) {
-						myPlayer.facing = FlxSprite.UP;
+						myPlayer.facing = FlxSprite.UP;						
 						win = myPlayer.movePlayer(0, -1, _tileSize, connection);
+						moved = true;
 					}else if (FlxG.keys.justPressed("RIGHT") && !myPlayer.isMoving && !myPlayer.inBattle) {
 						myPlayer.facing = FlxSprite.RIGHT;
 						win = myPlayer.movePlayer(1, 0, _tileSize, connection);
+						moved = true;
 					}else if (FlxG.keys.justPressed("LEFT") && !myPlayer.isMoving && !myPlayer.inBattle) {
 						myPlayer.facing = FlxSprite.LEFT;
 						win = myPlayer.movePlayer( -1, 0, _tileSize, connection);
-					}
+						moved = true;
+					} 
+						
 					
+
 					// handle ability usage
 					else if (myMouse.justPressed() &&  mouseWithinTileMap() && abilitySelected) {
 						var selectedXTile:int = getTileX();// (myMouse.x - _mapOffsetX) / _tileSize
@@ -560,7 +597,7 @@ package
 							amountLumberText.text = "Lumber: " + myPlayer.amountLumber;
 							amountLumberText.text = "Cherry: " + myPlayer.amountCherry;
 						}
-					}	
+					} 
 					//CLICK MOVING
 					else if (mouseWithinTileMap() && abilitySelected == false) {
 						tileHover.visible = mouseWithinTileMap();
@@ -639,7 +676,7 @@ package
 							else if (myMouse.justPressed() && abilitySelected == false && !myPlayer.isMoving && !myPlayer.inBattle) {
 								//trace("okay to move");
 								// check for condition....
-								
+								moved = true;
 								if (xTemp < myPlayer.xPos)
 									myPlayer.facing = FlxSprite.LEFT; 
 								else if (xTemp > myPlayer.xPos)
@@ -650,7 +687,9 @@ package
 									myPlayer.facing = FlxSprite.DOWN; 
 								
 								win = myPlayer.movePlayer(xTemp - myPlayer.xPos, yTemp - myPlayer.yPos, _tileSize, connection)
-							} else fireNotification(myPlayer.xPos + 20, myPlayer.yPos - 20, "Invalid move!", "loss");
+							} else {
+								fireNotification(myPlayer.xPos + 20, myPlayer.yPos - 20, "Invalid move!", "loss");
+							}
 						} else {
 							// if not within reach, set color to red
 							//tileHover.loadGraphic(hoverTileImgNo);
@@ -659,7 +698,16 @@ package
 					}else if(!myPlayer.isMoving) {
 						myPlayer.play("idle" + myPlayer.facing);
 					}
-					
+					if (moved) {
+						action.aid = ClientActionType.MOVE;
+						action.detail["x2"] = myPlayer.xPos;
+						action.detail["y2"] = myPlayer.yPos;
+						//logClient.LogAction(action);	
+						//action.detail = null;
+						moved = false;
+					} else {
+						//action.detail = null;
+					}
 					apInfo.text = "AP: " + myPlayer.AP;
 					location.text = "(" + myPlayer.xPos + "," + myPlayer.yPos + ")";
 					errorMessage.text = "" + myPlayer.errorMessage;
@@ -901,6 +949,7 @@ package
 					// if map has intro messages, fill them in
 					if (dbo != null && dbo.Messages != null)
 					{
+
 						trace("message object: " + dbo.toString());
 						var messages:Array = dbo.Messages;
 						for (var i:int = messages.length - 1; i >= 0; i--) {
@@ -913,6 +962,19 @@ package
 					}
 				}
 			);
+			
+			action.uid = logClient.message.uid;	// what is this?
+			var levelID:int = levelToInt(levelKey);
+			logClient.SetUid(function f(d:String):void {
+				logClient.SetDqid(function f(d:String):void {
+					logClient.ReportLevel(d, levelID, function g(d:String):void {
+						action.ts = new Date().getTime();
+						action.aid = ClientActionType.GAME_START;
+						logClient.LogAction(action);
+						//action.detail = null;
+					});
+				});
+			});
 			
 			setCameras();
 			connected = true;
@@ -940,6 +1002,22 @@ package
 			camMap.deadzone = new FlxRect(_viewSize * 2, _viewSize * 2, 320 - _viewSize * 4, 320 - _viewSize * 4);
 			FlxG.resetCameras(new FlxCamera(0, 0, _windowWidth, _windowHeight));
 			FlxG.addCamera(camMap);
+		}
+		
+		private function levelToInt(s:String):int 
+		{
+			if (s =="Tutorial_1") {
+				return 1;
+			} else if (s =="Tutorial_2") {
+				return 2;
+			} else if (s == "Tutorial_3") {
+				return 3;
+			} else if (s=="Tutorial_4") {
+				return 4;
+			} else if (s=="Tutorial_5") {
+				return 5;
+			}
+			return -1;
 		}
 		
 		//Determines whether the mouse is within the game map board, return true if it is or false if it is outside the board
@@ -989,12 +1067,26 @@ package
 					connection.send("updateStat", "lumber", myPlayer.amountLumber);
 					fireNotification(myPlayer.x + 30, myPlayer.y + 20, "+1 Lumber", "gain");
 					amountLumberText.text = "Lumber: " + myPlayer.amountLumber;
+					action.ts = new Date().getTime();
+					action.detail = new Object();
+					action.detail["x1"] = myPlayer.xPos;
+					action.detail["y1"] = myPlayer.yPos;					
+					action.aid = ClientActionType.COLLECT_LUMBER;
+					logClient.LogAction(action);	
+					//action.detail = null;					
 					break;
 				case "cherry":
 					myPlayer.amountCherry++;
 					connection.send("updateStat", "cherry", myPlayer.amountCherry);
 					fireNotification(myPlayer.x + 30, myPlayer.y + 20, "+1 Cherry", "gain");
 					amountCherryText.text = "Cherry: " + myPlayer.amountCherry;
+					action.ts = new Date().getTime();
+					action.detail = new Object();
+					action.detail["x1"] = myPlayer.xPos;
+					action.detail["y1"] = myPlayer.yPos;					
+					action.aid = ClientActionType.COLLECT_CHERRY;
+					logClient.LogAction(action);	
+					//action.detail = null;					
 					break;
 			}
 			
