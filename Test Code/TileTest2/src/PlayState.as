@@ -18,6 +18,8 @@ package
 	import sample.ui.Chat
 	import flash.text.TextFormatAlign
 	import flash.utils.*;
+	
+	import com.Logging.*;
 	/**
 	 * ...
 	 * @author Charlie Regan
@@ -62,6 +64,8 @@ package
 		private var lvl:FlxText;
 		private var experience:FlxText;
 		private var resources:FlxText;
+		
+		private var level_name:String;
 		
 		private var background:Background;
 		private var playerStartX: int = 0;	// starting x position of this player
@@ -139,10 +143,11 @@ package
 		public static var amountCherryText:FlxText; //= new FlxText(_resourceTextOffsetX, _resourceTextOffsetY + 20, 150, "Cherry: 0", true);
 		
 		private var timer;				// object used for delays.
-		
 		private var tileHover:FlxSprite;
-		
 		private var thingsSet:Number = 0;
+		
+		private var logClient:CGSClient;
+		private var action:ClientAction;
 		
 		public function PlayState(connection:Connection, client:Client):void
 		{
@@ -153,11 +158,16 @@ package
 			this.client = client;
 			myClient = client;
 			this.connection = connection;
+
+			// Connect to the logging database
+			action = new ClientAction();
+			logClient = new CGSClient(CGSClientConstants.URL, 5, 1);
 			
 			//Connection successful, load board and player
 			connection.addMessageHandler("init", function(m:Message, iAm:int, name:String, level:String, startAP:int, levelKey:String, resources:String) {
 				imPlayer = iAm;
 				playerAP = startAP;
+				level_name = levelKey;
 				trace("init: starting ap: " + playerAP);
 				//boardSetup(level);
 				resourcesString = resources;
@@ -398,7 +408,6 @@ package
 		
 		private function setCameras():void {
 			thingsSet++;
-			trace(thingsSet);
 			if (thingsSet > 1) {
 				trace("make camera");
 				// Camera will show up at where the map should be
@@ -409,6 +418,21 @@ package
 				//camMap.color = 0xFFCCCC;
 				FlxG.addCamera(camMap);							// camera that shows where the character is on the map
 			}
+			logClient.SetUid(function f(d:String):void {
+				//Starting level 1!
+				//First we need a new dqid to associate with this play of the level.
+				logClient.SetDqid(function f(d:String):void {
+					var lvl:int = -1;
+					if (level_name.slice(0, 8)  == "Tutorial") lvl = int(level_name.slice(9, 10));
+					else lvl =  lvl = int(level_name.slice(9, 10)) + 20;
+						
+					logClient.ReportLevel(d, lvl, function g(d:String):void {
+						//Now that server has responded, let's send some actions.
+						
+					});
+				});
+			});
+				
 		}
 		
 		private function cleanup(m:Message, xpGain:int, coinGain:int, nextLevel:String):void 
@@ -443,8 +467,16 @@ package
 					// increment player's AP if it's not the max yet
 					if (myPlayer.AP < 20) {
 						myPlayer.AP++;
+						action = new ClientAction();
 						connection.send("updateStat", "AP", myPlayer.AP);
 						fireNotification(myPlayer.x + 20, myPlayer.y - 20, "+1 AP", "gain");
+						action = new ClientAction();					 
+						action.detail = new Object();
+						action.detail["x1"] = myPlayer.xPos;
+						action.detail["y1"] = myPlayer.yPos;
+						action.aid = ClientActionType.AP_GAIN;
+						action.ts = new Date().getTime();
+						logClient.LogAction(action);
 					}
 				}
 				
@@ -497,20 +529,29 @@ package
 							monster++;
 						}
 					 }
-					
+					action = new ClientAction();					 
+					action.detail = new Object();
+					action.detail["x1"] = myPlayer.xPos;
+					action.detail["y1"] = myPlayer.yPos;		
+					var moved:Boolean = false;					
+					 
 					// handle player movement with arrow keys
 					if (FlxG.keys.justPressed("DOWN") && !myPlayer.isMoving && !myPlayer.inBattle) {
 						myPlayer.facing = FlxSprite.DOWN;
 						win = myPlayer.movePlayer(0, 1, _tileSize, connection);
+						moved = true;
 					}else if (FlxG.keys.justPressed("UP") && !myPlayer.isMoving && !myPlayer.inBattle) {
 						myPlayer.facing = FlxSprite.UP;
 						win = myPlayer.movePlayer(0, -1, _tileSize, connection);
+						moved = true;
 					}else if (FlxG.keys.justPressed("RIGHT") && !myPlayer.isMoving && !myPlayer.inBattle) {
 						myPlayer.facing = FlxSprite.RIGHT;
 						win = myPlayer.movePlayer(1, 0, _tileSize, connection);
+						moved = true;
 					}else if (FlxG.keys.justPressed("LEFT") && !myPlayer.isMoving && !myPlayer.inBattle) {
 						myPlayer.facing = FlxSprite.LEFT;
 						win = myPlayer.movePlayer( -1, 0, _tileSize, connection);
+						moved = true;
 					}
 					
 					// handle ability usage
@@ -529,7 +570,14 @@ package
 							if (cost > 0) resourceNote += "-" + cost + " AP";
 							if (activeAbility._neededLumber > 0) resourceNote += "\n-" + activeAbility._neededLumber + " lumber";
 							PlayState.fireNotification(myPlayer.x + 20, myPlayer.y - 20, resourceNote, "loss");
-							
+							// depending on what ability... 
+							action = new ClientAction();
+							action.aid = ClientActionType.UNKNOWN_ABILITY;
+							action.detail = new Object();			
+							action.detail["ap_cost"] = cost;
+							action.detail["lumber_needed"] = activeAbility._neededLumber;
+							action.ts = new Date().getTime();
+							logClient.LogAction(action);	
 							/*trace("just cast ability");
 							// if player was in battle, see if they still are
 							if (myPlayer.inBattle) {
@@ -639,7 +687,7 @@ package
 							else if (myMouse.justPressed() && abilitySelected == false && !myPlayer.isMoving && !myPlayer.inBattle) {
 								//trace("okay to move");
 								// check for condition....
-								
+								moved = true;
 								if (xTemp < myPlayer.xPos)
 									myPlayer.facing = FlxSprite.LEFT; 
 								else if (xTemp > myPlayer.xPos)
@@ -659,12 +707,29 @@ package
 					}else if(!myPlayer.isMoving) {
 						myPlayer.play("idle" + myPlayer.facing);
 					}
-					
+					if (moved) {
+						trace("sending moved");
+						action.aid = ClientActionType.MOVE;
+						action.detail = new Object();			
+						action.detail["x1"] = myPlayer.xPos;
+						action.detail["y1"] = myPlayer.yPos;
+						action.ts = new Date().getTime();
+						logClient.LogAction(action);	
+						moved = false;						
+					}
 					apInfo.text = "AP: " + myPlayer.AP;
 					location.text = "(" + myPlayer.xPos + "," + myPlayer.yPos + ")";
 					errorMessage.text = "" + myPlayer.errorMessage;
 					
 					if (win) {
+						action = new ClientAction();
+						action.aid = ClientActionType.WON;
+						action.detail = new Object();			
+						action.detail["x1"] = myPlayer.xPos;
+						action.detail["y1"] = myPlayer.yPos;
+						action.ts = new Date().getTime();
+						trace("won");
+						logClient.LogAction(action);	
 						connection.send("win")
 						connected = false;
 					}
@@ -803,7 +868,7 @@ package
 				if (myPlayer.inBattle) {
 					myPlayer.combatant.attack(1, myPlayer);
 					myPlayer.AP--;
-					connection.send("updateStat", "AP", myPlayer.AP);
+					connection.send("updateStat", "AP", myPlayer.AP);				
 				}
 			}, null, "Weak Attack: 1 AP", 120));
 			//lyrBattle.add(new FlxText(24, 286, 100, "Weak Attack"));
@@ -929,6 +994,14 @@ package
 			camMap.deadzone = new FlxRect(32, 32, 48, 48);///new FlxRect(_viewSize * 2, _viewSize * 2, 320 - _viewSize * 4, 320 - _viewSize * 4);
 			FlxG.resetCameras(new FlxCamera(0, 0, _windowWidth, _windowHeight));
 			FlxG.addCamera(camMap);
+			action = new ClientAction();
+			action.aid = ClientActionType.ZOOMED_IN;
+			action.detail = new Object();			
+			action.detail["x1"] = myPlayer.xPos;
+			action.detail["y1"] = myPlayer.yPos;
+			action.ts = new Date().getTime();
+			trace("+");
+			logClient.LogAction(action);				
 		}
 		
 		private function zoomOutAction():void 
@@ -940,6 +1013,15 @@ package
 			camMap.deadzone = new FlxRect(_viewSize * 2, _viewSize * 2, 320 - _viewSize * 4, 320 - _viewSize * 4);
 			FlxG.resetCameras(new FlxCamera(0, 0, _windowWidth, _windowHeight));
 			FlxG.addCamera(camMap);
+			action = new ClientAction();
+			action.ts = new Date().getTime();
+			action.aid = ClientActionType.ZOOMED_OUT;
+			action.detail = new Object();			
+			action.detail["x1"] = myPlayer.xPos;
+			action.detail["y1"] = myPlayer.yPos;
+			action.ts = new Date().getTime();
+			trace("+");
+			logClient.LogAction(action);				
 		}
 		
 		//Determines whether the mouse is within the game map board, return true if it is or false if it is outside the board
@@ -989,12 +1071,28 @@ package
 					connection.send("updateStat", "lumber", myPlayer.amountLumber);
 					fireNotification(myPlayer.x + 30, myPlayer.y + 20, "+1 Lumber", "gain");
 					amountLumberText.text = "Lumber: " + myPlayer.amountLumber;
+					action = new ClientAction();
+					action.ts = new Date().getTime();
+					action.detail = new Object();
+					action.detail["x1"] = myPlayer.xPos;
+					action.detail["y1"] = myPlayer.yPos;					
+					action.aid = ClientActionType.COLLECT_LUMBER;
+					trace("lumber");
+					logClient.LogAction(action);						
 					break;
 				case "cherry":
 					myPlayer.amountCherry++;
 					connection.send("updateStat", "cherry", myPlayer.amountCherry);
 					fireNotification(myPlayer.x + 30, myPlayer.y + 20, "+1 Cherry", "gain");
 					amountCherryText.text = "Cherry: " + myPlayer.amountCherry;
+					action = new ClientAction();
+					action.ts = new Date().getTime();
+					action.detail = new Object();
+					action.detail["x1"] = myPlayer.xPos;
+					action.detail["y1"] = myPlayer.yPos;					
+					action.aid = ClientActionType.COLLECT_CHERRY;
+					trace("cherry");
+					logClient.LogAction(action);					
 					break;
 			}
 			
@@ -1023,6 +1121,13 @@ package
 		private function resetGame():void{
 			connection.send("reset");
 			infoBox.Show("waiting");
+			action.ts = new Date().getTime();
+			action.detail = new Object();
+			action.detail["x1"] = myPlayer.xPos;
+			action.detail["y1"] = myPlayer.yPos;					
+			action.aid = ClientActionType.RESET;
+			trace("reset");
+			logClient.LogAction(action);			
 		}
 		
 		private function joinGame():void{
