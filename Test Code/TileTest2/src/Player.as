@@ -26,7 +26,10 @@ package
 		public static const BRIDGE_TILE_LEFT:int = 7;
 		public static const GATE_TILE:int = 14;
 		
-		[Embed(source = "data/character2.png")] public var player_avatar:Class;
+		[Embed(source = "data/character3.png")] public var player_avatar:Class;
+		[Embed(source = "data/character3_cook.png")] public var cook_avatar:Class;
+		[Embed(source = "data/character3_crafter.png")] public var crafter_avatar:Class;
+		[Embed(source = "data/character3_planter.png")] public var planter_avatar:Class;
 		public var AP:Number; //Amount of AP
 		public var level:Number;
 		public var coin:Number;
@@ -45,7 +48,7 @@ package
 		public var amountLumber:int;
 		public var amountCherry:int;
 		
-		public function Player(startX:Number, startY:Number, xOffset:int, yOffset:int, tileSize:int, startAP:int, resourcesString:String) 
+		public function Player(startX:Number, startY:Number, xOffset:int, yOffset:int, tileSize:int, startAP:int, resourcesString:String, playerClass:String) 
 		{
 			errorMessage = "";
 			xPos = startX;
@@ -82,7 +85,22 @@ package
 			}
 			
 			super(((startX) * tileSize) + xOffset, ((startY) * tileSize) + yOffset);
-			loadGraphic(player_avatar, true, false, 32 , 32);
+			
+			switch (playerClass)
+			{
+				case "Cook":
+					loadGraphic(cook_avatar, true, false, 32 , 32);
+					break;
+				case "Planter":
+					loadGraphic(planter_avatar, true, false, 32 , 32);
+					break;
+				case "Crafter":
+					loadGraphic(crafter_avatar, true, false, 32 , 32);
+					break;
+				default:
+					loadGraphic(player_avatar, true, false, 32 , 32);
+					break;
+			}
 			/*addAnimation("idle" + UP, [0], 0, false);
 			addAnimation("idle" + DOWN, [3], 0, false);
 			addAnimation("idle" + LEFT, [6], 0, false);

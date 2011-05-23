@@ -21,10 +21,10 @@ package
 		private var loader:Box
 		private var _questID:String;
 		private var myPlayer:DatabaseObject;
-		[Embed(source = "data/Planter1.png")] private var planterImg:Class;
-		[Embed(source = "data/Cook1.png")] private var cookImg:Class;
-		[Embed(source = "data/Crafter1.png")] private var crafterImg:Class;
-		[Embed(source = "data/monster1.png")] private var monsterImg:Class;
+		[Embed(source = "data/Planter2.png")] private var planterImg:Class;
+		[Embed(source = "data/Cook2.png")] private var cookImg:Class;
+		[Embed(source = "data/Crafter2.png")] private var crafterImg:Class;
+		[Embed(source = "data/Novice2.png")] private var noviceImg:Class;
 		private var playerClassImg:FlxSprite = new FlxSprite();
 		
 		private static var _windowWidth:int = 700;
@@ -36,7 +36,7 @@ package
 			super();
 			add(new Background("Map"));
 			client.bigDB.loadMyPlayerObject(loadPlayerSuccess);
-			playerClassImg = new FlxSprite(400, 150, monsterImg);
+			playerClassImg = new FlxSprite(450, 130, noviceImg);
 			add(playerClassImg);
 		}
 		
@@ -72,7 +72,7 @@ package
 					playerClassImg.loadGraphic(crafterImg);
 					break;
 				default:
-					playerClassImg.loadGraphic(monsterImg);
+					playerClassImg.loadGraphic(noviceImg);
 					break;
 			}
 			

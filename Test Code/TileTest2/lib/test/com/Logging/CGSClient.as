@@ -45,7 +45,7 @@ package com.Logging
 		protected var _timerCounter:int;
 		protected var _callbackDict:Dictionary;
 		
-		protected var _message:Message;
+		protected var _message:LogMessage;
 		
 		//----------- Constructor -------------------------------------------------------------------------------
 		public function CGSClient(serverURL:String, gid:int, cid:int, vid:Number=0, bufferLogs:Boolean = true):void
@@ -54,7 +54,7 @@ package com.Logging
 				throw new Error("Server URL must not be null!!!");
 			_serverURL = serverURL;
 			
-			_message = new Message(bufferLogs);
+			_message = new LogMessage(bufferLogs);
 			_message.gid = gid;
 			_message.g_name = CGSClientConstants.NAME_DICT[gid];
 			_message.skey = CGSClientConstants.SKEY_DICT[gid];
@@ -71,7 +71,7 @@ package com.Logging
 		
 		//----------- message -----------------------------------------------------------------------------------
 		///Returns clients message. Use this getter to set message header variables.
-		public function get message():Message
+		public function get message():LogMessage
 		{
 			return(_message);
 		}
