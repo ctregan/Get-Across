@@ -116,8 +116,8 @@ package
 		private static var _zoomedIn:Boolean = false;
 		private var _lvlTextOffsetX:int = 5;
 		private var _lvlTextOffsetY:int = 5;
-		private var _experienceTextOffsetX:int = 70;
-		private var _experienceTextOffsetY:int = 5;
+		private var _experienceTextOffsetX:int = 5;
+		private var _experienceTextOffsetY:int = 30;
 		private static var _resourceTextOffsetX:int = 540;
 		private static var _resourceTextOffsetY:int = 250;
 		
@@ -786,9 +786,10 @@ package
 		
 			// Top HUD
 			apInfo = new FlxText(_apBoxOffsetX, _apBoxOffsetY, 100, "AP:", true);
-			lvl = new FlxText(_lvlTextOffsetX, _lvlTextOffsetY, 100, "Lvl:1", true);
-			experience = new FlxText(_experienceTextOffsetX, _experienceTextOffsetY, 100, "Exp:0", true);
-			
+			lvl = new FlxText(_lvlTextOffsetX, _lvlTextOffsetY, 100, "Level 1", true);
+			lvl.setFormat(null, 15);
+			experience = new FlxText(_experienceTextOffsetX, _experienceTextOffsetY, 200, "Experience: 0", true);
+			experience.setFormat(null, 10);
 			var zoomInButton:FlxButton = new FlxButton(100, 340, "+", zoomInAction);
 			var zoomOutButton:FlxButton = new FlxButton(100, 370, "-", zoomOutAction);
 			var zoomInLabel:FlxText = new FlxText(50, 340, 100, "Zoom in");
@@ -797,7 +798,7 @@ package
 			//Background
 			
 			//Weak Attack Button
-			lyrBattle.add(new FlxButtonPlus(540, 290,  function() { 
+			lyrBattle.add(new FlxButtonPlus(540, 290,  function():void { 
 				if (myPlayer.inBattle) {
 					myPlayer.combatant.attack(1, myPlayer);
 					myPlayer.AP--;

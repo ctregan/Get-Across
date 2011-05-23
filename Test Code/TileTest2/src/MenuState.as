@@ -24,6 +24,7 @@ package
 		[Embed(source = "data/Planter1.png")] private var planterImg:Class;
 		[Embed(source = "data/Cook1.png")] private var cookImg:Class;
 		[Embed(source = "data/Crafter1.png")] private var crafterImg:Class;
+		[Embed(source = "data/monster1.png")] private var monsterImg:Class;
 		private var playerClassImg:FlxSprite = new FlxSprite();
 		
 		private static var _windowWidth:int = 700;
@@ -35,6 +36,8 @@ package
 			super();
 			add(new Background("Map"));
 			client.bigDB.loadMyPlayerObject(loadPlayerSuccess);
+			playerClassImg = new FlxSprite(400, 150, null);
+			add(playerClassImg);
 		}
 		
 		//Callback function called when Player data object has been successfully loaded
@@ -60,17 +63,18 @@ package
 			switch (ob.role)
 			{
 				case "Planter":
-					playerClassImg = new FlxSprite(100, 150, planterImg);
+					playerClassImg.loadGraphic(planterImg);
 					break;
 				case "Cook":
-					playerClassImg = new FlxSprite(100, 150, cookImg);
+					playerClassImg.loadGraphic(cookImg);
 					break;
 				case "Crafter":
-					playerClassImg = new FlxSprite(100, 150, crafterImg);
+					playerClassImg.loadGraphic(crafterImg);
+					break;
+				default:
+					playerClassImg.loadGraphic(monsterImg);
 					break;
 			}
-			
-			add(playerClassImg);
 			
 			tutorialButton = new TextButton("Start Tutorial", startTutorial);
 			tutorialLevel = ob.tutorial;
@@ -105,7 +109,7 @@ package
 			var titleLabel:Label = new Label("welcome!", 40, TextFormatAlign.CENTER, 0xff488921);
 			titleLabel.setTextFormat(titleTextFormat);
 			
-			mainMenu = new Box().fill(0xFFFFFF, 0.8, 0)
+			mainMenu = new Box().fill(0xFFFFFF, 0.8, 0);
 			mainMenu.add(new Box().fill(0x00000, .3, 15).margin(10, 10, 10, 10).minSize(_windowWidth / 2, _windowHeight).add(
 				new Box().fill(0xffffff,1,5).margin(10,10,10,10).minSize(300,0).add(
 						new Rows(
