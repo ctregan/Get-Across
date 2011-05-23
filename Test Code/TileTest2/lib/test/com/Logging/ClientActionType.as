@@ -33,6 +33,7 @@ package com.Logging
 		public static const GAME_END:int = 14;
 		public static const AP_GAIN:int = 15;
 		public static const MOVE:int = 16;
+		public static const WON:int = 17;
 	}
 
 }
