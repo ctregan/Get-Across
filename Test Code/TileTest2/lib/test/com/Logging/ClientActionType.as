@@ -34,13 +34,10 @@ package com.Logging
 		public static const AP_GAIN:int = 15;
 		public static const MOVE:int = 16;
 		public static const WON:int = 17;
-<<<<<<< HEAD
-=======
 		public static const ZOOMED_IN:int = 18;
 		public static const ZOOMED_OUT:int = 19;
 		public static const RESET:int = 20;
 		public static const UNKNOWN_ABILITY:int = 21;
->>>>>>> 046775e520116f698625de51aee63d5c35c4f750
 	}
 
 }

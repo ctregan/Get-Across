@@ -719,8 +719,8 @@ package
 						trace("sending moved");
 						action.aid = ClientActionType.MOVE;
 						action.detail = new Object();			
-						action.detail["x1"] = myPlayer.xPos;
-						action.detail["y1"] = myPlayer.yPos;
+						action.detail["x2"] = myPlayer.xPos;
+						action.detail["y2"] = myPlayer.yPos;
 						action.ts = new Date().getTime();
 						logClient.LogAction(action);	
 						moved = false;						
