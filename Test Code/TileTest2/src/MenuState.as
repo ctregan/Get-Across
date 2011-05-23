@@ -13,7 +13,6 @@ package
 	 */
 	public class MenuState extends FlxState
 	{
-		//private var characterInfo:Label //Will Hold Player Info Loaded from DB
 		private var mainMenu:Box
 		private var myClient:Client;
 		private var tutorialButton:TextButton;
@@ -22,6 +21,11 @@ package
 		private var loader:Box
 		private var _questID:String;
 		private var myPlayer:DatabaseObject;
+		[Embed(source = "data/Planter2.png")] private var planterImg:Class;
+		[Embed(source = "data/Cook2.png")] private var cookImg:Class;
+		[Embed(source = "data/Crafter2.png")] private var crafterImg:Class;
+		[Embed(source = "data/Novice2.png")] private var noviceImg:Class;
+		private var playerClassImg:FlxSprite = new FlxSprite();
 		
 		private static var _windowWidth:int = 700;
 		private static var _windowHeight:int = 400;
@@ -31,7 +35,9 @@ package
 			myClient = client;
 			super();
 			add(new Background("Map"));
-			client.bigDB.loadMyPlayerObject(loadPlayerSuccess)
+			client.bigDB.loadMyPlayerObject(loadPlayerSuccess);
+			playerClassImg = new FlxSprite(450, 130, noviceImg);
+			add(playerClassImg);
 		}
 		
 		//Callback function called when Player data object has been successfully loaded
@@ -39,6 +45,7 @@ package
 		{
 			myPlayer = ob;
 			
+			// labels for level, class, coins
 			var playerInfoTextSize:int = 15;
 			var levelTextFormat:TextFormat = new TextFormat("Abscissa", playerInfoTextSize, 0xff488921);
 			var levelLabel:Label = new Label("Level: " + ob.level, playerInfoTextSize, TextFormatAlign.CENTER, 0xff488921);
@@ -52,8 +59,23 @@ package
 			var coinLabel:Label = new Label("Coins: " + ob.coin, playerInfoTextSize, TextFormatAlign.CENTER, 0xff488921);
 			coinLabel.setTextFormat(coinTextFormat);
 			
+			// image of player avatar
+			switch (ob.role)
+			{
+				case "Planter":
+					playerClassImg.loadGraphic(planterImg);
+					break;
+				case "Cook":
+					playerClassImg.loadGraphic(cookImg);
+					break;
+				case "Crafter":
+					playerClassImg.loadGraphic(crafterImg);
+					break;
+				default:
+					playerClassImg.loadGraphic(noviceImg);
+					break;
+			}
 			
-			//characterInfo = new Label("Level: " + ob.level + "	Class: " + ob.role + "	Coin: " + ob.coin, 12, TextFormatAlign.CENTER);
 			tutorialButton = new TextButton("Start Tutorial", startTutorial);
 			tutorialLevel = ob.tutorial;
 			try {
@@ -78,8 +100,8 @@ package
 			}
 			catch (e:Error)
 			{
-					continueButton.visible = false;
-					continueButton.enabled = false;
+				continueButton.visible = false;
+				continueButton.enabled = false;
 			}
 			//Try to load questID, if no quest then that button is invisible
 			
@@ -87,7 +109,7 @@ package
 			var titleLabel:Label = new Label("welcome!", 40, TextFormatAlign.CENTER, 0xff488921);
 			titleLabel.setTextFormat(titleTextFormat);
 			
-			mainMenu = new Box().fill(0xFFFFFF, 0.8, 0)
+			mainMenu = new Box().fill(0xFFFFFF, 0.8, 0);
 			mainMenu.add(new Box().fill(0x00000, .3, 15).margin(10, 10, 10, 10).minSize(_windowWidth / 2, _windowHeight).add(
 				new Box().fill(0xffffff,1,5).margin(10,10,10,10).minSize(300,0).add(
 						new Rows(
@@ -180,8 +202,8 @@ package
 		//Callback function for Map Editor Button
 		private function mapEditor():void 
 		{
-			//FlxG.switchState(new OptionState(myClient));
-			FlxG.switchState(new ClassChooseState(myClient));
+			FlxG.switchState(new OptionState(myClient));
+			//FlxG.switchState(new MapEditorState("n", "10", "10", myClient));
 			FlxG.stage.removeChild(mainMenu);
 			this.kill();
 		}

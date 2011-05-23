@@ -29,15 +29,20 @@ package
 	public class PlayState extends FlxState
 	{
 		//Tile Value Constants, if tileSet changes, need to update these!!
-		private const GRASS_TILE:int = 0;
-		private const HILL_TILE:int = 1;
-		private const TREE_TILE:int = 2;
-		private const CHERRY_TILE:int = 3;
-		private const WATER_TILE:int = 4;
-		private const WIN_TILE:int = 5;
+		public static const GRASS_TILE:int = 0;
+		public static const HILL_TILE:int = 1;
+		public static const TREE_TILE:int = 2;
+		public static const CHERRY_TILE:int = 3;
+		public static const WATER_TILE:int = 8;
+		public static const WIN_TILE:int = 4;
+		public static const WATER_TILE2:int = 13;
+		public static const WATER_TILE3:int = 9;
+		public static const BRIDGE_TILE_UP:int = 6;
+		public static const BRIDGE_TILE_LEFT:int = 7;
+		public static const GATE_TILE:int = 14;
 		
 		//[Embed(source = "data/map_data.txt", mimeType = "application/octet-stream")] public var data_map:Class; //Tile Map array
-		[Embed(source = "data/testTileSet2_32.png")] public var data_tiles:Class; //Tile Set Image
+		[Embed(source = "data/testTileSet3_32.png")] public var data_tiles:Class; //Tile Set Image
 		[Embed(source = "data/Cursor.png")] public var cursor_img:Class; //Mouse Cursor
 		[Embed(source = "data/arrows_32.png")] public var hoverTileImg:Class;
 		[Embed(source = "data/noTileImg.png")] public var hoverTileImgNo:Class;
@@ -115,8 +120,8 @@ package
 		private static var _zoomedIn:Boolean = false;
 		private var _lvlTextOffsetX:int = 5;
 		private var _lvlTextOffsetY:int = 5;
-		private var _experienceTextOffsetX:int = 70;
-		private var _experienceTextOffsetY:int = 5;
+		private var _experienceTextOffsetX:int = 5;
+		private var _experienceTextOffsetY:int = 30;
 		private static var _resourceTextOffsetX:int = 540;
 		private static var _resourceTextOffsetY:int = 250;
 		
@@ -278,7 +283,7 @@ package
 			
 			
 			//Recieve Info from server about your saved character
-			connection.addMessageHandler("playerInfo", function(m:Message, posX:int, posY:int, name:String) {
+			connection.addMessageHandler("playerInfo", function(m:Message, posX:int, posY:int, name:String, playerClass:String ) {
 				if (myPlayer == null) {
 					playerName = name;
 					// add player to screen --
@@ -287,7 +292,7 @@ package
 					//trace("resources to start with: " + playerAP);
 					if (posX < 0) posX = 0;
         			if (posY < 0) posY = 0;
-					myPlayer = new Player(posX, posY, 0, _windowHeight, _tileSize, playerAP, resourcesString);
+					myPlayer = new Player(posX, posY, 0, _windowHeight, _tileSize, playerAP, resourcesString, playerClass);
 					playersArray[imPlayer - 1] = myPlayer;
 					
 					var playerHealthBar:FlxHealthBar = new FlxHealthBar(myPlayer, 100, 20, 0, 20, true);
@@ -305,11 +310,12 @@ package
 					var tempButton:AbilityButton;
 					var abilityText:FlxText;
 					var spaceBetweenAbilities:int = 90;
-					client.bigDB.loadMyPlayerObject(function(db:DatabaseObject) {
+					client.bigDB.loadMyPlayerObject(function(db:DatabaseObject):void {
 						try {
+							lvl.text = "Level: " + db.level;
 							var abilityArray:Array = db.abilities;
 							if (abilityArray != null || abilityArray.length > 0) {
-								client.bigDB.loadKeys("Abilities", db.abilities, function(dbarr:Array) {
+								client.bigDB.loadKeys("Abilities", db.abilities, function(dbarr:Array):void {
 									var yButtonPlacementModifier:int = 0;
 									for (var z:String in dbarr) {
 										abilityObject = dbarr[z];
@@ -347,7 +353,7 @@ package
 			connection.addMessageHandler("UserJoined", function(m:Message, userID:int, posX:int, posY:int) {
 				if (userID != imPlayer) {
 					// create other player; AP doesn't matter, so default to 20
-					playersArray[userID-1] = new Player(posX, posY, 0,_windowHeight , _tileSize, 20, null);
+					playersArray[userID-1] = new Player(posX, posY, 0,_windowHeight , _tileSize, 20, null, "Novice");
 					if (playersArray[userID-1] != null && lyrSprites != null) lyrSprites.add(playersArray[userID-1]);
 				}
 			})
@@ -420,11 +426,11 @@ package
 			}
 		}
 		
-		private function cleanup(m:Message, userID:int, xp:int, coin:int, nextLevel:String):void 
+		private function cleanup(m:Message, xpGain:int, coinGain:int, nextLevel:String):void 
 		{
 			connection.disconnect();
 			this.kill();
-			FlxG.switchState(new QuestCompleteState(xp, coin, client, nextLevel));
+			FlxG.switchState(new QuestCompleteState(xpGain, coinGain, client, nextLevel));
 			
 		}
 		override public function update():void 
@@ -829,9 +835,10 @@ package
 		
 			// Top HUD
 			apInfo = new FlxText(_apBoxOffsetX, _apBoxOffsetY, 100, "AP:", true);
-			lvl = new FlxText(_lvlTextOffsetX, _lvlTextOffsetY, 100, "Lvl:1", true);
-			experience = new FlxText(_experienceTextOffsetX, _experienceTextOffsetY, 100, "Exp:0", true);
-			
+			lvl = new FlxText(_lvlTextOffsetX, _lvlTextOffsetY, 100, "Level 1", true);
+			lvl.setFormat(null, 15);
+			experience = new FlxText(_experienceTextOffsetX, _experienceTextOffsetY, 200, "Experience: 0", true);
+			experience.setFormat(null, 10);
 			var zoomInButton:FlxButton = new FlxButton(100, 340, "+", zoomInAction);
 			var zoomOutButton:FlxButton = new FlxButton(100, 370, "-", zoomOutAction);
 			var zoomInLabel:FlxText = new FlxText(50, 340, 100, "Zoom in");
@@ -840,7 +847,7 @@ package
 			//Background
 			
 			//Weak Attack Button
-			lyrBattle.add(new FlxButtonPlus(540, 290,  function() { 
+			lyrBattle.add(new FlxButtonPlus(540, 290,  function():void { 
 				if (myPlayer.inBattle) {
 					myPlayer.combatant.attack(1, myPlayer);
 					myPlayer.AP--;

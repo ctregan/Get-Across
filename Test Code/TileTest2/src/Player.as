@@ -18,14 +18,18 @@ package
 		public static const HILL_TILE:int = 1;
 		public static const TREE_TILE:int = 2;
 		public static const CHERRY_TILE:int = 3;
-		public static const WATER_TILE:int = 4;
-		public static const WIN_TILE:int = 5;
-		public static const WATER_TILE2:int = 6;
-		public static const WATER_TILE3:int = 7;
-		public static const BRIDGE_TILE:int = 9;
-		public static const GATE_TILE:int = 10;
+		public static const WATER_TILE:int = 8;
+		public static const WIN_TILE:int = 4;
+		public static const WATER_TILE2:int = 13;
+		public static const WATER_TILE3:int = 9;
+		public static const BRIDGE_TILE_UP:int = 6;
+		public static const BRIDGE_TILE_LEFT:int = 7;
+		public static const GATE_TILE:int = 14;
 		
-		[Embed(source = "data/character2.png")] public var player_avatar:Class;
+		[Embed(source = "data/character3.png")] public var player_avatar:Class;
+		[Embed(source = "data/character3_cook.png")] public var cook_avatar:Class;
+		[Embed(source = "data/character3_crafter.png")] public var crafter_avatar:Class;
+		[Embed(source = "data/character3_planter.png")] public var planter_avatar:Class;
 		public var AP:Number; //Amount of AP
 		public var level:Number;
 		public var coin:Number;
@@ -44,7 +48,7 @@ package
 		public var amountLumber:int;
 		public var amountCherry:int;
 		
-		public function Player(startX:Number, startY:Number, xOffset:int, yOffset:int, tileSize:int, startAP:int, resourcesString:String) 
+		public function Player(startX:Number, startY:Number, xOffset:int, yOffset:int, tileSize:int, startAP:int, resourcesString:String, playerClass:String) 
 		{
 			errorMessage = "";
 			xPos = startX;
@@ -81,7 +85,22 @@ package
 			}
 			
 			super(((startX) * tileSize) + xOffset, ((startY) * tileSize) + yOffset);
-			loadGraphic(player_avatar, true, false, 32 , 32);
+			
+			switch (playerClass)
+			{
+				case "Cook":
+					loadGraphic(cook_avatar, true, false, 32 , 32);
+					break;
+				case "Planter":
+					loadGraphic(planter_avatar, true, false, 32 , 32);
+					break;
+				case "Crafter":
+					loadGraphic(crafter_avatar, true, false, 32 , 32);
+					break;
+				default:
+					loadGraphic(player_avatar, true, false, 32 , 32);
+					break;
+			}
 			/*addAnimation("idle" + UP, [0], 0, false);
 			addAnimation("idle" + DOWN, [3], 0, false);
 			addAnimation("idle" + LEFT, [6], 0, false);
@@ -177,7 +196,7 @@ package
 		//Sees if the desired move for the player is valid.
 		public function checkMove(proposedX:Number, proposedY:Number, tileSize:int):Boolean {
 			var proposedTileType:int = PlayState.myMap.getTile(proposedX, proposedY)
-			if ( proposedTileType == WATER_TILE || proposedTileType == WATER_TILE2 || proposedTileType == WATER_TILE3) {
+			if ( proposedTileType >= WATER_TILE && proposedTileType <= WATER_TILE2) {
 				errorMessage = "Invalid Move, can't cross water";
 				//PlayState.fireNotification(this.x + 20, this.y - 20, "You can't cross water!", "loss");
 				return false;

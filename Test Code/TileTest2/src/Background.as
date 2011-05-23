@@ -10,6 +10,7 @@ package
 		[Embed(source = "data/gui.png")] public var bg_img:Class;
 		[Embed(source = "data/levelChooseBackground.png")] public var lc_img:Class;
 		[Embed(source = "data/menubg.png")] public var menubg_img:Class;
+		[Embed(source = "data/fadedmapbg.png")] public var fadedmapbg_img:Class;
 		
 		public function Background(type:String = "") 
 		{
@@ -22,6 +23,9 @@ package
 					break;
 				case "Map":
 					backgroundImage = menubg_img;
+					break;
+				case "Faded":
+					backgroundImage = fadedmapbg_img;
 					break;
 				default:
 					backgroundImage = bg_img;

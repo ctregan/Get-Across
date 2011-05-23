@@ -15,9 +15,9 @@ package
 	public class ClassChooseState extends FlxState
 	{
 		private var _client:Client;
-		[Embed(source = "data/Planter1.png")] public var planterImg:Class;
-		[Embed(source = "data/Cook1.png")] public var cookImg:Class;
-		[Embed(source = "data/Crafter1.png")] public var crafterImg:Class;
+		[Embed(source = "data/Planter2.png")] public var planterImg:Class;
+		[Embed(source = "data/Cook2.png")] public var cookImg:Class;
+		[Embed(source = "data/Crafter2.png")] public var crafterImg:Class;
 		public function ClassChooseState(client:Client) 
 		{
 			_client = client;

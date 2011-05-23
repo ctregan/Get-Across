@@ -40,11 +40,11 @@ package
 								nameInput
 							),
 							new Columns().margin(0,5,0,5).spacing(3).add(
-								new Label("Tile Height",12, TextFormatAlign.RIGHT),
+								new Label("Tile Height (1 to 10)",12, TextFormatAlign.RIGHT),
 								heightInput
 							),
 							new Columns().margin(0,5,0,5).spacing(3).add(
-								new Label("Tile Width",12, TextFormatAlign.RIGHT),
+								new Label("Tile Width (1 to 10)",12, TextFormatAlign.RIGHT),
 								widthInput
 							),
 							error,
@@ -60,9 +60,17 @@ package
 		}
 		
 		private function continueCallback():void {
-			if (int(heightInput.text) > 10 || int(widthInput.text) > 10) {
-				error.text = "Max Width and Height is 10 tile"
-			}else{
+			if (nameInput.text == "")
+				error.text = "Error: Please fill in a name for your map!"
+			else if (heightInput.text == "" || isNaN(int(heightInput.text)))
+				error.text = "Error: Please fill in a numerical height for your map!"
+			else if (widthInput.text == "" || isNaN(int(widthInput.text)))
+				error.text = "Error: Please fill in a width for your map!"
+			else if (int(heightInput.text) == 1 && int(widthInput.text) == 1)
+				error.text = "Error: You can't have a 1x1 map!"
+			else if (int(heightInput.text) > 10 || int(widthInput.text) > 10)
+				error.text = "Error: Max Width and Height is 10 tiles"
+			else{
 				FlxG.stage.removeChild(base);
 				this.kill();
 				FlxG.switchState(new MapEditorState(nameInput.text, heightInput.text, widthInput.text, _myClient));

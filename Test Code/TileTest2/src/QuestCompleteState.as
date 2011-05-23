@@ -1,11 +1,16 @@
 package  
 {
 	import flash.display.SimpleButton;
+	import org.flixel.FlxSprite;
 	import org.flixel.FlxState;
 	import org.flixel.FlxG;
+	import org.flixel.FlxText;
+	import org.flixel.plugin.photonstorm.FlxHealthBar;
 	import playerio.*
 	import sample.ui.components.*
 	import sample.ui.*
+	import flash.events.TimerEvent
+	import flash.utils.Timer
 	
 	import flash.text.TextFormatAlign
 	import flash.text.TextFormat
@@ -18,6 +23,7 @@ package
 	{
 		private var _client:Client
 		private var _nextLevel:String
+		private var _xpGain:int
 		private var characterInfo:Label
 		private var levelLabel:Label;
 		private var classLabel:Label;
@@ -27,21 +33,26 @@ package
 		private var mainMenuButton:TextButton;
 		private var loader:Box
 		
-		public function QuestCompleteState(xp:int, coin:int, client:Client, nextLevel:String) 
+		public function QuestCompleteState(gainedXP:int, coin:int, client:Client, nextLevel:String) 
 		{
 			_client = client;
 			_nextLevel = nextLevel;
+			_xpGain = gainedXP;
 			super();
 			add(new Background("Map"));
 			characterInfo = new Label("", 12, TextFormatAlign.CENTER);
 			client.bigDB.loadMyPlayerObject(loadPlayerSuccess);
 			mainMenuButton = new TextButton("Main Menu", continueButton);
 			nextLevelButton = new TextButton("Next Level", nextLevelCallback);
+			mainMenuButton.visible = false;
+			nextLevelButton.visible = false;
 			if (nextLevel == "") {
 				nextLevelButton.visible = false;
+				nextLevelButton.enabled = false;
 			}else if (nextLevel == "Class_Choose") {
 				nextLevelButton = new TextButton("Choose Class", chooseClassCallback);
 				mainMenuButton.visible = false;
+				mainMenuButton.enabled = false;
 			}
 			
 			// initialize labels for player info to show at the end
@@ -64,7 +75,7 @@ package
 			questLabel.setTextFormat(questTextFormat);
 			
 			var xpGainedTextFormat:TextFormat = new TextFormat("Abscissa", 20, 0xff488921);
-			var xpGainedLabel:Label = new Label("Gained " + xp + " XP!", 20, TextFormatAlign.LEFT, 0xff4af266);
+			var xpGainedLabel:Label = new Label("Gained " + gainedXP + " XP!", 20, TextFormatAlign.LEFT, 0xff4af266);
 			xpGainedLabel.setTextFormat(xpGainedTextFormat);
 			
 			var coinsGainedTextFormat:TextFormat = new TextFormat("Abscissa", 20, 0xff488921);
@@ -106,6 +117,45 @@ package
 		//Callback function called when Player data object has been successfully loaded
 		private function loadPlayerSuccess(ob:DatabaseObject):void 
 		{
+			
+			
+			//XP BAR - have to make a sprite to leverage the FlxHealthBar, his health will reflect the XP
+			var xpSprite:FlxSprite = new FlxSprite(0, 0, null);
+			xpSprite.health = ob.xp;
+			var neededXP:Number = needXP(ob.level + 1);
+			var xpBar:FlxHealthBar = new FlxHealthBar(xpSprite, 300, 100, needXP(ob.level), neededXP, true);
+			xpBar.x = (FlxG.width / 2) + 20
+			xpBar.y = 100
+			var xpText:FlxText = new FlxText( xpBar.x + 150, 150, 300, xpSprite.health.toString() + " XP / " + neededXP.toString() + " XP");
+			add(xpSprite);
+			add(xpBar);
+			add(xpText);
+			var count:int = 0;
+			var myTimer:Timer = new Timer(100);
+			myTimer.addEventListener(TimerEvent.TIMER, function (event:TimerEvent):void 
+			{
+				xpSprite.health++;
+				count++;
+				
+				if (xpSprite.health >= neededXP) {
+					FlxG.flash(0xffffff, 1, function() {
+						FlxG.stage.addChild(new Alert("You Have Leveled Up!"));
+					});
+					ob.level = ob.level + 1;
+					neededXP = needXP(ob.level + 1);
+					xpBar.setRange(needXP(ob.level), neededXP)
+					ob.save();
+				}else if(count >= _xpGain){
+					myTimer.stop();
+					levelLabel.text = "Level " + ob.level;
+					classLabel.text = "Class: " + ob.role;
+					coinLabel.text = "Coins: " + ob.coin;
+					mainMenuButton.visible = true;
+					nextLevelButton.visible = true;
+				}
+				xpText.text = xpSprite.health.toString() + " XP / " + neededXP.toString() + " XP";
+			});
+			myTimer.start();
 			// labels for player info
 			levelLabel.text = "Level " + ob.level;
 			classLabel.text = "Class: " + ob.role;
@@ -160,6 +210,10 @@ package
 
 		private function hideLoader():void{
 			if(loader.parent)FlxG.stage.removeChild(loader)
+		}
+		
+		private function needXP(level:int):Number {
+			return Math.floor(Math.pow((level - 1), 1.2) * 25)
 		}
 
 	}
