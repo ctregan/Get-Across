@@ -1,6 +1,7 @@
 package  
 {
 	import flash.display.Sprite;
+	import flash.sampler.NewObjectSample;
 	import org.flixel.*
 	import org.flixel.plugin.photonstorm.FlxButtonPlus;
 	import org.flixel.plugin.photonstorm.FlxHealthBar;
@@ -20,6 +21,7 @@ package
 	import flash.utils.*;
 	
 	import com.Logging.*;
+	
 	/**
 	 * ...
 	 * @author Charlie Regan
@@ -176,6 +178,7 @@ package
 					//Recieve Tile Array from database to be turned into string with line breaks between each line
 					if (ob != null)
 					{
+
 						var mapString:String = ob.tileValues;
 						connection.send("QuestMapUpdate", mapString);
 						mapString = mapString.split("|").join("\n");
@@ -452,7 +455,7 @@ package
 						gatherLumberButton.x = gatherCherryButton.x = 540;
 						gatherLumberButton.y = 340;
 						gatherCherryButton.y = 310;
-						gatherLumberButton.visible = gatherCherryButton.visible = true;
+						gatherLumberButton.visible = gatherCherryButton.visible = true;						
 					}
 					else { 
 						gatherLumberButton.visible = gatherCherryButton.visible = false;
@@ -537,11 +540,12 @@ package
 					 
 					// handle player movement with arrow keys
 					if (FlxG.keys.justPressed("DOWN") && !myPlayer.isMoving && !myPlayer.inBattle) {
-						myPlayer.facing = FlxSprite.DOWN;
-						win = myPlayer.movePlayer(0, 1, _tileSize, connection);
+						myPlayer.facing = FlxSprite.DOWN;	
+						win = myPlayer.movePlayer(0, 1, _tileSize, connection);	
+						moved = true;
 						moved = true;
 					}else if (FlxG.keys.justPressed("UP") && !myPlayer.isMoving && !myPlayer.inBattle) {
-						myPlayer.facing = FlxSprite.UP;
+						myPlayer.facing = FlxSprite.UP;						
 						win = myPlayer.movePlayer(0, -1, _tileSize, connection);
 						moved = true;
 					}else if (FlxG.keys.justPressed("RIGHT") && !myPlayer.isMoving && !myPlayer.inBattle) {
@@ -554,6 +558,7 @@ package
 						moved = true;
 					}
 					
+
 					// handle ability usage
 					else if (myMouse.justPressed() &&  mouseWithinTileMap() && abilitySelected) {
 						var selectedXTile:int = getTileX();// (myMouse.x - _mapOffsetX) / _tileSize
@@ -608,7 +613,7 @@ package
 							amountLumberText.text = "Lumber: " + myPlayer.amountLumber;
 							amountLumberText.text = "Cherry: " + myPlayer.amountCherry;
 						}
-					}	
+					} 
 					//CLICK MOVING
 					else if (mouseWithinTileMap() && abilitySelected == false) {
 						tileHover.visible = mouseWithinTileMap();
@@ -698,7 +703,9 @@ package
 									myPlayer.facing = FlxSprite.DOWN; 
 								
 								win = myPlayer.movePlayer(xTemp - myPlayer.xPos, yTemp - myPlayer.yPos, _tileSize, connection)
-							} else fireNotification(myPlayer.xPos + 20, myPlayer.yPos - 20, "Invalid move!", "loss");
+							} else {
+								fireNotification(myPlayer.xPos + 20, myPlayer.yPos - 20, "Invalid move!", "loss");
+							}
 						} else {
 							// if not within reach, set color to red
 							//tileHover.loadGraphic(hoverTileImgNo);
@@ -966,6 +973,7 @@ package
 					// if map has intro messages, fill them in
 					if (dbo != null && dbo.Messages != null)
 					{
+
 						trace("message object: " + dbo.toString());
 						var messages:Array = dbo.Messages;
 						for (var i:int = messages.length - 1; i >= 0; i--) {
@@ -978,6 +986,19 @@ package
 					}
 				}
 			);
+			
+			action.uid = logClient.message.uid;	// what is this?
+			var levelID:int = levelToInt(levelKey);
+			logClient.SetUid(function f(d:String):void {
+				logClient.SetDqid(function f(d:String):void {
+					logClient.ReportLevel(d, levelID, function g(d:String):void {
+						action.ts = new Date().getTime();
+						action.aid = ClientActionType.GAME_START;
+						logClient.LogAction(action);
+						//action.detail = null;
+					});
+				});
+			});
 			
 			setCameras();
 			connected = true;
@@ -1022,6 +1043,22 @@ package
 			action.ts = new Date().getTime();
 			trace("+");
 			logClient.LogAction(action);				
+		}
+		
+		private function levelToInt(s:String):int 
+		{
+			if (s =="Tutorial_1") {
+				return 1;
+			} else if (s =="Tutorial_2") {
+				return 2;
+			} else if (s == "Tutorial_3") {
+				return 3;
+			} else if (s=="Tutorial_4") {
+				return 4;
+			} else if (s=="Tutorial_5") {
+				return 5;
+			}
+			return -1;
 		}
 		
 		//Determines whether the mouse is within the game map board, return true if it is or false if it is outside the board
