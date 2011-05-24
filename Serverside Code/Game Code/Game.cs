@@ -220,9 +220,9 @@ namespace GetAcross {
                                 delegate(DatabaseObject questObject)
                                 {
                                     String resources = ""; // player's resources, to pass to client
-                                    levelKey = questObject.GetString("StaticMapKey");
                                     if (questObject != null)
                                     {
+                                        levelKey = questObject.GetString("StaticMapKey");
                                         // extract players playing this quest
                                         DatabaseObject playersInQuest = questObject.GetObject("players");
                                         DatabaseObject thisPlayer = playersInQuest.GetObject(player.ConnectUserId);
