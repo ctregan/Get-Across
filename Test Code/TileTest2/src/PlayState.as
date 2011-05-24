@@ -253,15 +253,15 @@ package
 								thisPlayer.save();
 							}
 						);
-						
+						var menu:Box = new Box().fill(0xFFFFFF, 0.8, 0);
 						// create new menu for player to navigate back to main screen
 						var button:TextButton = new TextButton("Start a new quest!",
 							function ():void
 							{
+								FlxG.stage.removeChild(menu);
 								FlxG.switchState(new MenuState(client));
 							}
 						);
-						var menu:Box = new Box().fill(0xFFFFFF, 0.8, 0)
 						menu.add(new Box().fill(0x00000, .5, 15).margin(10, 10, 10, 10).minSize(FlxG.width/2, FlxG.height).add(
 							new Box().fill(0xffffff,1,5).margin(10,10,10,10).minSize(300,0).add(
 									new Rows(
