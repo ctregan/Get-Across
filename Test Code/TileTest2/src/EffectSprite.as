@@ -40,7 +40,7 @@ package
 				classToinitialize = redflower;
 			}
 			
-			super((xTile * tileSize) + PlayState.myMap.x, (yTile * tileSize) + PlayState.myMap.y, classToinitialize);
+			super(((xTile * tileSize) + PlayState.myMap.x) - (tileSize * _range) , ((yTile * tileSize) + PlayState.myMap.y) - (tileSize * _range) , classToinitialize);
 			
 			if(type == "bacon" && uses < 1){
 				var myTimer:Timer = new Timer(1000);

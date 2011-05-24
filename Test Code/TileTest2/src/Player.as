@@ -165,7 +165,7 @@ package
 			for (var x in sprites) {
 				try {
 					var eSprite:EffectSprite = EffectSprite(sprites[x]);
-					if (eSprite.type == "redflower" && eSprite.inRange(proposedX, proposedY))  {
+					if (eSprite.type == "redflower" && eSprite.inRange(proposedX, proposedY) && !eSprite.dead)  {
 						if(trueMove){
 							eSprite.addUse(true);
 						}
