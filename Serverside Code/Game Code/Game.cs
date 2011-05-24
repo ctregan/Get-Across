@@ -34,6 +34,7 @@ namespace GetAcross {
         private String playerConnectUserId;
         //private int player.AP;       // server's variable to keep track of clientside player AP amount
         private String questID;    // id of the quest player is in
+        private DatabaseObject quest;
         DateTime startSessionTime, endSessionTime, lastSessionEndTime;
         String DateTimeFormat = "MM/dd/yyyy HH:mm:ss";
 
@@ -115,6 +116,7 @@ namespace GetAcross {
                             PlayerIO.BigDB.Load("NewQuests", questID,
                                 delegate(DatabaseObject quest)
                                 {
+                                    this.quest = quest;
                                     DatabaseObject questPlayerData = new DatabaseObject();
                                     questPlayerData.Set("positionX", 0);
                                     questPlayerData.Set("positionY", 0);
@@ -198,8 +200,8 @@ namespace GetAcross {
                                             result.Save();
                                             //levelKey = addedQuest.Key;
                                             // tell client to initialize (board, monsters, player object & player sprite) with max AP amount
-                                            addedQuest.Save(delegate() { player.Send("init", player.Id, player.ConnectUserId,0, 0, questID, 20, levelKey, "", player.characterClass); });
-                                           
+                                            addedQuest.Save(delegate() { quest = addedQuest; player.Send("init", player.Id, player.ConnectUserId, 0, 0, questID, 20, levelKey, "", player.characterClass); });
+                                            
                                             //player.Send("AlertMessages", staticMap.Key);
                                         });
 
@@ -219,6 +221,7 @@ namespace GetAcross {
                             PlayerIO.BigDB.Load("NewQuests", questID,
                                 delegate(DatabaseObject questObject)
                                 {
+                                    quest = questObject;
                                     String resources = ""; // player's resources, to pass to client
                                     if (questObject != null)
                                     {
@@ -281,55 +284,54 @@ namespace GetAcross {
 
 		// This method is called when a player leaves the game
 		public override void UserLeft(Player player) {
+            
 			Broadcast("UserLeft", player.Id);
             endSessionTime = DateTime.Now;
             Console.WriteLine("User session end!  Set end session time: " + endSessionTime.ToString(DateTimeFormat));
             //update player's end session time in the newQuest database
-            PlayerIO.BigDB.Load("NewQuests", questID,
-                delegate(DatabaseObject result)
+            PlayerIO.ErrorLog.WriteError("Player Left3 " + questID);
+            // if result is not null and contains something, save it into Quests db
+            if (quest != null && quest.Contains("players"))
+            {
+                // save quest map data
+                Console.WriteLine("questMap data to save: " + questMap);
+                quest.Set("tileValues", questMap);
+
+
+                DatabaseObject players = quest.GetObject("players");
+                if (players != null && players.Contains(playerConnectUserId))
                 {
-                    // if result is not null and contains something, save it into Quests db
-                    if (result != null && result.Contains("players"))
+                    DatabaseObject thisPlayer = players.GetObject(playerConnectUserId);
+
+                    thisPlayer.Set("lastSessionEndTime", endSessionTime);
+                    thisPlayer.Set("AP", player.AP);
+                    thisPlayer.Set("positionX", player.positionX);
+                    thisPlayer.Set("positionY", player.positionY);
+
+                    // if resources exists, increment it; if not, create it
+                    if (thisPlayer.Contains("resources"))
                     {
-                        // save quest map data
-                        Console.WriteLine("questMap data to save: " + questMap);
-                        result.Set("tileValues", questMap);
+                        DatabaseObject resourceCount = thisPlayer.GetObject("resources");
+                        resourceCount.Set("lumber", amountLumber);
+                        resourceCount.Set("cherry", amountCherry);
+                    }
 
-                        
-                        DatabaseObject players = result.GetObject("players");
-                        if (players != null && players.Contains(playerConnectUserId))
-                        {
-                            DatabaseObject thisPlayer = players.GetObject(playerConnectUserId);
-
-                            thisPlayer.Set("lastSessionEndTime", endSessionTime);
-                            thisPlayer.Set("AP", player.AP);
-                            thisPlayer.Set("positionX", player.positionX);
-                            thisPlayer.Set("positionY", player.positionY);
-
-                            // if resources exists, increment it; if not, create it
-                            if (thisPlayer.Contains("resources"))
-                            {
-                                DatabaseObject resourceCount = thisPlayer.GetObject("resources");
-                                resourceCount.Set("lumber", amountLumber);
-                                resourceCount.Set("cherry", amountCherry);
-                            }
-
-                            else
-                            {
-                                DatabaseObject resourceCount = new DatabaseObject();
-                                resourceCount.Set("lumber", amountLumber);
-                                resourceCount.Set("cherry", amountCherry);
-                                thisPlayer.Set("resources", resourceCount);
-                            }
-                        }
-
-                        result.Save(delegate()
-                        {
-                            Console.WriteLine("UserLeft result: " + result.ToString());
-                        });
+                    else
+                    {
+                        DatabaseObject resourceCount = new DatabaseObject();
+                        resourceCount.Set("lumber", amountLumber);
+                        resourceCount.Set("cherry", amountCherry);
+                        thisPlayer.Set("resources", resourceCount);
                     }
                 }
-            );
+
+                quest.Save(delegate()
+                {
+                    PlayerIO.ErrorLog.WriteError("Player Left1");
+                    Console.WriteLine("UserLeft result: " + quest.ToString());
+                });
+            }
+            PlayerIO.ErrorLog.WriteError("End of Left");
 		}
 
 		// This method is called when a player sends a message into the server code

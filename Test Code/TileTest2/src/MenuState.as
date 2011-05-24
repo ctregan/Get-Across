@@ -135,18 +135,26 @@ package
 		//Callback function for when Continue Button is pressed
 		private function continueQuest():void 
 		{
+			var _levelKey:String = "";
 			if (tutorialLevel <= 5) {
-				var _levelKey:String = "Tutorial_" + tutorialLevel;
-			}else{
-				var _levelKey:String = "";
+				_levelKey = "Tutorial_" + tutorialLevel;
 			}
-			myClient.multiplayer.createRoom(
+			showLoader();
+			myClient.multiplayer.createJoinRoom(
 				null,								//Room id, null for auto generted
 				"GetAcross",							//RoomType to create, bounce is a simple bounce server
 				true,								//Hide room from userlist
-				{name:"Tutorial", key:_levelKey, type:"static"},						//Room Join data, data is returned to lobby list. Variabels can be modifed on the server
-				joinRoom,							//Create handler
-				handleError					//Error handler										   
+				{name:"Tutorial", key:_levelKey, type:"static" },						//Room Join data, data is returned to lobby list. Variabels can be modifed on the server
+				{},
+				function(connection:Connection) {
+					FlxG.stage.removeChild(mainMenu);
+					hideLoader();
+					FlxG.switchState( new PlayState(connection,myClient))
+				},
+				function(error:PlayerIOError) {
+					hideLoader();
+					FlxG.stage.addChild(new Alert("Error "));
+				}										   
 			)
 		}
 		//Callback function for when Start Tutorial Button is Pressed
@@ -161,13 +169,23 @@ package
 			myPlayer.questID = "noQuest"
 			myPlayer.save();
 			var _levelKey:String = "Tutorial_1"
-			myClient.multiplayer.createRoom(
+			showLoader();
+			myClient.multiplayer.createJoinRoom(
 				null,								//Room id, null for auto generted
 				"GetAcross",							//RoomType to create, bounce is a simple bounce server
 				true,								//Hide room from userlist
-				{name:"Tutorial", key:_levelKey, type:"static"},						//Room Join data, data is returned to lobby list. Variabels can be modifed on the server
-				joinRoom,							//Create handler
-				handleError					//Error handler										   
+				{name:"Tutorial", key:_levelKey, type:"static" },						//Room Join data, data is returned to lobby list. Variabels can be modifed on the server
+				{},
+				function(connection:Connection) {
+					FlxG.stage.removeChild(mainMenu);
+					hideLoader();
+					FlxG.switchState( new PlayState(connection,myClient))
+				},
+				function(error:PlayerIOError) {
+					hideLoader();
+					FlxG.stage.addChild(new Alert("Error "));
+				}
+				//handleError					//Error handler										   
 			)
 		}
 		//Callback function for when New Game Button is pressed
@@ -207,33 +225,38 @@ package
 			FlxG.stage.removeChild(mainMenu);
 			this.kill();
 		}
-		
+		//Callback for once room is created
+		private function joinRoom(id:String):void {
+			if(id != null){
+				showLoader()
+				myClient.multiplayer.joinRoom(
+					id,									//Room id
+					{},									//User join data.
+					handleJoin,							//Join handler
+					handleError					//Error handler	
+				)
+			}
+		}
 		/*
 		 * PLAYERIO ROOM JOIN
 		 */
 		//Callback function for LOBBY, once it has connected to a game
 		private function handleJoin(connection:Connection):void 
 		{
-			FlxG.switchState( new PlayState(connection, myClient))
-			FlxG.stage.removeChild(mainMenu);
-			FlxG.stage.removeChild(loader);
+			if(connection != null){
+				FlxG.switchState( new PlayState(connection, myClient))
+				FlxG.stage.removeChild(mainMenu);
+				FlxG.stage.removeChild(loader);
+			}
 		}
 		
 		//Callback function for LOBBY, if it has encountered an error
 		private function handleError(error:PlayerIOError):void{
-			trace("Got", error)
+			hideLoader();
+			FlxG.stage.addChild(new Alert("Error "));
 			//FlxG.state = new LoginState()
 		}
-		//Callback for once room is created
-		private function joinRoom(id:String):void{
-			showLoader()
-			myClient.multiplayer.joinRoom(
-				id,									//Room id
-				{},									//User join data.
-				handleJoin,							//Join handler
-				handleError					//Error handler	
-			)
-		}
+		
 		
 		
 		private function showLoader():void{
