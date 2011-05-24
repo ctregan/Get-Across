@@ -123,7 +123,7 @@ namespace GetAcross {
                                     quest.GetObject("players").Set("numPlayers", quest.GetObject("players").Count - 1);
                                     quest.Save(delegate()
                                     {
-                                        player.Send("init", player.Id, player.ConnectUserId, questID, 20, levelKey, "", player.characterClass);
+                                        player.Send("init", player.Id, player.ConnectUserId,0,0, questID, 20, levelKey, "", player.characterClass);
                                     });
                                 });
                         }
@@ -198,7 +198,7 @@ namespace GetAcross {
                                             result.Save();
                                             //levelKey = addedQuest.Key;
                                             // tell client to initialize (board, monsters, player object & player sprite) with max AP amount
-                                            addedQuest.Save(delegate() { player.Send("init", player.Id, player.ConnectUserId, questID, 20, levelKey, "", player.characterClass); });
+                                            addedQuest.Save(delegate() { player.Send("init", player.Id, player.ConnectUserId,0, 0, questID, 20, levelKey, "", player.characterClass); });
                                            
                                             //player.Send("AlertMessages", staticMap.Key);
                                         });
@@ -263,7 +263,7 @@ namespace GetAcross {
                                     }
 
                                     // tell client to initialize (board, monsters, player object & player sprite)
-                                    player.Send("init", player.Id, player.ConnectUserId, questID, player.AP, levelKey, resources, player.characterClass);
+                                    player.Send("init", player.Id, player.ConnectUserId, player.positionX, player.positionY, questID, player.AP, levelKey, resources, player.characterClass);
                                 }
                             );
                         }
@@ -464,7 +464,7 @@ namespace GetAcross {
                                 player.PlayerObject.Set("coin", player.PlayerObject.GetInt("coin", 0) + gainedcoin);
                                 player.PlayerObject.Save(delegate()
                                 {
-                                    Broadcast("win", gainedxp, gainedcoin, nextLevel);
+                                    
 
                                     // quest is finished; remove this quest from the table
                                     // todo: what happens if another player is playing this quest?
@@ -474,7 +474,7 @@ namespace GetAcross {
                                         delegate(DatabaseObject thisPlayer)
                                         {
                                             thisPlayer.Set("questID", "noQuest");
-                                            thisPlayer.Save();
+                                            thisPlayer.Save(delegate() { Broadcast("win", gainedxp, gainedcoin, nextLevel); });
                                         }
                                     );
                                 });

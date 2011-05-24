@@ -167,7 +167,7 @@ package
 			logClient = new CGSClient(CGSClientConstants.URL, 5, 1, 1);
 			
 			//Connection successful, load board and player
-			connection.addMessageHandler("init", function(m:Message, iAm:int, name:String, level:String, startAP:int, levelKey:String, resources:String) {
+			connection.addMessageHandler("init", function(m:Message, iAm:int, name:String, xStartTile:int, yStartTile:int, level:String, startAP:int, levelKey:String, resources:String) {
 				imPlayer = iAm;
 				playerAP = startAP;
 				level_name = levelKey;
@@ -272,81 +272,14 @@ package
 						);
 						FlxG.stage.addChild(menu);
 					}
-					connection.send("PlayerSetUp");
+					playerSetup(xStartTile, yStartTile, name);
+					//connection.send("PlayerSetUp");
 				});
 			})
 			
 			if (myMap == null) {
 				trace("map doesn't exist....");
 			}
-			
-			
-			//Recieve Info from server about your saved character
-			connection.addMessageHandler("playerInfo", function(m:Message, posX:int, posY:int, name:String, playerClass:String ) {
-				if (myPlayer == null) {
-					playerName = name;
-					// add player to screen --
-					trace("create player sprite: " + posX + " " + posY);
-					//trace("playerInfo: AP to start with: " + playerAP);
-					//trace("resources to start with: " + playerAP);
-					if (posX < 0) posX = 0;
-        			if (posY < 0) posY = 0;
-					myPlayer = new Player(posX, posY, 0, _windowHeight, _tileSize, playerAP, resourcesString, playerClass);
-					playersArray[imPlayer - 1] = myPlayer;
-					
-					var playerHealthBar:FlxHealthBar = new FlxHealthBar(myPlayer, 100, 20, 0, 20, true);
-					playerHealthBar.x = _apBoxOffsetX - 35
-					playerHealthBar.y = _apBoxOffsetY - 5
-					lyrHUD.add(playerHealthBar);
-					lyrTop.add(apInfo);
-					lyrSprites.add(myPlayer);
-
-					//Load Abilities for Player From Database
-					var abilityObject:DatabaseObject;
-					var abilityTextWidth:int = 210;
-					var abilityTextLeftOffset:int = -25;
-					var abilityTextUpperOffset:int = 20;
-					var tempButton:AbilityButton;
-					var abilityText:FlxText;
-					var spaceBetweenAbilities:int = 90;
-					client.bigDB.loadMyPlayerObject(function(db:DatabaseObject):void {
-						try {
-							lvl.text = "Level: " + db.level;
-							var abilityArray:Array = db.abilities;
-							if (abilityArray != null || abilityArray.length > 0) {
-								client.bigDB.loadKeys("Abilities", db.abilities, function(dbarr:Array):void {
-									var yButtonPlacementModifier:int = 0;
-									for (var z:String in dbarr) {
-										abilityObject = dbarr[z];
-										var myAbility:Ability = new Ability(_tileSize, myPlayer, abilityObject);
-										myAbility.visible = false;
-										lyrStage.add(myAbility);
-										//trace("Loaded Ability " + abilityObject.Name + "\n");
-										tempButton = new AbilityButton(_cardBoxOffsetX, _cardBoxOffsetY + yButtonPlacementModifier, myAbility, abilityObject.Name)
-										abilityText = new FlxText(_cardBoxOffsetX + abilityTextLeftOffset, _cardBoxOffsetY + yButtonPlacementModifier + abilityTextUpperOffset, abilityTextWidth, abilityObject.Description);
-										abilityText.text += "\n\tAP cost: " + abilityObject.Cost;
-										if (abilityObject.Lumber != null) abilityText.text += "\n\tLumber needed: " + abilityObject.Lumber;
-										if (abilityObject.Cherry != null) abilityText.text += "\n\tCherries needed: " + abilityObject.Cherry;
-										abilityText.setFormat(null, 10);
-										lyrHUD.add(tempButton);
-										lyrHUD.add(abilityText);
-										myAbility.setButton(tempButton);
-										yButtonPlacementModifier += spaceBetweenAbilities;
-									}
-								});
-								abilities.text = "Abilities:\n";
-							}
-						} catch (e:Error) {
-							//Catches Error is no abilities have been set yet
-							trace("unable to load abilities");
-							abilities.text = "No Abilities\n";
-						}
-					});
-				}
-				//timer = setInterval(setCameras, 100);	// set up camera after 0.1 second.... to ensure everything is set
-				trace("done with character, setting camera ***");
-				setCameras();
-			})
 			
 			//New user has joined, make their character
 			connection.addMessageHandler("UserJoined", function(m:Message, userID:int, posX:int, posY:int) {
@@ -831,7 +764,69 @@ package
 				activeAbility = toActivate;
 			}
 		}
-		
+		//Set Up the Player
+		private function playerSetup(posX:int, posY:int, name:String) {
+			if (myPlayer == null) {
+					
+
+					//Load Abilities for Player From Database
+					var abilityObject:DatabaseObject;
+					var abilityTextWidth:int = 210;
+					var abilityTextLeftOffset:int = -25;
+					var abilityTextUpperOffset:int = 20;
+					var tempButton:AbilityButton;
+					var abilityText:FlxText;
+					var spaceBetweenAbilities:int = 90;
+					client.bigDB.loadMyPlayerObject(function(db:DatabaseObject):void {
+						try {
+							playerName = name;
+							if (posX < 0) posX = 0;
+							if (posY < 0) posY = 0;
+							myPlayer = new Player(posX, posY, 0, _windowHeight, _tileSize, playerAP, resourcesString, db.role);
+							playersArray[imPlayer - 1] = myPlayer;
+							
+							var playerHealthBar:FlxHealthBar = new FlxHealthBar(myPlayer, 100, 20, 0, 20, true);
+							playerHealthBar.x = _apBoxOffsetX - 35
+							playerHealthBar.y = _apBoxOffsetY - 5
+							lyrHUD.add(playerHealthBar);
+							lyrTop.add(apInfo);
+							lyrSprites.add(myPlayer);
+							lvl.text = "Level: " + db.level;
+							var abilityArray:Array = db.abilities;
+							if (abilityArray != null || abilityArray.length > 0) {
+								client.bigDB.loadKeys("Abilities", db.abilities, function(dbarr:Array):void {
+									var yButtonPlacementModifier:int = 0;
+									for (var z:String in dbarr) {
+										abilityObject = dbarr[z];
+										var myAbility:Ability = new Ability(_tileSize, myPlayer, abilityObject);
+										myAbility.visible = false;
+										lyrStage.add(myAbility);
+										//trace("Loaded Ability " + abilityObject.Name + "\n");
+										tempButton = new AbilityButton(_cardBoxOffsetX, _cardBoxOffsetY + yButtonPlacementModifier, myAbility, abilityObject.Name)
+										abilityText = new FlxText(_cardBoxOffsetX + abilityTextLeftOffset, _cardBoxOffsetY + yButtonPlacementModifier + abilityTextUpperOffset, abilityTextWidth, abilityObject.Description);
+										abilityText.text += "\n\tAP cost: " + abilityObject.Cost;
+										if (abilityObject.Lumber != null) abilityText.text += "\n\tLumber needed: " + abilityObject.Lumber;
+										if (abilityObject.Cherry != null) abilityText.text += "\n\tCherries needed: " + abilityObject.Cherry;
+										abilityText.setFormat(null, 10);
+										lyrHUD.add(tempButton);
+										lyrHUD.add(abilityText);
+										myAbility.setButton(tempButton);
+										yButtonPlacementModifier += spaceBetweenAbilities;
+									}
+								});
+								abilities.text = "Abilities:\n";
+							}
+						} catch (e:Error) {
+							//Catches Error is no abilities have been set yet
+							trace("unable to load abilities");
+							abilities.text = "No Abilities\n";
+						}
+					});
+				}
+				//timer = setInterval(setCameras, 100);	// set up camera after 0.1 second.... to ensure everything is set
+				trace("done with character, setting camera ***");
+				setCameras();
+		}
 		//Add all flixel elements to the board, essentially drawing the game.
 		private function boardSetup(map_data:String, playerName:String, levelKey:String):void 
 		{
