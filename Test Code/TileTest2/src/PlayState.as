@@ -6,6 +6,7 @@ package
 	import org.flixel.plugin.photonstorm.FlxButtonPlus;
 	import org.flixel.plugin.photonstorm.FlxHealthBar;
 	import org.flixel.system.input.*;// data.FlxMouse;
+	import sample.ui.MultiAlert;
 	//import org.flixel.data.FlxPanel;
 	import playerio.*
 	import sample.ui.Alert;
@@ -969,16 +970,8 @@ package
 					// if map has intro messages, fill them in
 					if (dbo != null && dbo.Messages != null)
 					{
-
 						trace("message object: " + dbo.toString());
-						var messages:Array = dbo.Messages;
-						for (var i:int = messages.length - 1; i >= 0; i--) {
-							var alert:Alert = new Alert(messages[i]);
-							alert.x = -100;
-							alert.y = -100;
-							alert.width = FlxG.width;
-							FlxG.stage.addChild(alert);
-						}
+						FlxG.stage.addChild(new MultiAlert(dbo.Messages));
 					}
 				}
 			);
