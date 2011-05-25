@@ -35,6 +35,8 @@ namespace GetAcross {
         //private int player.AP;       // server's variable to keep track of clientside player AP amount
         private String questID;    // id of the quest player is in
         private DatabaseObject quest;
+        private int startX = 0;
+        private int startY = 0;
         DateTime startSessionTime, endSessionTime, lastSessionEndTime;
         String DateTimeFormat = "MM/dd/yyyy HH:mm:ss";
 
@@ -125,7 +127,7 @@ namespace GetAcross {
                                     quest.GetObject("players").Set("numPlayers", quest.GetObject("players").Count - 1);
                                     quest.Save(delegate()
                                     {
-                                        player.Send("init", player.Id, player.ConnectUserId,0,0, questID, 20, levelKey, "", player.characterClass);
+                                        player.Send("init", player.Id, player.ConnectUserId,startX,startY, questID, 20, levelKey, "", player.characterClass);
                                     });
                                 });
                         }
@@ -141,14 +143,7 @@ namespace GetAcross {
 
                             // create new object for this player and their quest data
                             DatabaseObject questPlayerData = new DatabaseObject();
-                            questPlayerData.Set("positionX", 0);
-                            questPlayerData.Set("positionY", 0);
-                            questPlayerData.Set("AP", 20);
-
-                            // add this player to players playing this quest
-                            questPlayers.Set("numPlayers", 1);
-                            questPlayers.Set(player.ConnectUserId, questPlayerData);
-                            newQuest.Set("players", questPlayers);
+                           
                            
                             Console.WriteLine("questPlayers contents: " + questPlayers.ToString());
                             Console.WriteLine("Level key: " + levelKey);
@@ -156,6 +151,17 @@ namespace GetAcross {
                             PlayerIO.BigDB.Load(mapType, levelKey, 
                                 delegate(DatabaseObject staticMap)
                                 {
+                                    startX = staticMap.GetInt("startX",0);
+                                    startY = staticMap.GetInt("startY",0);
+                                    questPlayerData.Set("positionX", startX);
+                                    questPlayerData.Set("positionY", startY);
+                                    questPlayerData.Set("AP", 20);
+
+                                    // add this player to players playing this quest
+                                    questPlayers.Set("numPlayers", 1);
+                                    questPlayers.Set(player.ConnectUserId, questPlayerData);
+
+                                    newQuest.Set("players", questPlayers);
                                     newQuest.Set("StaticMapKey", staticMap.Key);
                                     newQuest.Set("tileValues", staticMap.GetString("tileValues"));
                                     newQuest.Set("MonsterCount", staticMap.GetInt("MonsterCount"));
@@ -200,7 +206,7 @@ namespace GetAcross {
                                             result.Save();
                                             //levelKey = addedQuest.Key;
                                             // tell client to initialize (board, monsters, player object & player sprite) with max AP amount
-                                            addedQuest.Save(delegate() { quest = addedQuest; player.Send("init", player.Id, player.ConnectUserId, 0, 0, questID, 20, levelKey, "", player.characterClass); });
+                                            addedQuest.Save(delegate() { quest = addedQuest; player.Send("init", player.Id, player.ConnectUserId, startX, startY, questID, 20, levelKey, "", player.characterClass); });
                                             
                                             //player.Send("AlertMessages", staticMap.Key);
                                         });
