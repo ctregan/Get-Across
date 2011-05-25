@@ -34,6 +34,8 @@ package
 		private var mainMenu:Box;
 		private var instructions:FlxText;
 		private var brushInfo:FlxText;
+		private var startX:int = 0;
+		private var startY:int = 0;
 		
 		public function MapEditorState(name:String, height:String, width:String, myClient:Client) 
 		{
@@ -95,6 +97,17 @@ package
 				var selectedYTile:int = (myMouse.y - map.y) / _tileSize
 				//(myMouse.y - (myMouse.y % 32)) / 32
 				//TO DO: ADD ALERT MESSAGE!!!
+				
+				//Replace old start point with new one
+				if (tileBrush == 5) {
+					var mapArray:Array = map.getTileInstances(5);
+					for (var x in mapArray) {
+						map.setTileByIndex(mapArray[x], 0, true);
+					}
+					startX = selectedXTile;
+					startY = selectedYTile;
+				}
+				
 				map.setTile(selectedXTile, selectedYTile, tileBrush, true)
 			}else if (myMouse.justPressed() && mouseWithinPalet()) {
 				
@@ -102,7 +115,7 @@ package
 				selectedTile.x = (tileBrush * _tileSize) + palet.x;
 			}
 			
-			// update information about selected tile
+			// update information about selected til
 			switch (tileBrush)
 			{
 				case 0:
@@ -121,7 +134,7 @@ package
 					brushInfo.text = "You currently have STAR selected.\n\nPlayers need to reach this to win the level.  Make sure your map has one!"
 					break;
 				case 5:
-					brushInfo.text = "You currently have YELLOW SQUARE selected.\n\nIt takes no AP to cross.  I'm not sure why we have this.";
+					brushInfo.text = "You currently have Start SQUARE selected.\n\nIt takes no AP to cross.  Player will start here.";
 					break;
 				case 6:
 					brushInfo.text = "You currently have VERTICAL BRIDGE selected.\n\nBridge allow players to cross over water for 1 AP."
@@ -196,6 +209,8 @@ package
 				newMap.XP = 0;
 				newMap.Coin = 0;
 				newMap.MonsterCount = 0;
+				newMap.startX = startX;
+				newMap.startY = startY;
 				_myClient.bigDB.createObject("UserMaps", null, newMap, function() {
 					FlxG.stage.addChild(new Alert("Map Uploaded"));
 				});
