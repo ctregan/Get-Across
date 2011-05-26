@@ -208,7 +208,6 @@ namespace GetAcross {
                                             // tell client to initialize (board, monsters, player object & player sprite) with max AP amount
                                             addedQuest.Save(delegate() { quest = addedQuest; player.Send("init", player.Id, player.ConnectUserId, startX, startY, questID, 20, levelKey, "", player.characterClass); });
                                             
-                                            //player.Send("AlertMessages", staticMap.Key);
                                         });
 
                                 });
@@ -295,7 +294,6 @@ namespace GetAcross {
             endSessionTime = DateTime.Now;
             Console.WriteLine("User session end!  Set end session time: " + endSessionTime.ToString(DateTimeFormat));
             //update player's end session time in the newQuest database
-            PlayerIO.ErrorLog.WriteError("Player Left3 " + questID);
             // if result is not null and contains something, save it into Quests db
             if (quest != null && quest.Contains("players"))
             {
@@ -333,11 +331,9 @@ namespace GetAcross {
 
                 quest.Save(delegate()
                 {
-                    PlayerIO.ErrorLog.WriteError("Player Left1");
                     Console.WriteLine("UserLeft result: " + quest.ToString());
                 });
             }
-            PlayerIO.ErrorLog.WriteError("End of Left");
 		}
 
 		// This method is called when a player sends a message into the server code
@@ -592,6 +588,7 @@ namespace GetAcross {
                             delegate(DatabaseObject dbo)
                             {
                                 DatabaseArray sprites = dbo.GetArray("Effects");
+                                while (index > sprites.Count - 1) { }
                                 DatabaseObject sprite = sprites.GetObject(index);
                                 sprite.Set("Uses", uses);
                                 dbo.Save();

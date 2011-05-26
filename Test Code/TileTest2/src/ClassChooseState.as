@@ -29,24 +29,24 @@ package
 			****Cook Panel****
 			*/
 			add(new FlxText(90, 90, 100, "Cook").setFormat(null, 15, 0x000000));
-			add(new FlxSprite(75, 150, cookImg));
-			add(new FlxText(75, 275, 100, "Explanation Text"));
+			add(new FlxSprite(75, 130, cookImg));
+			add(new FlxText(45, 255, 155, "Cooks are masters of the culinary arts. A cook can create a wide array of treats to support friends or annoy foes.\n\nStarting Ability:\nMonster Bacon").setFormat(null, 8, 0x000000,"center"));
 			add(new FlxButtonPlus(75, 350, chooseClass, [ "Cook" ], "Choose Cook"));
 			
 			/*
 			****Crafter Panel****
 			*/
 			add(new FlxText(315, 90, 100, "Crafter").setFormat(null, 15, 0x000000));
-			add(new FlxSprite(300, 150, crafterImg));
-			add(new FlxText(300, 275, 100, "Explanation Text"));
+			add(new FlxSprite(300, 130, crafterImg));
+			add(new FlxText(270, 255, 155, "Crafters are the masters of tools. A crafter can construct support structures to help ease any journey.\n\nStarting Ability:\nBuild Bridge").setFormat(null, 8, 0x000000,"center"));
 			add(new FlxButtonPlus(300, 350, chooseClass, [ "Crafter" ], "Choose Crafter"));
 			
 			/*
 			****Planter Panel****
 			*/
 			add(new FlxText(540, 90, 100, "Planter").setFormat(null, 15, 0x000000));
-			add(new FlxSprite(525, 150, planterImg));
-			add(new FlxText(525, 275, 100, "Explanation Text"));
+			add(new FlxSprite(525, 130, planterImg));
+			add(new FlxText(495, 255, 155, "Planters are attuned to nature. A planter can grow an assortment of flowers that can aid allies or create resources.\n\nStarting Ability:\nRed Flower").setFormat(null, 8, 0x000000,"center"));
 			add(new FlxButtonPlus(525, 350, chooseClass, [ "Planter" ], "Choose Planter"));
 			
 			
@@ -55,17 +55,27 @@ package
 		
 		private function chooseClass(classChoice:String):void 
 		{
+			var startingAbility:Array = new Array();
+			if (classChoice == "Planter") {
+				startingAbility[0] = "Planter_RedFlower"
+			}else if (classChoice == "Crafter") {
+				startingAbility[0] = "Crafter_Bridge"
+			}else if (classChoice == "Cook") {
+				startingAbility[0] = "Cook_MonsterBacon"
+			}
 			var prompt:InGamePrompt = new InGamePrompt(FlxG.stage, "You Want to Choose the " + classChoice + "?", function() {
 				_client.bigDB.loadMyPlayerObject(function (myPlayer:DatabaseObject):void 
 				{
 					myPlayer.role = classChoice;
+					myPlayer.level = 1;
+					myPlayer.xp = 0;
+					myPlayer.abilities = startingAbility;
 					myPlayer.save();
 				});
 				FlxG.flash(0xFFFFFF, 1, function() {
 					FlxG.switchState(new MenuState(_client));
 					FlxG.stage.addChild(new Alert("You have chosen " + classChoice));
 				});
-				//TO-DO Update Database
 			});
 		}
 		
