@@ -18,6 +18,7 @@ package
 		private var _tileSize:int;
 		private var _connection:Connection
 		public var moving:Boolean = false;
+		public var dead:Boolean = false;
 		
 		public function Monster(type:String, ap:int, monsterIndex:int, xTile:int, yTile:int, xOffset:int, yOffset:int, tileSize:int, connection:Connection) 
 		{
@@ -49,9 +50,10 @@ package
 			
 			super.update();
 			this.health = _ap
-			if (_ap <= 0) {
+			if (_ap <= 0 && !dead) {
 				this.kill();
 				healthBar.kill();
+				dead = true;
 			}
 		}
 		
@@ -89,8 +91,9 @@ package
 			
 			var note:String = "-" + damage + " to monster!";
 			if (_ap <= 0) {
-				//this.kill();
-				//healthBar.kill();
+				this.kill();
+				healthBar.kill();
+				dead = true;
 				player.inBattle = false;
 				note += "\nMonster fell!";
 			}
