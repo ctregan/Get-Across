@@ -1,6 +1,7 @@
 package  
 {
 	import flash.display.Sprite;
+	import flash.events.ContextMenuEvent;
 	import flash.sampler.NewObjectSample;
 	import org.flixel.*
 	import org.flixel.plugin.photonstorm.FlxButtonPlus;
@@ -48,7 +49,7 @@ package
 		[Embed(source = "data/arrows_32.png")] public var hoverTileImg:Class;
 		[Embed(source = "data/noTileImg.png")] public var hoverTileImgNo:Class;
 		private var apInfo:FlxText; //Text field to reflect the numner of AP left
-		private var myPlayer:Player;
+		public static var myPlayer:Player;
 		private var playersArray:Array = []; //Array of all players on board
 		private var monsterArray:Array = [];
 		private var buttonArray:Array = []; //Array of all buttons on the board
@@ -69,6 +70,7 @@ package
 		private var resources:FlxText;
 		
 		private var level_name:String;
+		private var contextButton:FlxButtonPlus;
 		
 		private var background:Background;
 		private var playerStartX: int = 0;	// starting x position of this player
@@ -128,6 +130,8 @@ package
 		private static var _resourceTextOffsetX:int = 540;
 		private static var _resourceTextOffsetY:int = 250;
 		
+		private var ContextButton:FlxButtonPlus;
+		
 		private static var myClient:Client;
 		private static var playerName:String;
 		private static var playerAP:int;
@@ -154,7 +158,6 @@ package
 		
 		public function PlayState(connection:Connection, client:Client):void
 		{
-
 			super();
 			trace("Sucessfully connected to the multiplayer server");
 			
@@ -176,16 +179,17 @@ package
 				//boardSetup(level);
 				resourcesString = resources;
 				trace("level to search in newquest: " + level);
+				
 				client.bigDB.load("NewQuests", level, function(ob:DatabaseObject):void {
 					//Recieve Tile Array from database to be turned into string with line breaks between each line
 					if (ob != null)
 					{
-
 						var mapString:String = ob.tileValues;
 						connection.send("QuestMapUpdate", mapString);
 						mapString = mapString.split("|").join("\n");
 						trace("Board MapString: " + mapString);
 						boardSetup(mapString, name, levelKey);
+						
 						trace("board made");
 						//Load Monster
 						try {
@@ -198,7 +202,6 @@ package
 										monsterArray.push(myMonsterSprite);
 										lyrMonster.add(myMonsterSprite);
 										lyrHUD.add(myMonsterSprite.healthBar);
-										
 									}
 								}
 								
@@ -232,6 +235,9 @@ package
 							if (effectSprites != null) {
 								for (var z in effectSprites) {
 									var myEffectSprite:EffectSprite = new EffectSprite(effectSprites[z].xTile, effectSprites[z].yTile, effectSprites[z].Type, effectSprites[z].Range, _tileSize, effectSprites[z].Uses, connection, z);
+									if (myEffectSprite.type == "wine") {
+										add(new ConsumeButton(myEffectSprite, myPlayer, connection, _tileSize));
+									}
 									effectArray.push(myEffectSprite);
 									lyrEffects.add(myEffectSprite);
 								}
@@ -309,28 +315,13 @@ package
 			{
 				monsterArray[monsterIndex]._ap = newAP;
 			})
-			//Load and alert the player of all messages associated with that level
-			connection.addMessageHandler("AlertMessages", function(m:Message, levelKey:String):void
-			{
-				client.bigDB.load("StaticMaps", levelKey,
-					function(dbo:DatabaseObject) {
-						//trace("message object: " + dbo.toString());
-						var messages:Array = dbo.Messages
-						for (var z in messages) {
-							//while (alert.unread) {
-							//}
-							alert.changeText(messages[z]);
-							alert.width = FlxG.stage.stageWidth
-							alert.height = FlxG.stage.stageHeight
-							FlxG.stage.addChild(alert);
-						}
-					}
-				);
-			})
 			//A new effect sprite has been added to the field
 			connection.addMessageHandler("AddSprite", function (m:Message, xTile:int, yTile:int, type:String, range:int):void 
 			{
 				var newEffectSprite:EffectSprite = new EffectSprite(xTile, yTile, type, range, _tileSize, 0, connection, effectArray.length);
+				if (type == "wine") {
+					lyrTop.add(new ConsumeButton(newEffectSprite, myPlayer, connection, _tileSize));
+				}
 				lyrEffects.add(newEffectSprite);
 				effectArray.push(newEffectSprite);
 			})
@@ -417,6 +408,8 @@ package
 						logClient.LogAction(action);
 					}
 				}
+				
+
 				
 				//Update HUD Information
 				secCounter.text = counter.toPrecision(3) + " seconds until more AP";
@@ -702,6 +695,7 @@ package
 								});
 						}
 					 }*/
+						
 					//Detect Button Collision
 					for (var button in buttonArray) {
 						FlxG.overlap(buttonArray[button], myPlayer, function ():void 
@@ -767,7 +761,6 @@ package
 		}
 		//Set Up the Player
 		private function playerSetup(posX:int, posY:int, name:String) {
-			if (myPlayer == null) {
 					
 
 					//Load Abilities for Player From Database
@@ -820,10 +813,11 @@ package
 						} catch (e:Error) {
 							//Catches Error is no abilities have been set yet
 							trace("unable to load abilities");
-							abilities.text = "No Abilities\n";
+							if (abilities != null) abilities.text = "No Abilities\n";
 						}
 					});
-				}
+				
+				connected = true;
 				//timer = setInterval(setCameras, 100);	// set up camera after 0.1 second.... to ensure everything is set
 				trace("done with character, setting camera ***");
 				setCameras();
@@ -915,7 +909,7 @@ package
 			mouseLocation = new FlxText(_terrainMessageBoxOffsetX, _terrainMessageBoxOffsetY, 260, "(0,0)", true);
 			secCounter = new FlxText(_timerOffsetX, _timerOffsetY, 100, "15 Sec until AP", true);			
 			abilities = new FlxText(_cardBoxOffsetX, _cardBoxOffsetY, 100, "", true);
-			
+												
 			// background
 			background = new Background();
 			
@@ -990,7 +984,7 @@ package
 			});
 			
 			setCameras();
-			connected = true;
+			
 			
 			trace("done setting up the board, camera set up *** ");
 		}

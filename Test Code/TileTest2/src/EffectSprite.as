@@ -4,6 +4,7 @@ package
 	import flash.events.TimerEvent
 	import flash.utils.Timer;
 	import playerio.Connection;
+	import org.flixel.FlxG;
 	/**
 	 * ...
 	 * @author Charlie Regan
@@ -21,6 +22,7 @@ package
 		public var dead:Boolean = false;
 		[Embed(source = "data/bacon.png")] private var bacon:Class;
 		[Embed(source = "data/redflower.png")] private var redflower:Class;
+		[Embed(source = "data/wine.png")] private var wine:Class;
 		public function EffectSprite(xTile:int, yTile:int, type:String, range:int, tileSize:int, uses:int, connection:Connection, index:int) 
 		{
 			this.type = type;
@@ -38,10 +40,11 @@ package
 			}
 			else if (type == "redflower") {
 				classToinitialize = redflower;
+			}else if (type == "wine") {
+				classToinitialize = wine;
 			}
 			
 			super(((xTile * tileSize) + PlayState.myMap.x) - (tileSize * _range) , ((yTile * tileSize) + PlayState.myMap.y) - (tileSize * _range) , classToinitialize);
-			
 			if(type == "bacon" && uses < 1){
 				var myTimer:Timer = new Timer(1000);
 				myTimer.addEventListener(TimerEvent.TIMER, function (event:TimerEvent):void 
@@ -87,7 +90,7 @@ package
 			if (type == "redflower" && uses >= 5) {
 				kill();
 				dead = true;
-			}else if (type == "bacon" && uses > 0) {
+			}else if ((type == "bacon" || type == "wine")&& uses > 0) {
 				kill();
 				dead = true;
 			}

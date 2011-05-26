@@ -25,6 +25,7 @@ package
 		
 		// resources this ability costs
 		public var _neededLumber:int;
+		public var _neededCherry:int
 			
 		public function Ability(tileSize:int, caster:Player, object:DatabaseObject) 
 		{
@@ -34,6 +35,7 @@ package
 			_object = object;
 			_caster = caster;
 			_neededLumber = object.Lumber;
+			_neededCherry = object.Cherry;
 			
 			var img:Class = range1;
 			if (_range == 1) {
@@ -88,6 +90,9 @@ package
 			else if (player.amountLumber < _neededLumber) {
 				canCast = false;
 				PlayState.fireNotification(player.x + 20, player.y + 20, "Not enough lumber!", "loss");
+			}else if (player.amountCherry < _neededCherry) {
+				canCast = false;
+				PlayState.fireNotification(player.x + 20, player.y + 20, "Not enough Cherries!", "loss");
 			}
 			
 			return canCast;
