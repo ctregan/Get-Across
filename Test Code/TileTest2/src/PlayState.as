@@ -761,7 +761,6 @@ package
 		}
 		//Set Up the Player
 		private function playerSetup(posX:int, posY:int, name:String) {
-			if (myPlayer == null) {
 					
 
 					//Load Abilities for Player From Database
@@ -817,7 +816,8 @@ package
 							if (abilities != null) abilities.text = "No Abilities\n";
 						}
 					});
-				}
+				
+				connected = true;
 				//timer = setInterval(setCameras, 100);	// set up camera after 0.1 second.... to ensure everything is set
 				trace("done with character, setting camera ***");
 				setCameras();
@@ -984,7 +984,7 @@ package
 			});
 			
 			setCameras();
-			connected = true;
+			
 			
 			trace("done setting up the board, camera set up *** ");
 		}
