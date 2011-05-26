@@ -312,7 +312,6 @@ namespace GetAcross {
             // and if result is not null and contains something to save,
             // save it into Quests db
             else if (quest != null && quest.Contains("players"))
->>>>>>> tutorial
             {
                 // save quest map data
                 Console.WriteLine("questMap data to save: " + questMap);
