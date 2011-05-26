@@ -158,7 +158,6 @@ package
 		
 		public function PlayState(connection:Connection, client:Client):void
 		{
-
 			super();
 			trace("Sucessfully connected to the multiplayer server");
 			
@@ -180,11 +179,11 @@ package
 				//boardSetup(level);
 				resourcesString = resources;
 				trace("level to search in newquest: " + level);
+				
 				client.bigDB.load("NewQuests", level, function(ob:DatabaseObject):void {
 					//Recieve Tile Array from database to be turned into string with line breaks between each line
 					if (ob != null)
 					{
-
 						var mapString:String = ob.tileValues;
 						connection.send("QuestMapUpdate", mapString);
 						mapString = mapString.split("|").join("\n");
@@ -203,7 +202,6 @@ package
 										monsterArray.push(myMonsterSprite);
 										lyrMonster.add(myMonsterSprite);
 										lyrHUD.add(myMonsterSprite.healthBar);
-										
 									}
 								}
 								
@@ -816,7 +814,7 @@ package
 						} catch (e:Error) {
 							//Catches Error is no abilities have been set yet
 							trace("unable to load abilities");
-							abilities.text = "No Abilities\n";
+							if (abilities != null) abilities.text = "No Abilities\n";
 						}
 					});
 				}

@@ -81,10 +81,10 @@ package
 			try {
 				_questID = ob.questID;
 				if (tutorialLevel <= 1  && (_questID == "noQuest" || _questID == null)) {
-					continueButton = new TextButton("Continue Tutorial", continueQuest);
+					continueButton = new TextButton("Continue Tutorial " + ob.tutorial + " of 5", startNewTutorial);
 					continueButton.visible = false;
 				}else if(tutorialLevel <= 5) {
-					continueButton = new TextButton("Continue Tutorial", continueQuest);
+					continueButton = new TextButton("Continue Tutorial " + ob.tutorial + " of 5", startNewTutorial);
 				}else {
 					continueButton = new TextButton("Continue Last Quest", continueQuest);
 					tutorialButton.visible = false;
@@ -146,29 +146,31 @@ package
 				true,								//Hide room from userlist
 				{name:"Tutorial", key:_levelKey, type:"static" },						//Room Join data, data is returned to lobby list. Variabels can be modifed on the server
 				{},
-				function(connection:Connection) {
+				function(connection:Connection):void  {
 					FlxG.stage.removeChild(mainMenu);
 					hideLoader();
 					FlxG.switchState( new PlayState(connection,myClient))
 				},
-				function(error:PlayerIOError) {
+				function(error:PlayerIOError):void {
 					hideLoader();
-					FlxG.stage.addChild(new Alert("Error "));
+					FlxG.stage.addChild(new Alert("Error finding level data in server!"));
 				}										   
 			)
 		}
 		//Callback function for when Start Tutorial Button is Pressed
 		private function startTutorial():void
 		{
-			var prompt:InGamePrompt = new InGamePrompt(FlxG.stage, "Would you like to start the tutorial?  Warning: All previous tutorial progress will be lost!", function() { startNewTutorialAccept() } );
+			var prompt:InGamePrompt = new InGamePrompt(FlxG.stage, "Would you like to start the tutorial?  Warning: All previous tutorial progress will be lost!", function() { tutorialLevel = 1;  startNewTutorial() } );
 		}
+
 		//Callback when the user wants to start new tutorial
-		private function startNewTutorialAccept():void 
+		private function startNewTutorial():void 
 		{
-			myPlayer.tutorial = 1;
+			myPlayer.tutorial = tutorialLevel;
+			trace("TUTORIAL TO START: " + myPlayer.tutorial);
 			myPlayer.questID = "noQuest"
 			myPlayer.save();
-			var _levelKey:String = "Tutorial_1"
+			var _levelKey:String = "Tutorial_" + myPlayer.tutorial;
 			showLoader();
 			myClient.multiplayer.createJoinRoom(
 				null,								//Room id, null for auto generted
@@ -183,7 +185,7 @@ package
 				},
 				function(error:PlayerIOError) {
 					hideLoader();
-					FlxG.stage.addChild(new Alert("Error "));
+					FlxG.stage.addChild(new Alert("Error: No connection to server!"));
 				}
 				//handleError					//Error handler										   
 			)
@@ -253,7 +255,7 @@ package
 		//Callback function for LOBBY, if it has encountered an error
 		private function handleError(error:PlayerIOError):void{
 			hideLoader();
-			FlxG.stage.addChild(new Alert("Error "));
+			FlxG.stage.addChild(new Alert("Error happened when connecting to lobby "));
 			//FlxG.state = new LoginState()
 		}
 		

@@ -15,6 +15,7 @@ namespace GetAcross {
         public int positionX;   // x tile position
         public int positionY;   // y tile position
         public string characterClass;
+        public int tutorialLevel;
 	}
     
     //Tile class. Each tile will have these attributes
@@ -61,7 +62,7 @@ namespace GetAcross {
             }
             PreloadPlayerObjects = true;
             startSessionTime = DateTime.Now;
-
+            
             if (levelKey.Contains("Tutorial"))
             {
                // Visible = false;
@@ -109,7 +110,10 @@ namespace GetAcross {
                     delegate(DatabaseObject result)
                     {
                         player.characterClass = result.GetString("role", "Novice");
+                        player.tutorialLevel = result.GetInt("tutorial");
                         Console.WriteLine("player class: " + player.characterClass);
+                        Console.WriteLine("player's tutorial: " + player.tutorialLevel);
+
                         if (questID != null)
                         {
                             result.Set("questID", questID);
@@ -127,10 +131,11 @@ namespace GetAcross {
                                     quest.GetObject("players").Set("numPlayers", quest.GetObject("players").Count - 1);
                                     quest.Save(delegate()
                                     {
-                                        player.Send("init", player.Id, player.ConnectUserId,startX,startY, questID, 20, levelKey, "", player.characterClass);
+                                        player.Send("init", player.Id, player.ConnectUserId, startX, startY, questID, 20, levelKey, "", player.characterClass);
                                     });
                                 });
                         }
+
                         // if player does not have a questID associated with it
                         // create new object in Quests db
                         else if (!result.Contains("questID") || result.GetString("questID") == "noQuest")
@@ -143,16 +148,16 @@ namespace GetAcross {
 
                             // create new object for this player and their quest data
                             DatabaseObject questPlayerData = new DatabaseObject();
-                           
-                           
+
+
                             Console.WriteLine("questPlayers contents: " + questPlayers.ToString());
                             Console.WriteLine("Level key: " + levelKey);
                             //Add Static Map to Quest, to be updated later
-                            PlayerIO.BigDB.Load(mapType, levelKey, 
+                            PlayerIO.BigDB.Load(mapType, levelKey,
                                 delegate(DatabaseObject staticMap)
                                 {
-                                    startX = staticMap.GetInt("startX",0);
-                                    startY = staticMap.GetInt("startY",0);
+                                    startX = staticMap.GetInt("startX", 0);
+                                    startY = staticMap.GetInt("startY", 0);
                                     questPlayerData.Set("positionX", startX);
                                     questPlayerData.Set("positionY", startY);
                                     questPlayerData.Set("AP", 20);
@@ -195,6 +200,7 @@ namespace GetAcross {
                                         }
                                         newQuest.Set("Buttons", newButtons);
                                     }
+                                    
                                     Console.WriteLine("Setting up new quest " + newQuest.ToString());
                                     // add this quest object to Quests db
                                     PlayerIO.BigDB.CreateObject("NewQuests", null, newQuest,
@@ -207,17 +213,22 @@ namespace GetAcross {
                                             //levelKey = addedQuest.Key;
                                             // tell client to initialize (board, monsters, player object & player sprite) with max AP amount
                                             addedQuest.Save(delegate() { quest = addedQuest; player.Send("init", player.Id, player.ConnectUserId, startX, startY, questID, 20, levelKey, "", player.characterClass); });
+<<<<<<< HEAD
                                             
+=======
+
+                                            //player.Send("AlertMessages", staticMap.Key);
+>>>>>>> tutorial
                                         });
 
                                 });
-                           
+
                             // save positions in the serverside
                             player.positionX = player.positionY = 0;
                             player.AP = 20;
                         }
 
-                        // else, this player has a questID saved
+                        // else, this player has a questID saved -- load data from it
                         else
                         {
                             questID = result.GetString("questID");
@@ -258,14 +269,14 @@ namespace GetAcross {
                                             if (resourcesObject.Contains("lumber"))
                                             {
                                                 amountLumber = resourcesObject.GetInt("lumber");
-                                                resources += "Lumber:" + amountLumber;                                        
+                                                resources += "Lumber:" + amountLumber;
                                             }
                                             if (resourcesObject.Contains("cherry"))
                                             {
                                                 amountCherry = resourcesObject.GetInt("cherry");
                                                 resources += "/Cherry:" + amountCherry;
                                             }
-                                            
+
                                             Console.WriteLine("resources string: " + resources);
                                         }
                                     }
@@ -294,8 +305,25 @@ namespace GetAcross {
             endSessionTime = DateTime.Now;
             Console.WriteLine("User session end!  Set end session time: " + endSessionTime.ToString(DateTimeFormat));
             //update player's end session time in the newQuest database
+<<<<<<< HEAD
             // if result is not null and contains something, save it into Quests db
             if (quest != null && quest.Contains("players"))
+=======
+            PlayerIO.ErrorLog.WriteError("Player Left3 " + questID);
+
+            // if this is a tutorial,
+            // delete the questObject that was made
+            if (player.tutorialLevel < 5 && quest != null)
+            {
+                PlayerIO.BigDB.DeleteKeys("NewQuests", quest.Key, null);
+                Console.WriteLine("deleted key");
+            }
+
+            // if this is not a tutorial
+            // and if result is not null and contains something to save,
+            // save it into Quests db
+            else if (quest != null && quest.Contains("players"))
+>>>>>>> tutorial
             {
                 // save quest map data
                 Console.WriteLine("questMap data to save: " + questMap);
