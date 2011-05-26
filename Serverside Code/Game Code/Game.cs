@@ -213,12 +213,6 @@ namespace GetAcross {
                                             //levelKey = addedQuest.Key;
                                             // tell client to initialize (board, monsters, player object & player sprite) with max AP amount
                                             addedQuest.Save(delegate() { quest = addedQuest; player.Send("init", player.Id, player.ConnectUserId, startX, startY, questID, 20, levelKey, "", player.characterClass); });
-<<<<<<< HEAD
-                                            
-=======
-
-                                            //player.Send("AlertMessages", staticMap.Key);
->>>>>>> tutorial
                                         });
 
                                 });
@@ -305,11 +299,6 @@ namespace GetAcross {
             endSessionTime = DateTime.Now;
             Console.WriteLine("User session end!  Set end session time: " + endSessionTime.ToString(DateTimeFormat));
             //update player's end session time in the newQuest database
-<<<<<<< HEAD
-            // if result is not null and contains something, save it into Quests db
-            if (quest != null && quest.Contains("players"))
-=======
-            PlayerIO.ErrorLog.WriteError("Player Left3 " + questID);
 
             // if this is a tutorial,
             // delete the questObject that was made
