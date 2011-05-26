@@ -23,8 +23,6 @@ package
 			//super(700, 800, LoginState,1);
 			super(700, 800, KongregateLoadState, 1);
 		}
-		
-		
 	}
 
 }
