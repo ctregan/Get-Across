@@ -284,6 +284,7 @@ package
 					playerSetup(xStartTile, yStartTile, name);
 					//connection.send("PlayerSetUp");
 				});
+				
 			})
 			
 			if (myMap == null) {
@@ -395,6 +396,7 @@ package
 				{
 					// After 180 seconds has passed, the timer will reset.
 					counter = _APcounterMax;
+					
 					// increment player's AP if it's not the max yet
 					if (myPlayer.AP < 20) {
 						myPlayer.AP++;
@@ -763,9 +765,6 @@ package
 		}
 		//Set Up the Player
 		private function playerSetup(posX:int, posY:int, name:String) {
-			if (myPlayer == null) {
-					
-
 					//Load Abilities for Player From Database
 					var abilityObject:DatabaseObject;
 					var abilityTextWidth:int = 210;
@@ -819,7 +818,7 @@ package
 							abilities.text = "No Abilities\n";
 						}
 					});
-				}
+				connected = true;
 				//timer = setInterval(setCameras, 100);	// set up camera after 0.1 second.... to ensure everything is set
 				trace("done with character, setting camera ***");
 				setCameras();
@@ -986,7 +985,7 @@ package
 			});
 			
 			setCameras();
-			connected = true;
+			
 			
 			trace("done setting up the board, camera set up *** ");
 		}

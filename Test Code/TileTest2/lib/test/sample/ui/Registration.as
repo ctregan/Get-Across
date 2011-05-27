@@ -163,7 +163,7 @@ package sample.ui{
 					trace("Sucessfully connected to player.io");
 				
 					//Set developmentsever (Comment out to connect to your server online)
-					client.multiplayer.developmentServer = "127.0.0.1:8184";
+					//client.multiplayer.developmentServer = "127.0.0.1:8184";
 
 					//Show lobby (parsing true hides the cancel button)
 					FlxG.switchState(new MenuState(client));

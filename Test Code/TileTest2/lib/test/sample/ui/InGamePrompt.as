@@ -15,10 +15,12 @@ package sample.ui{
 	public class InGamePrompt extends Box{
 		private var base:Box 
 		private var _callback:Function
+		private var _cancelCallback:Function
 		private var _stage:Stage
-		function InGamePrompt(stage:Stage, text:String, callback:Function){
+		function InGamePrompt(stage:Stage, text:String, callback:Function, cancel:Function = null){
 			_callback = callback
 			_stage = stage
+			_cancelCallback = cancel;
 			fill(0xffffff,.8).add(
 				new Box().minSize(150,110).fill(0x0,.5,10).margin(10,10,10,10).add(
 					new Box().minSize(150, 110).fill(0xFFFFFF, 1, 10).margin(0, 0, 0, 0).add(
@@ -48,6 +50,9 @@ package sample.ui{
 		}
 		
 		function reject():void {
+			if (_cancelCallback != null) {
+				_cancelCallback();
+			}
 			_stage.removeChild(this);
 			_stage.removeEventListener(Event.RESIZE, handleResize)
 		}

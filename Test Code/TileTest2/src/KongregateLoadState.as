@@ -9,6 +9,7 @@ package
 	import playerio.*;
 	import sample.ui.components.*;
 	import sample.ui.*;
+	import sample.ui.InGamePrompt;
 	
 	/**
 	 * ...
@@ -26,7 +27,7 @@ package
 			loaderBox = new Box().fill(0xffffff,.8).add(
 				words
 			).add(
-				new Box().margin(20).add(new Label("Please wait while we connect to the server.", 12))
+				new Box().margin(20).add(new Label("Attempting to Log In...", 12))
 			)
 			loaderBox.width = FlxG.stage.stageWidth;
 			loaderBox.height = FlxG.stage.stageHeight;
@@ -56,8 +57,14 @@ package
 			var isGuest:Boolean = kongregate.services.isGuest();
 			
 			if (isGuest) {
-				//words.text = "3"
+				var prompt:InGamePrompt = new InGamePrompt(FlxG.stage,"Would you like to use your Kongregate Login?", function(){
 				kongregate.services.showSignInBox();
+				}, function() {
+					hideLoader();
+					FlxG.switchState(new LoginState());
+				});
+				
+				
 			}else {
 				//Get Kongregate user credentials
 				var userid:String = kongregate.services.getUserId();
@@ -98,11 +105,8 @@ package
 		
 		private function loginSuccess(client:Client) {
 			hideLoader();
-			words.text = "1";
 			client.bigDB.loadMyPlayerObject(function(myPlayer:DatabaseObject) {
-				words.text = "2"
 				if (myPlayer.level == null) {
-					words.text = "3"
 					myPlayer.level = 1;
 					myPlayer.role = "Novice";
 					myPlayer.tutorial = 1;
@@ -113,7 +117,6 @@ package
 						FlxG.switchState(new MenuState(client));
 					});
 				}else {
-					words.text = "4"
 					//hideLoader();
 					FlxG.switchState(new MenuState(client));
 				}
