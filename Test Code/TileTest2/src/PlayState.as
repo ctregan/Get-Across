@@ -660,7 +660,7 @@ package
 						logClient.LogAction(action);	
 						connection.send("win")
 						connected = false;
-						logClient.ReportLevel(logClient.message.dqid, lvl_num, function g(d:String):void {}, -2, level_name);
+						logClient.ReportLevel(logClient.message.dqid, lvl_num, function g(d:String):void {}, 3, level_name);
 					}
 					if (mouseWithinTileMap()){
 						mouseLocation.text = tileInformation(getTileIdentity(myMouse.x, myMouse.y));
@@ -981,7 +981,7 @@ package
 					else lvl_num = int(level_name.slice(9, 10)) + 20;
 		
 					logClient.ReportLevel(d, lvl_num, function g(d:String):void {
-						trace("-----reporting starting level"); }, -1, level_name);								
+						trace("-----reporting starting level"); }, 2, level_name);								
 				});
 			});			
 			trace("done setting up the board, camera set up *** ");
