@@ -9,3 +9,25 @@ Test\ Code/TileTest2/obj/TileTest2Config.xml
 # files that contain Game ID
 Test\ Code/TileTest2/lib/test/sample/ui/Login.as
 Test\ Code/TileTest2/lib/test/sample/ui/Registration.as
+
+/Test Code/TileTest2/bin/TileTest2.swf
+/Test Code/TileTest2/lib/com/.svn/entries
+/Test Code/TileTest2/lib/com/Logging/.svn/entries
+/Test Code/TileTest2/lib/com/Logging/.svn/text-base/CGSClient.as.svn-base
+/Test Code/TileTest2/lib/com/Logging/.svn/text-base/CGSClientConstants.as.svn-base
+/Test Code/TileTest2/lib/com/Logging/.svn/text-base/ClientAction.as.svn-base
+/Test Code/TileTest2/lib/com/Logging/.svn/text-base/ClientActionType.as.svn-base
+/Test Code/TileTest2/lib/com/Logging/.svn/text-base/Message.as.svn-base
+/Test Code/TileTest2/lib/com/Logging/CGSClient.as
+/Test Code/TileTest2/lib/com/Logging/CGSClientConstants.as
+/Test Code/TileTest2/lib/com/Logging/ClientAction.as
+/Test Code/TileTest2/lib/com/Logging/ClientActionType.as
+/Test Code/TileTest2/lib/com/Logging/Message.as
+/Test Code/TileTest2/lib/com/adobe/serialization/json/JSON.as
+/Test Code/TileTest2/lib/com/adobe/serialization/json/JSONDecoder.as
+/Test Code/TileTest2/lib/com/adobe/serialization/json/JSONEncoder.as
+/Test Code/TileTest2/lib/com/adobe/serialization/json/JSONParseError.as
+/Test Code/TileTest2/lib/com/adobe/serialization/json/JSONToken.as
+/Test Code/TileTest2/lib/com/adobe/serialization/json/JSONTokenType.as
+/Test Code/TileTest2/lib/com/adobe/serialization/json/JSONTokenizer.as
+/Test Code/TileTest2/lib/test/com/Logging/ClientActionType.as
