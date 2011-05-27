@@ -139,9 +139,10 @@ package
 				
 				if (xpSprite.health >= neededXP) {
 					FlxG.flash(0xffffff, 1, function() {
-						FlxG.stage.addChild(new Alert("You Have Leveled Up!"));
+						FlxG.stage.addChild(new Alert("You Have Leveled Up and Gained 1 Skill Point"));
 					});
 					ob.level = ob.level + 1;
+					ob.sp += 1;
 					neededXP = needXP(ob.level + 1);
 					xpBar.setRange(needXP(ob.level), neededXP)
 					ob.save();

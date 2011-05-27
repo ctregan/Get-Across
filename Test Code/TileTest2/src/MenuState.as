@@ -56,7 +56,7 @@ package
 			classLabel.setTextFormat(classTextFormat);
 			
 			var coinTextFormat:TextFormat = new TextFormat("Abscissa", playerInfoTextSize, 0xff488921);
-			var coinLabel:Label = new Label("Coins: " + ob.coin, playerInfoTextSize, TextFormatAlign.CENTER, 0xff488921);
+			var coinLabel:Label = new Label("Skill Points: " + ob.sp, playerInfoTextSize, TextFormatAlign.CENTER, 0xff488921);
 			coinLabel.setTextFormat(coinTextFormat);
 			
 			// image of player avatar
@@ -118,8 +118,9 @@ package
 							continueButton,
 							tutorialButton,
 							new TextButton("New Game", newGame),
-							new TextButton("Map Editor", mapEditor)
-						).spacing(30)
+							new TextButton("Map Editor", mapEditor),
+							new TextButton("Spend Skill Points", skillPoints)
+						).spacing(15)
 					)))
 			FlxG.stage.addChild(mainMenu);
 			
@@ -218,9 +219,11 @@ package
 			this.kill();
 		}
 		//Callback function for when Random Map Button is pressed
-		private function randomMap():void
+		private function skillPoints():void
 		{
-			FlxG.stage.addChild(new Alert("This Feature has not yet been implemented!"));
+			this.kill();
+			FlxG.stage.removeChild(mainMenu);
+			FlxG.switchState(new AbilitySelectState(myClient));
 		}
 		//Callback function for Map Editor Button
 		private function mapEditor():void 
