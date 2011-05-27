@@ -83,7 +83,7 @@ package
 			coinsGainedLabel.setTextFormat(coinsGainedTextFormat);
 			
 			mainMenu = new Box().fill(0xFFFFFF, 0.8, 0);
-			mainMenu.add(new Box().fill(0x00000, 0.3, 15).margin(10, 10, 10, 10).minSize(FlxG.width / 2, FlxG.height).add(
+			mainMenu.add(new Box().fill(0x00000, 0.3, 15).margin(10, 10, 10, 10).minSize(FlxG.width / 2, 400).add(
 				new Box().fill(0xffffff,1,5).margin(10,10,10,10).minSize(300,0).add(
 						new Rows(
 							questLabel,

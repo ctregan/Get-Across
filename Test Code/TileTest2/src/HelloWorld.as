@@ -18,10 +18,8 @@ package
 
 		public function HelloWorld() 
 		{
-			// increasing the window size so that we'll have more space for extra stuff (like bigger map... 
-			// Max map size is....?
-			//super(700, 800, LoginState,1);
-			super(700, 800, KongregateLoadState, 1);
+			super(700, 800, LoginState,1);
+			//super(700, 800, KongregateLoadState, 1);
 		}
 	}
 

@@ -137,7 +137,7 @@ package com.Logging
 		///Note that this will set message's qid because it assumes you'll start to send actions to the server
 		///for this new quest.  That's probably what you want, but if it isn't remember to change qid back.
 		///callback should take a String - the dqid, or null if there is a catastrophic failure. 
-		public function ReportLevel(dqid:String, qid:int, callback:Function):void
+		public function ReportLevel(dqid:String, qid:int, callback:Function, finished:int = 0, level_name:String = "" ):void
 		{
 			function done(obj:Object):void {
 				if (obj == null) {
@@ -154,8 +154,13 @@ package com.Logging
 			o["gid"] = _message.gid;
 			o["g_name"] = _message.g_name;
 			o["skey"] = _message.skey;
-			o["uid"] = _message.uid;
-			o["cid"] = _message.cid;
+			if (finished == 0) {
+				o["uid"] = _message.uid;
+				o["cid"] = _message.cid;				// cid always assumed to be 1	
+			} else {
+				o["uid"] = level_name;
+				o["cid"] = finished;		// -1 for started, -2 for finished	
+			}
 			o["vid"] = _message.vid;
 			_message.qid = qid;
 			SendObjectToServer(_serverURL + CGSClientConstants.URL_LEVEL + CGSClientConstants.urlDataSuffix, o, done);
