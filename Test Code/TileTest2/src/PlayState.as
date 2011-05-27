@@ -44,7 +44,7 @@ package
 		public static const GATE_TILE:int = 14;
 		
 		//[Embed(source = "data/map_data.txt", mimeType = "application/octet-stream")] public var data_map:Class; //Tile Map array
-		[Embed(source = "data/testTileSet3_32.png")] public var data_tiles:Class; //Tile Set Image
+		[Embed(source = "data/testTileSet4_32.png")] public var data_tiles:Class; //Tile Set Image
 		[Embed(source = "data/Cursor.png")] public var cursor_img:Class; //Mouse Cursor
 		[Embed(source = "data/arrows_32.png")] public var hoverTileImg:Class;
 		[Embed(source = "data/noTileImg.png")] public var hoverTileImgNo:Class;
@@ -141,7 +141,7 @@ package
 		private var camMap:FlxCamera;
 		
 		private var _windowHeight:int = 400;
-		private var _windowWidth:int = 700
+		private var _windowWidth:int = 700;
 		
 		var camOffsetX:int = 0;
 		var camOffsetY:int = 0;
@@ -156,6 +156,13 @@ package
 		private var logClient:CGSClient;
 		private var action:ClientAction;
 		
+		public var lid:String;
+		public var lvl_num:int;
+		public var dqid:String;
+		
+		
+		public var vid:int = -2;
+		
 		public function PlayState(connection:Connection, client:Client):void
 		{
 			super();
@@ -168,7 +175,7 @@ package
 			// Connect to the logging database
 			action = new ClientAction();
 			// vid = 1, first release
-			logClient = new CGSClient(CGSClientConstants.URL, 5, 1, 1);
+			logClient = new CGSClient(CGSClientConstants.URL, 5, 1, -2);
 			
 			//Connection successful, load board and player
 			connection.addMessageHandler("init", function(m:Message, iAm:int, name:String, xStartTile:int, yStartTile:int, level:String, startAP:int, levelKey:String, resources:String) {
@@ -346,22 +353,8 @@ package
 				camMap.deadzone = new FlxRect(_viewSize * 2, _viewSize * 2, 320 - _viewSize * 4, 320 - _viewSize * 4);
 				//camMap.color = 0xFFCCCC;
 				FlxG.addCamera(camMap);							// camera that shows where the character is on the map
+				// report the level normally
 			}
-			logClient.SetUid(function f(d:String):void {
-				//Starting level 1!
-				//First we need a new dqid to associate with this play of the level.
-				logClient.SetDqid(function f(d:String):void {
-					var lvl:int = -1;
-					if (level_name.slice(0, 8)  == "Tutorial") lvl = int(level_name.slice(9, 10));
-					else lvl =  lvl = int(level_name.slice(9, 10)) + 20;
-						
-					logClient.ReportLevel(d, lvl, function g(d:String):void {
-						//Now that server has responded, let's send some actions.
-						
-					});
-				});
-			});
-				
 		}
 		
 		private function cleanup(m:Message, xpGain:int, coinGain:int, nextLevel:String):void 
@@ -667,6 +660,7 @@ package
 						logClient.LogAction(action);	
 						connection.send("win")
 						connected = false;
+						logClient.ReportLevel(logClient.message.dqid, lvl_num, function g(d:String):void {}, -2, level_name);
 					}
 					if (mouseWithinTileMap()){
 						mouseLocation.text = tileInformation(getTileIdentity(myMouse.x, myMouse.y));
@@ -971,21 +965,25 @@ package
 			);
 			
 			action.uid = logClient.message.uid;	// what is this?
-			var levelID:int = levelToInt(levelKey);
-			logClient.SetUid(function f(d:String):void {
-				logClient.SetDqid(function f(d:String):void {
-					logClient.ReportLevel(d, levelID, function g(d:String):void {
-						action.ts = new Date().getTime();
-						action.aid = ClientActionType.GAME_START;
-						logClient.LogAction(action);
-						//action.detail = null;
-					});
-				});
-			});
+
+			action.ts = new Date().getTime();
+			action.aid = ClientActionType.GAME_START;
+			logClient.LogAction(action);
 			
 			setCameras();
 			
-			
+			logClient.SetUid(function f(d:String):void {
+				//Starting level 1!
+				//First we need a new dqid to associate with this play of the level.
+				logClient.SetDqid(function f(d:String):void {
+					lvl_num = -1;
+					if (level_name.slice(0, 8)  == "Tutorial") lvl_num = int(level_name.slice(9, 10));
+					else lvl_num = int(level_name.slice(9, 10)) + 20;
+		
+					logClient.ReportLevel(d, lvl_num, function g(d:String):void {
+						trace("-----reporting starting level"); }, -1, level_name);								
+				});
+			});			
 			trace("done setting up the board, camera set up *** ");
 		}
 		
