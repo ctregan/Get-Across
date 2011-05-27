@@ -169,26 +169,29 @@ package
 			myPlayer.tutorial = tutorialLevel;
 			trace("TUTORIAL TO START: " + myPlayer.tutorial);
 			myPlayer.questID = "noQuest"
-			myPlayer.save();
-			var _levelKey:String = "Tutorial_" + myPlayer.tutorial;
-			showLoader();
-			myClient.multiplayer.createJoinRoom(
-				null,								//Room id, null for auto generted
-				"GetAcross",							//RoomType to create, bounce is a simple bounce server
-				true,								//Hide room from userlist
-				{name:"Tutorial", key:_levelKey, type:"static" },						//Room Join data, data is returned to lobby list. Variabels can be modifed on the server
-				{},
-				function(connection:Connection) {
-					FlxG.stage.removeChild(mainMenu);
-					hideLoader();
-					FlxG.switchState( new PlayState(connection,myClient))
-				},
-				function(error:PlayerIOError) {
-					hideLoader();
-					FlxG.stage.addChild(new Alert("Error: No connection to server!"));
-				}
+			myPlayer.save(false,false,
+			function() {
+				var _levelKey:String = "Tutorial_" + myPlayer.tutorial;
+				showLoader();
+				myClient.multiplayer.createJoinRoom(
+					null,								//Room id, null for auto generted
+					"GetAcross",							//RoomType to create, bounce is a simple bounce server
+					true,								//Hide room from userlist
+					{name:"Tutorial", key:_levelKey, type:"static" },						//Room Join data, data is returned to lobby list. Variabels can be modifed on the server
+					{},
+					function(connection:Connection) {
+						FlxG.stage.removeChild(mainMenu);
+						hideLoader();
+						FlxG.switchState( new PlayState(connection,myClient))
+					},
+					function(error:PlayerIOError) {
+						hideLoader();
+						FlxG.stage.addChild(new Alert("Error: No connection to server!"));
+					}
+				);
+			});
+			
 				//handleError					//Error handler										   
-			)
 		}
 		//Callback function for when New Game Button is pressed
 		private function newGame():void

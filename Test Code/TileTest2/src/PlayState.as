@@ -44,7 +44,7 @@ package
 		public static const GATE_TILE:int = 14;
 		
 		//[Embed(source = "data/map_data.txt", mimeType = "application/octet-stream")] public var data_map:Class; //Tile Map array
-		[Embed(source = "data/testTileSet4_32.png")] public var data_tiles:Class; //Tile Set Image
+		[Embed(source = "data/testTileSet3_32.png")] public var data_tiles:Class; //Tile Set Image
 		[Embed(source = "data/Cursor.png")] public var cursor_img:Class; //Mouse Cursor
 		[Embed(source = "data/arrows_32.png")] public var hoverTileImg:Class;
 		[Embed(source = "data/noTileImg.png")] public var hoverTileImgNo:Class;
