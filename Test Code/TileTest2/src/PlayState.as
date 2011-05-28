@@ -386,6 +386,7 @@ package
 				//camMap.color = 0xFFCCCC;
 				FlxG.addCamera(camMap);							// camera that shows where the character is on the map
 				// report the level normally
+				//zoomOutAction();		// do it just in case...!
 			}
 		}
 		
@@ -1064,7 +1065,6 @@ package
 				});
 			});			
 			trace("done setting up the board, camera set up *** ");
-			zoomOutAction();		// do it just in case...!
 		}
 		
 		private function zoomInAction():void
