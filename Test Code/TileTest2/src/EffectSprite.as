@@ -1,5 +1,6 @@
 package  
 {
+	import org.flixel.FlxBasic;
 	import org.flixel.FlxSprite; 
 	import flash.events.TimerEvent
 	import flash.utils.Timer;
@@ -49,8 +50,9 @@ package
 				var myTimer:Timer = new Timer(1000);
 				myTimer.addEventListener(TimerEvent.TIMER, function (event:TimerEvent):void 
 				{
-					wait()
 					myTimer.stop();
+					wait()
+					
 				});
 				myTimer.start();
 			}
@@ -58,15 +60,23 @@ package
 		
 		private function wait():void 
 		{
-			var sprites:Array = PlayState.lyrMonster.members;
-			for (var index in sprites) {
-					if (inRange(sprites[index]._xTile, sprites[index]._yTile) && sprites[index]._ap > 0) {
-						Monster(sprites[index]).move(xTile, yTile);
-						addUse(true);
-						return;
-					}
+			var inRangeArray:Array = new Array()
+			var bsprite:Array = PlayState.lyrMonster.members;
+			for (var monster in bsprite) {
+				var sprite = Monster(bsprite[monster]);
+				if (inRange(sprite._xTile, sprite._yTile) && sprite._ap > 0) {
+					inRangeArray.push(sprite);
 				}
-				kill();
+			}
+			if (inRangeArray.length < 1) {
+				addUse(true);
+				return
+			}else {
+				;
+				Monster(inRangeArray[Math.floor(Math.random() * (1+(inRange.length-1)-0)) + 0]).move(xTile, yTile);
+				addUse(true);
+				return
+			}
 		}
 		
 		public function addUse(propogate:Boolean):void

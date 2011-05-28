@@ -454,7 +454,16 @@ package
 							
 							monster++;
 						}
-					 }
+					}else {
+						 //Player is in battle, make sure this is ture
+						 var overlapping = false;
+						 for (var monsterc in monsterArray) {
+							 if (FlxG.overlap(monsterArray[monsterc], myPlayer)) {
+								 overlapping = true;
+							 }
+						 }
+						 myPlayer.inBattle = overlapping;
+					}
 					action = new ClientAction();					 
 					action.detail = new Object();
 					action.detail["x1"] = myPlayer.xPos;
