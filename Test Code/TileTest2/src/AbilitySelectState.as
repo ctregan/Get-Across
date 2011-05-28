@@ -1,6 +1,7 @@
 package  
 {
 	import com.Logging.ClientAction;
+	import flash.events.MouseEvent;
 	import sample.ui.*
 	import sample.ui.components.*;
 	import sample.ui.components.scroll.ScrollBox;
@@ -18,9 +19,11 @@ package
 		private var myPlayer:DatabaseObject;
 		private var cancel:TextButton
 		private var roomContainer:Rows;
+		private var toolTip:FlxText
 		
 		public function AbilitySelectState(client:Client) 
 		{
+			add(new Background("Map"));
 			myClient = client; 
 			roomContainer = new Rows().spacing(2);
 			var titleLabel:Label = new Label("Ability Store", 40, TextFormatAlign.CENTER, 0xff488921);
@@ -44,10 +47,12 @@ package
 					)
 				)
 			)
-			mainMenu.width = FlxG.stage.stageWidth
+			toolTip = new FlxText(375,50, 200, "", true).setFormat(null, 16)
+			mainMenu.width = FlxG.stage.stageWidth / 2
 			mainMenu.height = FlxG.stage.stageHeight
 			refresh();
 			FlxG.stage.addChild(mainMenu);
+			add(toolTip);
 		}
 		private function refresh():void 
 		{
@@ -67,8 +72,15 @@ package
 									contains = true;
 								}
 							}
-							if(!contains){
-								roomContainer.addChild(new AbilityEntry(abarr[x].Name, abarr[x].key, abarr[x].cost, AbilitySelectCallback));
+							if (!contains) {
+								var abilityE:AbilityEntry = new AbilityEntry(abarr[x].Name, abarr[x].key, abarr[x].cost, AbilitySelectCallback)
+								abilityE.addEventListener(MouseEvent.MOUSE_OVER, function ():void 
+								{
+									toolTip.text = abarr[x].Name + "\n\n" + "Cost: " + abarr[x].cost + " Skill Points\n\n" + "Description:\n" + abarr[x].Description	
+								})
+								roomContainer.addChild(abilityE);
+							}else {
+								roomContainer.addChild(new AbilityEntry(abarr[x].Name, abarr[x].key, abarr[x].cost, AbilitySelectCallback, true));
 							}
 						}
 					}

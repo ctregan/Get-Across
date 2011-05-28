@@ -782,6 +782,7 @@ package
 							if (posX < 0) posX = 0;
 							if (posY < 0) posY = 0;
 							myPlayer = new Player(posX, posY, 0, _windowHeight, _tileSize, playerAP, resourcesString, db.role);
+							connected = true;
 							playersArray[imPlayer - 1] = myPlayer;
 							
 							var playerHealthBar:FlxHealthBar = new FlxHealthBar(myPlayer, 100, 20, 0, 20, true);
@@ -815,8 +816,8 @@ package
 									}
 								});
 								abilities.text = "Abilities:\n";
-								connected = true;
 							}
+
 						} catch (e:Error) {
 							//Catches Error is no abilities have been set yet
 							trace("unable to load abilities");

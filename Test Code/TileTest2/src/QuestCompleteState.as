@@ -43,16 +43,19 @@ package
 			characterInfo = new Label("", 12, TextFormatAlign.CENTER);
 			client.bigDB.loadMyPlayerObject(loadPlayerSuccess);
 			mainMenuButton = new TextButton("Main Menu", continueButton);
-			nextLevelButton = new TextButton("Next Level", nextLevelCallback);
+			
 			mainMenuButton.visible = false;
 			nextLevelButton.visible = false;
 			if (nextLevel == "") {
+				nextLevelButton = new TextButton("Next Level", null);
 				nextLevelButton.visible = false;
 				nextLevelButton.enabled = false;
 			}else if (nextLevel == "Class_Choose") {
 				nextLevelButton = new TextButton("Choose Class", chooseClassCallback);
 				mainMenuButton.visible = false;
 				mainMenuButton.enabled = false;
+			}else {
+				nextLevelButton = new TextButton("Next Level", nextLevelCallback);
 			}
 			
 			// initialize labels for player info to show at the end
