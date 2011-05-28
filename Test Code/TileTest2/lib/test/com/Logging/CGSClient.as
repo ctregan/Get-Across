@@ -47,6 +47,12 @@ package com.Logging
 		
 		protected var _message:LogMessage;
 		
+		public static const PLAY:int = 1;
+		public static const WON:int = 2;
+		public static const MAKE_MAP:int = 3;
+		public static const INVITE_FRIEND:int = 4;
+		public static const PLAY_TOGETHER:int = 5;		
+		
 		//----------- Constructor -------------------------------------------------------------------------------
 		public function CGSClient(serverURL:String, gid:int, cid:int, vid:Number=0, bufferLogs:Boolean = true):void
 		{
@@ -137,7 +143,7 @@ package com.Logging
 		///Note that this will set message's qid because it assumes you'll start to send actions to the server
 		///for this new quest.  That's probably what you want, but if it isn't remember to change qid back.
 		///callback should take a String - the dqid, or null if there is a catastrophic failure. 
-		public function ReportLevel(dqid:String, qid:int, callback:Function, finished:int = 0, level_name:String = "" ):void
+		public function ReportLevel(dqid:String, qid:int, callback:Function, typeReport:int = 1, userID:String = "Nobody", level_name:String = "" ):void
 		{
 			function done(obj:Object):void {
 				if (obj == null) {
@@ -148,21 +154,40 @@ package com.Logging
 				trace("Reported a new level to the server: " + dqid);
 				callback(_message.dqid);
 			}
+			
 			var o:Object = new Object();
-			o["qid"] = qid;
-			o["dqid"] = dqid;
+			o["cid"] = typeReport;
 			o["gid"] = _message.gid;
 			o["g_name"] = _message.g_name;
 			o["skey"] = _message.skey;
-			if (finished == 0) {
-				o["uid"] = _message.uid;
-				o["cid"] = _message.cid;				// cid always assumed to be 1	
-			} else {
-				o["uid"] = level_name;
-				o["cid"] = finished;		// -1 for started, -2 for finished	
-			}
 			o["vid"] = _message.vid;
-			_message.qid = qid;
+			if (typeReport == PLAY) {							// if the type of reporting is games played
+				o["dqid"] = userID;
+				//o["dqid"] = _message.dqid;
+				o["uid"] = level_name;// 0;							// for playing the game
+			} else if (typeReport == WON) {					// won the game
+				o["dqid"] = userID;
+				//o["dqid"] = _message.dqid;
+				o["uid"] = level_name;// 0;							// for winning the game				
+			} else if (typeReport == MAKE_MAP) {					// reporting maps made
+				// store who made it
+				// store size...? as string?
+				o["dqid"] = userID;
+				//o["dqid"] = _message.dqid;
+				o["uid"] = level_name;// 0;								// width of the map...?
+			} else if (typeReport == INVITE_FRIEND) {					// keep track of invitation
+				o["dqid"] = userID;
+				//o["dqid"] = _message.dqid;
+				o["uid"] = level_name;// 0;	// report friend name			
+			} else if (typeReport == PLAY_TOGETHER) {					// keep track of friends playing together
+				o["dqid"] = userID;
+				//o["dqid"] = _message.dqid;
+				o["uid"] = level_name;// 0;				// report friend name...
+			} 
+			//if (_message.qid == null) {
+				_message.qid = qid;
+			//}
+			o["qid"] = _message.qid;
 			SendObjectToServer(_serverURL + CGSClientConstants.URL_LEVEL + CGSClientConstants.urlDataSuffix, o, done);
 		}
 		

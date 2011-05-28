@@ -43,6 +43,16 @@ package
 		public static const BRIDGE_TILE_LEFT:int = 7;
 		public static const GATE_TILE:int = 14;
 		
+		
+		// some constants for logging
+		public static const PLAY:int = 1;
+		public static const WON:int = 2;
+		public static const MAKE_MAP:int = 3;
+		public static const INVITE_FRIEND:int = 4;
+		public static const PLAY_TOGETHER:int = 5;
+		
+		private var _user_id:String = "Nobody";
+		
 		//[Embed(source = "data/map_data.txt", mimeType = "application/octet-stream")] public var data_map:Class; //Tile Map array
 		[Embed(source = "data/testTileSet4_32.png")] public var data_tiles:Class; //Tile Set Image
 		[Embed(source = "data/Cursor.png")] public var cursor_img:Class; //Mouse Cursor
@@ -136,7 +146,7 @@ package
 		private static var playerName:String;
 		private static var playerAP:int;
 		private var _APcounterMax:int = 10;	// seconds to pass until player gets AP incremented
-		private static var resourcesString;
+		private static var resourcesString:String;
 		
 		private var camMap:FlxCamera;
 		
@@ -186,6 +196,10 @@ package
 				//boardSetup(level);
 				resourcesString = resources;
 				trace("level to search in newquest: " + level);
+				
+				trace("=====before copying, the userID is " + name);
+				_user_id = name;
+				
 				
 				client.bigDB.load("NewQuests", level, function(ob:DatabaseObject):void {
 					//Recieve Tile Array from database to be turned into string with line breaks between each line
@@ -298,12 +312,14 @@ package
 			
 			//New user has joined, make their character
 			connection.addMessageHandler("UserJoined", function(m:Message, userID:int, posX:int, posY:int) {
+	
 				if (userID != imPlayer) {
 					// create other player; AP doesn't matter, so default to 20
 					playersArray[userID-1] = new Player(posX, posY, 0,_windowHeight , _tileSize, 20, null, "Novice");
 					if (playersArray[userID-1] != null && lyrSprites != null) lyrSprites.add(playersArray[userID-1]);
 				}
 			})
+			trace("======copied user id " + _user_id);
 			//Player has moved and we hear about it
 			connection.addMessageHandler("PlayerMove", function(m:Message, userID:int, posX:int, posY:int) {
 				var tileType:int = getTileIdentity(posX, posY);
@@ -671,7 +687,10 @@ package
 						logClient.LogAction(action);	
 						connection.send("win")
 						connected = false;
-						logClient.ReportLevel(logClient.message.dqid, lvl_num, function g(d:String):void {}, 3, level_name);
+						//ReportLevel(dqid:String, qid:int, callback:Function, typeReport:int = 1, username:String = "", level_name:String = "" ):void
+						trace("user id" + _user_id);
+						trace("level name" + level_name);
+						logClient.ReportLevel(logClient.message.dqid, 0, function g(d:String):void {}, WON, _user_id, level_name);
 					}
 					if (mouseWithinTileMap()){
 						mouseLocation.text = tileInformation(getTileIdentity(myMouse.x, myMouse.y));
@@ -815,8 +834,8 @@ package
 									}
 								});
 								abilities.text = "Abilities:\n";
-								connected = true;
 							}
+							connected = true;
 						} catch (e:Error) {
 							//Catches Error is no abilities have been set yet
 							trace("unable to load abilities");
@@ -832,6 +851,7 @@ package
 		//Add all flixel elements to the board, essentially drawing the game.
 		private function boardSetup(map_data:String, playerName:String, levelKey:String):void 
 		{
+
 			counter = _APcounterMax; // 1ap gained every 3 minutes
 			alert = new Alert("");
 			//Add chat to game
@@ -991,25 +1011,26 @@ package
 			
 			action.uid = logClient.message.uid;	// what is this?
 
-			action.ts = new Date().getTime();
-			action.aid = ClientActionType.GAME_START;
-			logClient.LogAction(action);
+			//action.ts = new Date().getTime();
+			//action.aid = ClientActionType.GAME_START;
+			//logClient.LogAction(action);
 			
 			setCameras();
 			
+			trace("report playing game");
 			logClient.SetUid(function f(d:String):void {
 				//Starting level 1!
 				//First we need a new dqid to associate with this play of the level.
 				logClient.SetDqid(function f(d:String):void {
-					lvl_num = -1;
-					if (level_name.slice(0, 8)  == "Tutorial") lvl_num = int(level_name.slice(9, 10));
-					else lvl_num = int(level_name.slice(9, 10)) + 20;
-		
-					logClient.ReportLevel(d, lvl_num, function g(d:String):void {
-						trace("-----reporting starting level"); }, 2, level_name);								
+					trace("user id" + _user_id);
+					trace("level name" + level_name);
+					logClient.ReportLevel(logClient.message.dqid, 0, function g(d:String):void {}, PLAY, _user_id, level_name);
+					//./logClient.ReportLevel(d, lvl_num, function g(d:String):void {
+					//	trace("-----reporting starting level"); }, 2, level_name);								
 				});
 			});			
 			trace("done setting up the board, camera set up *** ");
+			zoomOutAction();		// do it just in case...!
 		}
 		
 		private function zoomInAction():void
@@ -1026,6 +1047,7 @@ package
 			action.detail = new Object();			
 			action.detail["x1"] = myPlayer.xPos;
 			action.detail["y1"] = myPlayer.yPos;
+			action.ts = new Date().getTime();
 			action.ts = new Date().getTime();
 			trace("+");
 			logClient.LogAction(action);				

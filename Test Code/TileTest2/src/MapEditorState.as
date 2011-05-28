@@ -1,5 +1,6 @@
 package  
 {
+	import com.Logging.CGSClient;
 	import flash.accessibility.Accessibility;
 	import org.flixel.FlxState;
 	import org.flixel.*;
@@ -9,6 +10,7 @@ package
 	import playerio.DatabaseObject;
 	import sample.ui.Alert;
 	import sample.ui.components.*
+	import com.Logging.*
 	/**
 	 * ...
 	 * @author Charlie Regan
@@ -36,10 +38,11 @@ package
 		private var brushInfo:FlxText;
 		private var startX:int = 0;
 		private var startY:int = 0;
+		private var logClient:CGSClient;
 		
 		public function MapEditorState(name:String, height:String, width:String, myClient:Client) 
 		{
-			
+			logClient = new CGSClient(CGSClientConstants.URL, 5, 1, -2);
 			_height = int(height);
 			_width = int(width);
 			_name = name;
@@ -213,6 +216,18 @@ package
 				newMap.startY = startY;
 				_myClient.bigDB.createObject("UserMaps", null, newMap, function() {
 					FlxG.stage.addChild(new Alert("Map Uploaded"));
+				});
+				
+				//
+				var action:ClientAction = new ClientAction;
+				action.uid = logClient.message.uid;	// what is this?
+				logClient.SetUid(function f(d:String):void {
+					//Starting level 1!
+					//First we need a new dqid to associate with this play of the level.
+					logClient.SetDqid(function f(d:String):void {				
+						// report that this user has made this map! 
+						logClient.ReportLevel(logClient.message.dqid, 0, function g(d:String):void {}, 3, newMap.Creator, newMap.Name);
+					});
 				});
 			}
 		}

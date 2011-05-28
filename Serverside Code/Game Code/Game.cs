@@ -421,8 +421,8 @@ namespace GetAcross {
                             delegate(DatabaseObject result)
                             {
                                 // todo: change these based on what you got in the level
-                                int gainedxp = result.GetInt("XP");
-                                int gainedcoin = result.GetInt("Coin");
+                                int gainedxp = 0;// = result.GetInt("XP");
+                                int gainedcoin = 0;// = result.GetInt("Coin");
 
                                 if (result != null)
                                 {
