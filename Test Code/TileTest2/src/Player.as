@@ -29,6 +29,12 @@ package
 		public static const WATER_TILE6:int = 12;
 		public static const WATER_TILE2:int = 13;
 		public static const GATE_TILE:int = 14;
+		public static const MOUNTAIN_TILE:int = 15;
+		public static const ROCK_TILE:int = 16;
+		public static const RUBBLE_TILE:int = 17;
+		public static const BRAMBLE_TILE:int = 18;
+		public static const SNAKE_TILE:int = 20;
+		public static const SNAKE_GONE_TILE:int = 21;
 		
 		[Embed(source = "data/character3.png")] public var player_avatar:Class;
 		[Embed(source = "data/character3_cook.png")] public var cook_avatar:Class;
@@ -176,6 +182,9 @@ package
 			{
 				case HILL_TILE:
 					return 3;
+					break;
+				case MOUNTAIN_TILE:
+					return 15;
 					break;
 				default:
 					return 0;

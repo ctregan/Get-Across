@@ -44,12 +44,18 @@ package
 		public static const WATER_TILE6:int = 12;
 		public static const WATER_TILE2:int = 13;
 		public static const GATE_TILE:int = 14;
+		public static const MOUNTAIN_TILE:int = 15;
+		public static const ROCK_TILE:int = 16;
+		public static const RUBBLE_TILE:int = 17;
+		public static const BRAMBLE_TILE:int = 18;
+		public static const SNAKE_TILE:int = 20;
+		public static const SNAKE_GONE_TILE:int = 21;
 		
 		//[Embed(source = "data/map_data.txt", mimeType = "application/octet-stream")] public var data_map:Class; //Tile Map array
 		[Embed(source = "data/testTileSet4_32.png")] public var data_tiles:Class; //Tile Set Image
 		[Embed(source = "data/Cursor.png")] public var cursor_img:Class; //Mouse Cursor
 		[Embed(source = "data/arrows_32.png")] public var hoverTileImg:Class;
-		[Embed(source = "data/noTileImg.png")] public var hoverTileImgNo:Class;
+		
 		private var apInfo:FlxText; //Text field to reflect the numner of AP left
 		public static var myPlayer:Player;
 		private var playersArray:Array = []; //Array of all players on board
@@ -372,8 +378,8 @@ package
 			connection.disconnect();
 			this.kill();
 			FlxG.switchState(new QuestCompleteState(xpGain, coinGain, client, nextLevel));
-			
 		}
+		
 		override public function update():void 
 		{
 			// if this is a tutorial,
@@ -475,7 +481,7 @@ package
 
 				if (myPlayer != null && !win) {
 					/*** DEBUG CHEATS ***/
-					if (myPlayer.AP <= 20 && FlxG.keys.justPressed("A")) {
+					/*if (myPlayer.AP <= 20 && FlxG.keys.justPressed("A")) {
 						myPlayer.AP++;
 						connection.send("updateStat", "AP", myPlayer.AP);
 					}
@@ -489,16 +495,12 @@ package
 						myPlayer.amountCherry++;
 						connection.send("updateStat", "cherry", myPlayer.amountCherry);
 						amountCherryText.text = "Cherry: " + myPlayer.amountCherry;
-					}
+					}*/
 					/*** END DEBUG CHEATS ***/
 					
 					lyrBattle.visible = myPlayer.inBattle; //Only show the battle hud if the player is in combat
 					 //Detect Monster collision, if a monster is overlapping your player then you are now in a fight
 					if (!myPlayer.inBattle) {
-						/*trace("the monster array i'm looking at: " );
-						for (var m:int = 0; m < monsterArray.length; m++ )
-							trace("index " + m + ":" + monsterArray[m]._xTile + "," + monsterArray[m]._yTile);*/
-						
 						var monster:int = 0;
 						while (monster < monsterArray.length && !myPlayer.inBattle) {
 							FlxG.overlap(monsterArray[monster], myPlayer, function() {
@@ -748,6 +750,24 @@ package
 					break;
 				case GATE_TILE:
 					return "A gate.  You can't get past it without opening it first.";
+					break;
+				case MOUNTAIN_TILE:
+					return "A mountain.  You need 15 AP to cross to cross it!";
+					break;
+				case ROCK_TILE:
+					return "A rock.  It's too high to pass.  A crafter could probably destroy it..."
+					break;
+				case RUBBLE_TILE:
+					return "Rubble.  Get across it!  Yeah!";
+					break;
+				case BRAMBLE_TILE:
+					return "Brambles.  Ouch!  They're too painful to get through!"
+					break;
+				case SNAKE_TILE:
+					return "An extremely hungry snake.  DON'T GET CLOSE TO IT, IT MIGHT EAT YOU";
+					break;
+				case SNAKE_GONE_TILE:
+					return "There used to be a snake here.  Looks like it fled!"
 					break;
 				default:
 					return "Unknown tile type...";
