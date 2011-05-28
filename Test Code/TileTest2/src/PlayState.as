@@ -791,6 +791,7 @@ package
 							lyrTop.add(apInfo);
 							lyrSprites.add(myPlayer);
 							lvl.text = "Level: " + db.level;
+							
 							var abilityArray:Array = db.abilities;
 							if (abilityArray != null || abilityArray.length > 0) {
 								client.bigDB.loadKeys("Abilities", db.abilities, function(dbarr:Array):void {
@@ -814,6 +815,7 @@ package
 									}
 								});
 								abilities.text = "Abilities:\n";
+								connected = true;
 							}
 						} catch (e:Error) {
 							//Catches Error is no abilities have been set yet
@@ -822,7 +824,7 @@ package
 						}
 					});
 				
-				connected = true;
+				
 				//timer = setInterval(setCameras, 100);	// set up camera after 0.1 second.... to ensure everything is set
 				trace("done with character, setting camera ***");
 				setCameras();
