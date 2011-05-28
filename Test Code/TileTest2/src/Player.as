@@ -18,13 +18,23 @@ package
 		public static const HILL_TILE:int = 1;
 		public static const TREE_TILE:int = 2;
 		public static const CHERRY_TILE:int = 3;
-		public static const WATER_TILE:int = 8;
 		public static const WIN_TILE:int = 4;
-		public static const WATER_TILE2:int = 13;
-		public static const WATER_TILE3:int = 9;
+		public static const YELLOW_TILE:int = 5;
 		public static const BRIDGE_TILE_UP:int = 6;
 		public static const BRIDGE_TILE_LEFT:int = 7;
+		public static const WATER_TILE:int = 8;
+		public static const WATER_TILE3:int = 9;
+		public static const WATER_TILE4:int = 10;
+		public static const WATER_TILE5:int = 11;
+		public static const WATER_TILE6:int = 12;
+		public static const WATER_TILE2:int = 13;
 		public static const GATE_TILE:int = 14;
+		public static const MOUNTAIN_TILE:int = 15;
+		public static const ROCK_TILE:int = 16;
+		public static const RUBBLE_TILE:int = 17;
+		public static const BRAMBLE_TILE:int = 18;
+		public static const SNAKE_TILE:int = 20;
+		public static const SNAKE_GONE_TILE:int = 21;
 		
 		[Embed(source = "data/character3.png")] public var player_avatar:Class;
 		[Embed(source = "data/character3_cook.png")] public var cook_avatar:Class;
@@ -39,8 +49,6 @@ package
 		public var yPos:Number; //Y Tile Position
 		public var inBattle:Boolean = false;
 		public var combatant:Monster;
-		//public var xTilePixel:Number; //The X tile location in pixels for the player's current tile
-		//public var yTilePixel:Number; //The Y tile location in pixels for the player's current tile
 		private var _move_speed:int = 400;
 		public var isMoving:Boolean = false;
 		
@@ -101,14 +109,6 @@ package
 					loadGraphic(player_avatar, true, false, 32 , 32);
 					break;
 			}
-			/*addAnimation("idle" + UP, [0], 0, false);
-			addAnimation("idle" + DOWN, [3], 0, false);
-			addAnimation("idle" + LEFT, [6], 0, false);
-			addAnimation("idle" + RIGHT, [9], 0, false);
-			addAnimation("walk" + UP, [0, 1, 2], 15, true);
-            addAnimation("walk" + DOWN, [3,4,5], 15, true);
-            addAnimation("walk" + LEFT, [6, 7, 8], 15, true);
-			addAnimation("walk" + RIGHT, [9, 10, 11], 15, true);*/
 			facing = FlxSprite.DOWN;
 			
 			addAnimation("idle" + UP, [5], 0, false);
@@ -124,7 +124,7 @@ package
 		
 		//Public function that can be called to move the position of the player based on a tile change
 		//thus to move one tile to the right send (1,0) as arugments, one to left is (-1,0)
-		//NOW RETURNS A BOOLEAN, True if the move has caused the user to reach the end, False if not
+		//returns true if the move has caused the user to reach the end, False if not
 		public function movePlayer(xChange:Number, yChange:Number, tileSize:int, connection:Connection):Boolean {
 			// see if player has enough AP to move; if not, fire notification
 			if (AP < findCost(xPos + xChange, yPos + yChange, tileSize, false))
@@ -159,6 +159,7 @@ package
 			if (cost > 0) PlayState.fireNotification(this.x + 20, this.y - 20, "-" + cost + " AP", "loss");
 			return false;
 		}
+		
 		//Find AP Cost of the tile at the given location. If tureMove flag is high, then the player will actually move when results are passed
 		private function findCost(proposedX:Number, proposedY:Number, tileSize:int, trueMove:Boolean):Number {
 			var sprites:Array = PlayState.lyrEffects.members
@@ -181,6 +182,9 @@ package
 			{
 				case HILL_TILE:
 					return 3;
+					break;
+				case MOUNTAIN_TILE:
+					return 15;
 					break;
 				default:
 					return 0;

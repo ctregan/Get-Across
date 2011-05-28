@@ -1,6 +1,7 @@
 package  
 {
 	import com.Logging.ClientAction;
+	import flash.events.MouseEvent;
 	import sample.ui.*
 	import sample.ui.components.*;
 	import sample.ui.components.scroll.ScrollBox;
@@ -15,12 +16,14 @@ package
 	{
 		private var mainMenu:Box
 		private var myClient:Client;
-		private var myPlayer:DatabaseObject;
 		private var cancel:TextButton
 		private var roomContainer:Rows;
+		private var toolTip:FlxText
+		private var spCount:FlxText
 		
 		public function AbilitySelectState(client:Client) 
 		{
+			add(new Background("Map"));
 			myClient = client; 
 			roomContainer = new Rows().spacing(2);
 			var titleLabel:Label = new Label("Ability Store", 40, TextFormatAlign.CENTER, 0xff488921);
@@ -44,17 +47,21 @@ package
 					)
 				)
 			)
-			mainMenu.width = FlxG.stage.stageWidth
+			spCount = new FlxText(375, 20, 100, "", true).setFormat(null, 16);
+			toolTip = new FlxText(375,50, 200, "", true).setFormat(null, 16)
+			mainMenu.width = FlxG.stage.stageWidth / 2
 			mainMenu.height = FlxG.stage.stageHeight
 			refresh();
 			FlxG.stage.addChild(mainMenu);
+			add(toolTip);
+			add(spCount);
 		}
 		private function refresh():void 
 		{
 			
 			//TO DO ADD LOADING SCREEN!!!!!!!
 			myClient.bigDB.loadMyPlayerObject(function(myPlayer:DatabaseObject) {
-				this.myPlayer = myPlayer;
+				spCount.text = "You Have " + myPlayer.sp + " SP"
 				var abilityArray:Array = myPlayer.abilities
 				myClient.bigDB.loadRange("Abilities", "Class", null, myPlayer.role, myPlayer.role, 10, function(abarr:Array) {
 					if (abarr.length == 0) {
@@ -67,8 +74,15 @@ package
 									contains = true;
 								}
 							}
-							if(!contains){
-								roomContainer.addChild(new AbilityEntry(abarr[x].Name, abarr[x].key, abarr[x].cost, AbilitySelectCallback));
+							if (!contains) {
+								var abilityE:AbilityEntry = new AbilityEntry(abarr[x].Name, abarr[x].key, abarr[x].SPcost, AbilitySelectCallback)
+								abilityE.addEventListener(MouseEvent.MOUSE_OVER, function ():void 
+								{
+									toolTip.text = abarr[x].Name + "\n\n" + "Cost: " + abarr[x].SPcost + " Skill Points\n\n" + "Description:\n" + abarr[x].Description	
+								})
+								roomContainer.addChild(abilityE);
+							}else {
+								roomContainer.addChild(new AbilityEntry(abarr[x].Name, abarr[x].key, abarr[x].SPcost, AbilitySelectCallback, true));
 							}
 						}
 					}
@@ -78,15 +92,19 @@ package
 		}
 		
 		private function AbilitySelectCallback(key:String, cost:int) {
-			if (myPlayer.sp >= cost) {
-				var prompt:InGamePrompt = new InGamePrompt(FlxG.stage, "Are you sure?\n Cost: " + cost + " SP", function(){
-					myPlayer.sp -= cost;
-					Array(myPlayer.abilities).push(key);
-					FlxG.flash(0xffffff,1,function() { FlxG.stage.addChild(new Alert("You have learned a new ability")) })
-				});
-			}else {
-				FlxG.stage.addChild(new Alert("You do not have enough skill points!"));
-			}
+			myClient.bigDB.loadMyPlayerObject(function(myPlayer:DatabaseObject) {
+				if (myPlayer.sp >= cost) {
+					var prompt:InGamePrompt = new InGamePrompt(FlxG.stage, "Are you sure?\n Cost: " + cost + " SP", function(){
+						myPlayer.sp -= cost;
+						var abilities:Array = myPlayer.abilities
+						abilities.push(key);
+						myPlayer.save();
+						FlxG.flash(0xffffff,1,function() { FlxG.stage.addChild(new Alert("You have learned a new ability")) })
+					});
+				}else {
+					FlxG.stage.addChild(new Alert("You do not have enough skill points!"));
+				}
+			});
 			
 			
 		}

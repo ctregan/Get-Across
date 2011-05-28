@@ -24,6 +24,7 @@ package
 		[Embed(source = "data/bacon.png")] private var bacon:Class;
 		[Embed(source = "data/redflower.png")] private var redflower:Class;
 		[Embed(source = "data/wine.png")] private var wine:Class;
+		[Embed(source = "data/bomb.png")] private var bomb:Class;
 		public function EffectSprite(xTile:int, yTile:int, type:String, range:int, tileSize:int, uses:int, connection:Connection, index:int) 
 		{
 			this.type = type;
@@ -43,6 +44,8 @@ package
 				classToinitialize = redflower;
 			}else if (type == "wine") {
 				classToinitialize = wine;
+			}else if (type == "bomb") {
+				classToinitialize = bomb;
 			}
 			
 			super(((xTile * tileSize) + PlayState.myMap.x) - (tileSize * _range) , ((yTile * tileSize) + PlayState.myMap.y) - (tileSize * _range) , classToinitialize);
@@ -55,6 +58,13 @@ package
 					
 				});
 				myTimer.start();
+			}else if (type == "bomb" && uses < 1) {
+				var myTimer:Timer = new Timer(1000);
+				myTimer.addEventListener(TimerEvent.TIMER, function (event:TimerEvent):void 
+				{
+					myTimer.stop();
+					bombExplode();
+				});
 			}
 		}
 		
@@ -77,6 +87,11 @@ package
 				addUse(true);
 				return
 			}
+		}
+		
+		private function bombExplode() {
+			PlayState.myMap.setTile(xTile, yTile, 17, true);
+			addUse(true);
 		}
 		
 		public function addUse(propogate:Boolean):void

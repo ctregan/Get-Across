@@ -295,20 +295,20 @@ namespace GetAcross {
 			Broadcast("UserLeft", player.Id);
             endSessionTime = DateTime.Now;
             Console.WriteLine("User session end!  Set end session time: " + endSessionTime.ToString(DateTimeFormat));
+
+            // if this is a tutorial level, don't save the data
+            if (player.tutorialLevel < 5 && quest != null)
+            {
+                PlayerIO.BigDB.DeleteKeys("NewQuests", quest.Key, null);
+                Console.WriteLine("deleted key " + quest.Key);
+            }
             //update player's end session time in the newQuest database
             // if result is not null and contains something, save it into Quests db
-            if (quest != null && quest.Contains("players"))
+            else if (quest != null && quest.Contains("players"))
             {
                 // save quest map data
                 Console.WriteLine("questMap data to save: " + questMap);
                 quest.Set("tileValues", questMap);
-                if (player.tutorialLevel < 5 && quest != null)
-                {
-                    String[] keys = new String[1];
-                    keys[0] = quest.Key;
-                    PlayerIO.BigDB.DeleteKeys("NewQuests", keys);
-                    
-                }
 
                 DatabaseObject players = quest.GetObject("players");
                 if (players != null && players.Contains(playerConnectUserId))
