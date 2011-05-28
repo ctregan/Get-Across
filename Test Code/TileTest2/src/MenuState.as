@@ -221,9 +221,13 @@ package
 		//Callback function for when Random Map Button is pressed
 		private function skillPoints():void
 		{
-			this.kill();
-			FlxG.stage.removeChild(mainMenu);
-			FlxG.switchState(new AbilitySelectState(myClient));
+			if (tutorialLevel <= 5) {
+				FlxG.stage.addChild(new Alert("To Access This Option You Must Finish All 5 Tutorial Levels"));
+			}else{
+				this.kill();
+				FlxG.stage.removeChild(mainMenu);
+				FlxG.switchState(new AbilitySelectState(myClient));
+			}
 		}
 		//Callback function for Map Editor Button
 		private function mapEditor():void 
