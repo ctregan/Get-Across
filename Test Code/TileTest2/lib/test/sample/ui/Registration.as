@@ -150,7 +150,7 @@ package sample.ui{
 			client.bigDB.loadMyPlayerObject(function(ob:DatabaseObject):void {
 				ob.role = "Novice"
 				ob.level = 1
-				ob.ap = 20
+				ob.sp = 0
 				ob.xp = 0
 				ob.coin = 0
 				ob.tutorial = 1

@@ -112,6 +112,7 @@ package
 					myPlayer.tutorial = 1;
 					myPlayer.xp = 0;
 					myPlayer.coin = 0;
+					myPlayer.sp = 0;
 					myPlayer.save(function() {
 						
 						FlxG.switchState(new MenuState(client));
