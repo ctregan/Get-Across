@@ -386,7 +386,7 @@ package
 				//camMap.color = 0xFFCCCC;
 				FlxG.addCamera(camMap);							// camera that shows where the character is on the map
 				// report the level normally
-				//zoomOutAction();		// do it just in case...!
+				zoomOutAction();		// do it just in case...!
 			}
 		}
 		
@@ -1076,15 +1076,15 @@ package
 			camMap.deadzone = new FlxRect(32, 32, 48, 48);///new FlxRect(_viewSize * 2, _viewSize * 2, 320 - _viewSize * 4, 320 - _viewSize * 4);
 			FlxG.resetCameras(new FlxCamera(0, 0, _windowWidth, _windowHeight));
 			FlxG.addCamera(camMap);
-			action = new ClientAction();
-			action.aid = ClientActionType.ZOOMED_IN;
-			action.detail = new Object();			
-			action.detail["x1"] = myPlayer.xPos;
-			action.detail["y1"] = myPlayer.yPos;
-			action.ts = new Date().getTime();
-			action.ts = new Date().getTime();
-			trace("+");
-			logClient.LogAction(action);				
+			//action = new ClientAction();
+			//action.aid = ClientActionType.ZOOMED_IN;
+			//action.detail = new Object();			
+			//action.detail["x1"] = myPlayer.xPos;
+			//action.detail["y1"] = myPlayer.yPos;
+			//action.ts = new Date().getTime();
+			//action.ts = new Date().getTime();
+			//trace("+");
+			//logClient.LogAction(action);				
 		}
 		
 		private function zoomOutAction():void 
@@ -1096,15 +1096,16 @@ package
 			camMap.deadzone = new FlxRect(_viewSize * 2, _viewSize * 2, 320 - _viewSize * 4, 320 - _viewSize * 4);
 			FlxG.resetCameras(new FlxCamera(0, 0, _windowWidth, _windowHeight));
 			FlxG.addCamera(camMap);
-			action = new ClientAction();
-			action.ts = new Date().getTime();
-			action.aid = ClientActionType.ZOOMED_OUT;
-			action.detail = new Object();			
-			action.detail["x1"] = myPlayer.xPos;
-			action.detail["y1"] = myPlayer.yPos;
-			action.ts = new Date().getTime();
-			trace("+");
-			logClient.LogAction(action);				
+			//initialize log stuff if not there yet
+			//action = new ClientAction();
+			//action.ts = new Date().getTime();
+			//action.aid = ClientActionType.ZOOMED_OUT;
+			//action.detail = new Object();			
+			//action.detail["x1"] = myPlayer.xPos;
+			//action.detail["y1"] = myPlayer.yPos;
+			//action.ts = new Date().getTime();
+			//trace("+");
+			//logClient.LogAction(action);				
 		}
 		
 		private function levelToInt(s:String):int 
