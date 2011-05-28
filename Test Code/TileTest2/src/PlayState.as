@@ -367,7 +367,6 @@ package
 		}
 		override public function update():void 
 		{
-			
 			if (connected == true) {
 				if (myPlayer != null) {
 					if (myMap.getTile(myPlayer.xPos, myPlayer.yPos) == CHERRY_TILE)
@@ -782,6 +781,7 @@ package
 							if (posX < 0) posX = 0;
 							if (posY < 0) posY = 0;
 							myPlayer = new Player(posX, posY, 0, _windowHeight, _tileSize, playerAP, resourcesString, db.role);
+							connected = true;
 							playersArray[imPlayer - 1] = myPlayer;
 							
 							var playerHealthBar:FlxHealthBar = new FlxHealthBar(myPlayer, 100, 20, 0, 20, true);
@@ -815,7 +815,6 @@ package
 									}
 								});
 								abilities.text = "Abilities:\n";
-								connected = true;
 							}
 						} catch (e:Error) {
 							//Catches Error is no abilities have been set yet
@@ -823,7 +822,6 @@ package
 							if (abilities != null) abilities.text = "No Abilities\n";
 						}
 					});
-				
 				
 				//timer = setInterval(setCameras, 100);	// set up camera after 0.1 second.... to ensure everything is set
 				trace("done with character, setting camera ***");
