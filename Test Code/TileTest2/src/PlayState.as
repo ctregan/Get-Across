@@ -8,7 +8,6 @@ package
 	import org.flixel.plugin.photonstorm.FlxHealthBar;
 	import org.flixel.system.input.*;// data.FlxMouse;
 	import sample.ui.MultiAlert;
-	//import org.flixel.data.FlxPanel;
 	import playerio.*
 	import sample.ui.Alert;
 	import sample.ui.components.AbilityButton;
@@ -25,7 +24,6 @@ package
 	import com.Logging.*;
 	
 	/**
-	 * ...
 	 * @author Charlie Regan
 	 */
 	public class PlayState extends FlxState
@@ -35,19 +33,29 @@ package
 		public static const HILL_TILE:int = 1;
 		public static const TREE_TILE:int = 2;
 		public static const CHERRY_TILE:int = 3;
-		public static const WATER_TILE:int = 8;
 		public static const WIN_TILE:int = 4;
-		public static const WATER_TILE2:int = 13;
-		public static const WATER_TILE3:int = 9;
+		public static const YELLOW_TILE:int = 5;
 		public static const BRIDGE_TILE_UP:int = 6;
 		public static const BRIDGE_TILE_LEFT:int = 7;
+		public static const WATER_TILE:int = 8;
+		public static const WATER_TILE3:int = 9;
+		public static const WATER_TILE4:int = 10;
+		public static const WATER_TILE5:int = 11;
+		public static const WATER_TILE6:int = 12;
+		public static const WATER_TILE2:int = 13;
 		public static const GATE_TILE:int = 14;
+		public static const MOUNTAIN_TILE:int = 15;
+		public static const ROCK_TILE:int = 16;
+		public static const RUBBLE_TILE:int = 17;
+		public static const BRAMBLE_TILE:int = 18;
+		public static const SNAKE_TILE:int = 20;
+		public static const SNAKE_GONE_TILE:int = 21;
 		
 		//[Embed(source = "data/map_data.txt", mimeType = "application/octet-stream")] public var data_map:Class; //Tile Map array
 		[Embed(source = "data/testTileSet5_32.png")] public var data_tiles:Class; //Tile Set Image
 		[Embed(source = "data/Cursor.png")] public var cursor_img:Class; //Mouse Cursor
 		[Embed(source = "data/arrows_32.png")] public var hoverTileImg:Class;
-		[Embed(source = "data/noTileImg.png")] public var hoverTileImgNo:Class;
+		
 		private var apInfo:FlxText; //Text field to reflect the numner of AP left
 		public static var myPlayer:Player;
 		private var playersArray:Array = []; //Array of all players on board
@@ -100,7 +108,6 @@ package
 		public static var gatherLumberButton:FlxButtonPlus;
 		public static var gatherCherryButton:FlxButtonPlus;
 		
-		
 		private var win:Boolean = false; //This variable will indicate if a user has won or not
 		
 		// constants/offset numbers
@@ -146,8 +153,8 @@ package
 		var camOffsetX:int = 0;
 		var camOffsetY:int = 0;
 		var currentZoomView:int = 1;
-		public static var amountLumberText:FlxText; //= new FlxText(_resourceTextOffsetX, _resourceTextOffsetY, 150, "Lumber: 0", true);
-		public static var amountCherryText:FlxText; //= new FlxText(_resourceTextOffsetX, _resourceTextOffsetY + 20, 150, "Cherry: 0", true);
+		public static var amountLumberText:FlxText;
+		public static var amountCherryText:FlxText;
 		
 		private var timer;				// object used for delays.
 		private var tileHover:FlxSprite;
@@ -162,6 +169,14 @@ package
 		
 		
 		public var vid:int = -2;
+		// variables for tutorial levels
+		private var sawHill:Boolean = false;
+		private var sawCherryTree:Boolean = false;
+		private var sawBridge:Boolean = false;
+		private var sawNearStar:Boolean = false;
+		private var sawMonster:Boolean = false;
+		private var sawBattle:Boolean = false;
+
 		
 		public function PlayState(connection:Connection, client:Client):void
 		{
@@ -363,11 +378,65 @@ package
 			connection.disconnect();
 			this.kill();
 			FlxG.switchState(new QuestCompleteState(xpGain, coinGain, client, nextLevel));
-			
 		}
+		
 		override public function update():void 
 		{
-			
+			// if this is a tutorial,
+			// show messages for when player reaches relevant parts of the map
+			if (myPlayer != null && level_name != null && levelToInt(level_name) > 0) {
+				var tutorial_number: int = levelToInt(level_name);
+				// tutorial 1 messages
+				if (tutorial_number == 1)
+				{
+					if (!sawHill && myPlayer.xPos == 0 && myPlayer.yPos == 5)
+					{
+						FlxG.stage.addChild(new MultiAlert(new Array( "A hill!", "It takes 3 AP to get across.", "Exhausting!" )));
+						sawHill = true;
+					}
+					
+					else if (!sawCherryTree && myPlayer.xPos == 2 && myPlayer.yPos == 0)
+					{
+						FlxG.stage.addChild(new MultiAlert(new Array( "This is a cherry tree!", "You can harvest a cherry or lumber for 1 AP.", "But then the tree will disappear!" )));
+						sawCherryTree = true;
+					}
+					
+					else if (!sawBridge && myPlayer.xPos == 6 && myPlayer.yPos == 2)
+					{
+						FlxG.stage.addChild(new MultiAlert(new Array( "This is a bridge!", "You can use a bridge to get across water!")));
+						sawBridge = true;
+					}
+					
+					else if (!sawNearStar && ((myPlayer.xPos == 8 && myPlayer.yPos == 9) || (myPlayer.xPos == 9 && myPlayer.yPos == 8)))
+					{
+						FlxG.stage.addChild(new MultiAlert(new Array( "You're almost at the red star!", "Just go one more place to reach the end!" )));
+						sawNearStar = true;
+					}
+				}
+				
+				// tutorial 2 messages
+				else if (tutorial_number == 2)
+				{
+					if (gatherCherryButton != null) lyrHUD.remove(gatherCherryButton);
+				}
+				
+				// tutorial 3 messages
+				else if (tutorial_number == 4)
+				{
+					if (!sawMonster && myPlayer.xPos == 5 && myPlayer.yPos == 4)
+					{
+						FlxG.stage.addChild(new MultiAlert(new Array( "You're almost at the monster!  It looks dangerous.", "Step forward to do battle with it!" )));
+						sawMonster = true;
+					}
+					
+					else if (!sawBattle && myPlayer.xPos == 6 && myPlayer.yPos == 4)
+					{
+						FlxG.stage.addChild(new MultiAlert(new Array( "You can choose to do weaker or stronger attacks at the bottom right.", "Stronger attacks will take more AP." )));
+						sawBattle = true;
+					}
+				}
+			}
+
 			if (connected == true) {
 				if (myPlayer != null) {
 					if (myMap.getTile(myPlayer.xPos, myPlayer.yPos) == CHERRY_TILE)
@@ -412,7 +481,7 @@ package
 
 				if (myPlayer != null && !win) {
 					/*** DEBUG CHEATS ***/
-					if (myPlayer.AP <= 20 && FlxG.keys.justPressed("A")) {
+					/*if (myPlayer.AP <= 20 && FlxG.keys.justPressed("A")) {
 						myPlayer.AP++;
 						connection.send("updateStat", "AP", myPlayer.AP);
 					}
@@ -426,16 +495,12 @@ package
 						myPlayer.amountCherry++;
 						connection.send("updateStat", "cherry", myPlayer.amountCherry);
 						amountCherryText.text = "Cherry: " + myPlayer.amountCherry;
-					}
+					}*/
 					/*** END DEBUG CHEATS ***/
 					
 					lyrBattle.visible = myPlayer.inBattle; //Only show the battle hud if the player is in combat
 					 //Detect Monster collision, if a monster is overlapping your player then you are now in a fight
 					if (!myPlayer.inBattle) {
-						/*trace("the monster array i'm looking at: " );
-						for (var m:int = 0; m < monsterArray.length; m++ )
-							trace("index " + m + ":" + monsterArray[m]._xTile + "," + monsterArray[m]._yTile);*/
-						
 						var monster:int = 0;
 						while (monster < monsterArray.length && !myPlayer.inBattle) {
 							FlxG.overlap(monsterArray[monster], myPlayer, function() {
@@ -514,28 +579,7 @@ package
 							action.detail["ap_cost"] = cost;
 							action.detail["lumber_needed"] = activeAbility._neededLumber;
 							action.ts = new Date().getTime();
-							logClient.LogAction(action);	
-							/*trace("just cast ability");
-							// if player was in battle, see if they still are
-							if (myPlayer.inBattle) {
-								trace("player was in battle and is at " + myPlayer.xPos + "," + myPlayer.yPos);
-								myPlayer.inBattle = false;
-								for (var monster:int in monsterArray) {
-									//if (monsterArray[monster]._xTile == myPlayer.xPos && monsterArray[monster]._yTile == myPlayer.yPos) {
-									//	myPlayer.inBattle = true;
-									FlxG.overlap(monsterArray[monster], myPlayer, function() {
-										if (!monsterArray[monster]._isEating) {
-											myPlayer.inBattle = true;
-											trace("monster is not eating");
-										} else trace ("monster " + monster + " is eating!");
-										myPlayer.combatant = monsterArray[monster];
-										errorMessage.text = "BATTLE!";
-										trace("player still in battle!  still overlapping with monster " + monster + "at "+ monsterArray[monster]._xTile + "," + monsterArray[monster]._yTile);
-										lyrBattle.visible = true;
-									});
-									
-								}
-							 }*/
+							logClient.LogAction(action);
 							
 							connection.send("updateStat", "AP", myPlayer.AP);
 							connection.send("updateStat", "lumber", myPlayer.amountLumber);
@@ -543,7 +587,7 @@ package
 							setActiveAbility(null);
 							abilitySelected = false;
 							amountLumberText.text = "Lumber: " + myPlayer.amountLumber;
-							amountLumberText.text = "Cherry: " + myPlayer.amountCherry;
+							amountCherryText.text = "Cherry: " + myPlayer.amountCherry;
 						}
 					} 
 					//CLICK MOVING
@@ -584,46 +628,13 @@ package
 							}
 							else if (yTemp > myPlayer.yPos) {
 								tileHover.frame = 1;
-							}							
-							
-							// if player wants to move and is in battle, let them try to escape
-							/*if (myMouse.justPressed() && abilitySelected == false && myPlayer.inBattle) {
-								if (myPlayer.AP == 0)
-									fireNotification(myPlayer.x - 5, myPlayer.y - 10, "Not enough AP!", "loss");
-								else {
-									// if player escaped
-									if ((Math.random() * 5) == 4) {
-										fireNotification(myPlayer.x + 5, myPlayer.y - 10, "-10 AP to escape!", "loss");
-										myPlayer.AP -= 10;
-										if (myPlayer.AP < 0) myPlayer.AP = 0;
-										connection.send("updateStat", "AP", myPlayer.AP);
-										
-										if (xTemp < myPlayer.xPos)
-											myPlayer.facing = FlxSprite.LEFT; 
-										else if (xTemp > myPlayer.xPos)
-											myPlayer.facing = FlxSprite.RIGHT; 
-										else if (yTemp < myPlayer.yPos)
-											myPlayer.facing = FlxSprite.UP; 
-										else if (yTemp > myPlayer.yPos)
-											myPlayer.facing = FlxSprite.DOWN; 
-											
-										myPlayer.inBattle = false;
-										win = myPlayer.movePlayer(xTemp - myPlayer.xPos, yTemp - myPlayer.yPos, _tileSize, connection)
-									}
-									else {
-										fireNotification(myPlayer.x + 5, myPlayer.y - 10, "-1 AP\nCouldn't escape monster!", "loss");
-										myPlayer.AP--;
-										connection.send("updateStat", "AP", myPlayer.AP);
-									}
-								}
-							}*/
+							}
 							
 							// if player wants to move and is not in battle
 							if (myMouse.justPressed() && abilitySelected == false && !myPlayer.isMoving && myPlayer.inBattle)
 								fireNotification(myPlayer.x + 20, myPlayer.y - 20, "Can't escape monster!", "loss");
 							else if (myMouse.justPressed() && abilitySelected == false && !myPlayer.isMoving && !myPlayer.inBattle) {
-								//trace("okay to move");
-								// check for condition....
+								// it's okay to move -- check for condition....
 								moved = true;
 								if (xTemp < myPlayer.xPos)
 									myPlayer.facing = FlxSprite.LEFT; 
@@ -639,12 +650,11 @@ package
 								fireNotification(myPlayer.xPos + 20, myPlayer.yPos - 20, "Invalid move!", "loss");
 							}
 						} else {
-							// if not within reach, set color to red
-							//tileHover.loadGraphic(hoverTileImgNo);
+							// if player can't move here, don't show arrow
 							tileHover.visible = false;
 						}
 					}else if(!myPlayer.isMoving) {
-						myPlayer.play("idle" + myPlayer.facing);
+						if (myPlayer != null) myPlayer.play("idle" + myPlayer.facing);
 					}
 					if (moved) {
 						trace("sending moved");
@@ -678,28 +688,6 @@ package
 					} else {
 						mouseLocation.text = "";
 					}
-					/*
-					//Only show the battle hud if the player is in combat
-					lyrBattle.visible = myPlayer.inBattle;
-					 //Detect Monster collision, if a monster is overlapping your player then you are now in a fight
-					if(myPlayer.inBattle == false){
-						for (var monster in monsterArray) {
-							
-								FlxG.overlap(monsterArray[monster], myPlayer, function() {
-									if(Monster(monsterArray[monster]).moving == false){
-										myPlayer.inBattle = true;
-										trace("Monster at " + monsterArray[monster].x + "," + monsterArray[monster].y + "   Player at " + myPlayer.x + "," + myPlayer.y);
-										FlxG.flash(0xFFFFFF, 1,function ():void 
-										{
-											FlxG.stage.addChild(new Alert("YOU HAVE ENTERED BATTLE"));
-										});
-										myPlayer.combatant = monsterArray[monster]
-										errorMessage.text = "BATTLE!";
-										lyrBattle.visible = true;
-									}
-								});
-						}
-					 }*/
 						
 					//Detect Button Collision
 					for (var button in buttonArray) {
@@ -715,30 +703,82 @@ package
 		
 		//Give a tile number and return information String about that Tile
 		private function tileInformation(type:Number):String
-		{
-			if (type == HILL_TILE) {
-				return "Hill (Travel Cost = 3 AP)";
-			}else if (type == TREE_TILE) {
-				return "Tree (Travel Cost = 1 AP)";
-			}else if (type == CHERRY_TILE) {
-				return "Cherry Tree (Travel Cost = 1 AP)";
-			}else if (type == WATER_TILE || type == 6 || type == 7) {
-				return "Water (Impassible without help)";
-			}else if (type == GRASS_TILE) {
-				return "Land (Travel Cost = 0 AP)";
-			}else if (type == WIN_TILE) {
-				return "End Point (Reach here to win!)";
-			}else{
-				return "Unknown Land Type";
+		{			
+			switch (type)
+			{
+				case GRASS_TILE:
+					return "Grass -- no travel cost!  Go freely!";
+					break;
+				case HILL_TILE:
+					return "Hill -- travel cost is 3 AP!";
+					break;
+				case TREE_TILE:
+					return "A tree -- no travel cost!  Pretty nice-looking, isn't it?";
+					break;
+				case CHERRY_TILE:
+					return "A cherry tree -- gather lumber or cherries for 1 AP!";
+					break;
+				case WIN_TILE:
+					return "A red star -- reach here to win the level!";
+					break;
+				case YELLOW_TILE:
+					return "A yellow square.  Why is this here?  No one remembers.";
+					break;
+				case BRIDGE_TILE_UP:
+					return "A bridge.  Use it to get across water!";
+					break;
+				case BRIDGE_TILE_LEFT:
+					return "A bridge.  Use it to get across water!";
+					break;
+				case WATER_TILE:
+					return "A river.  Impassible without help.";
+					break;
+				case WATER_TILE2:
+					return "A river.  Impassible without help.";
+					break;
+				case WATER_TILE3:
+					return "A river.  Impassible without help.";
+					break;
+				case WATER_TILE4:
+					return "A river.  Impassible without help.";
+					break;
+				case WATER_TILE5:
+					return "A river.  Impassible without help.";
+					break;
+				case WATER_TILE6:
+					return "A river.  Impassible without help.";
+					break;
+				case GATE_TILE:
+					return "A gate.  You can't get past it without opening it first.";
+					break;
+				case MOUNTAIN_TILE:
+					return "A mountain.  You need 15 AP to cross to cross it!";
+					break;
+				case ROCK_TILE:
+					return "A rock.  It's too high to pass.  A crafter could probably destroy it..."
+					break;
+				case RUBBLE_TILE:
+					return "Rubble.  Get across it!  Yeah!";
+					break;
+				case BRAMBLE_TILE:
+					return "Brambles.  Ouch!  They're too painful to get through!"
+					break;
+				case SNAKE_TILE:
+					return "An extremely hungry snake.  DON'T GET CLOSE TO IT, IT MIGHT EAT YOU";
+					break;
+				case SNAKE_GONE_TILE:
+					return "There used to be a snake here.  Looks like it fled!"
+					break;
+				default:
+					return "Unknown tile type...";
+					break;
 			}
-			
 		}
 		
 		//Returns whether the given tile location is within range of the active ability
 		private function checkActiveAbilityRange(xTile:int, yTile:int):Boolean
 		{
 			return (Math.abs((myPlayer.xPos - xTile) + (myPlayer.yPos - yTile)) <= activeAbility.getRange()) 
-			
 		}
 		
 		private function getTileX():int {
@@ -754,6 +794,7 @@ package
 		{
 			return abilitySelected;
 		}
+		
 		// Updates which ability is currently active
 		public static function setActiveAbility(toActivate:Ability):void 
 		{
@@ -764,72 +805,68 @@ package
 				activeAbility = toActivate;
 			}
 		}
+		
 		//Set Up the Player
 		private function playerSetup(posX:int, posY:int, name:String) {
-					
+			//Load Abilities for Player From Database
+			var abilityObject:DatabaseObject;
+			var abilityTextWidth:int = 210;
+			var abilityTextLeftOffset:int = -25;
+			var abilityTextUpperOffset:int = 20;
+			var tempButton:AbilityButton;
+			var abilityText:FlxText;
+			var spaceBetweenAbilities:int = 90;
+			client.bigDB.loadMyPlayerObject(function(db:DatabaseObject):void {
+				try {
+					playerName = name;
+					if (posX < 0) posX = 0;
+					if (posY < 0) posY = 0;
+					myPlayer = new Player(posX, posY, 0, _windowHeight, _tileSize, playerAP, resourcesString, db.role);
+					playersArray[imPlayer - 1] = myPlayer;
+					connected = true;	// player is made; now allow update() to go
+					var playerHealthBar:FlxHealthBar = new FlxHealthBar(myPlayer, 100, 20, 0, 20, true);
+					playerHealthBar.x = _apBoxOffsetX - 35
+					playerHealthBar.y = _apBoxOffsetY - 5
+					lyrHUD.add(playerHealthBar);
+					lyrTop.add(apInfo);
+					lyrSprites.add(myPlayer);
+					lvl.text = "Level: " + db.level;
 
-					//Load Abilities for Player From Database
-					var abilityObject:DatabaseObject;
-					var abilityTextWidth:int = 210;
-					var abilityTextLeftOffset:int = -25;
-					var abilityTextUpperOffset:int = 20;
-					var tempButton:AbilityButton;
-					var abilityText:FlxText;
-					var spaceBetweenAbilities:int = 90;
-					client.bigDB.loadMyPlayerObject(function(db:DatabaseObject):void {
-						try {
-							playerName = name;
-							if (posX < 0) posX = 0;
-							if (posY < 0) posY = 0;
-							myPlayer = new Player(posX, posY, 0, _windowHeight, _tileSize, playerAP, resourcesString, db.role);
-							connected = true;
-							playersArray[imPlayer - 1] = myPlayer;
-							
-							var playerHealthBar:FlxHealthBar = new FlxHealthBar(myPlayer, 100, 20, 0, 20, true);
-							playerHealthBar.x = _apBoxOffsetX - 35
-							playerHealthBar.y = _apBoxOffsetY - 5
-							lyrHUD.add(playerHealthBar);
-							lyrTop.add(apInfo);
-							lyrSprites.add(myPlayer);
-							lvl.text = "Level: " + db.level;
-							
-							var abilityArray:Array = db.abilities;
-							if (abilityArray != null || abilityArray.length > 0) {
-								client.bigDB.loadKeys("Abilities", db.abilities, function(dbarr:Array):void {
-									var yButtonPlacementModifier:int = 0;
-									for (var z:String in dbarr) {
-										abilityObject = dbarr[z];
-										var myAbility:Ability = new Ability(_tileSize, myPlayer, abilityObject);
-										myAbility.visible = false;
-										lyrStage.add(myAbility);
-										//trace("Loaded Ability " + abilityObject.Name + "\n");
-										tempButton = new AbilityButton(_cardBoxOffsetX, _cardBoxOffsetY + yButtonPlacementModifier, myAbility, abilityObject.Name)
-										abilityText = new FlxText(_cardBoxOffsetX + abilityTextLeftOffset, _cardBoxOffsetY + yButtonPlacementModifier + abilityTextUpperOffset, abilityTextWidth, abilityObject.Description);
-										abilityText.text += "\n\tAP cost: " + abilityObject.Cost;
-										if (abilityObject.Lumber != null) abilityText.text += "\n\tLumber needed: " + abilityObject.Lumber;
-										if (abilityObject.Cherry != null) abilityText.text += "\n\tCherries needed: " + abilityObject.Cherry;
-										abilityText.setFormat(null, 10);
-										lyrHUD.add(tempButton);
-										lyrHUD.add(abilityText);
-										myAbility.setButton(tempButton);
-										yButtonPlacementModifier += spaceBetweenAbilities;
-									}
-								});
-								abilities.text = "Abilities:\n";
+					var abilityArray:Array = db.abilities;
+					if (abilityArray != null || abilityArray.length > 0) {
+						client.bigDB.loadKeys("Abilities", db.abilities, function(dbarr:Array):void {
+							var yButtonPlacementModifier:int = 0;
+							for (var z:String in dbarr) {
+								abilityObject = dbarr[z];
+								var myAbility:Ability = new Ability(_tileSize, myPlayer, abilityObject);
+								myAbility.visible = false;
+								lyrStage.add(myAbility);
+								//trace("Loaded Ability " + abilityObject.Name + "\n");
+								tempButton = new AbilityButton(_cardBoxOffsetX, _cardBoxOffsetY + yButtonPlacementModifier, myAbility, abilityObject.Name)
+								abilityText = new FlxText(_cardBoxOffsetX + abilityTextLeftOffset, _cardBoxOffsetY + yButtonPlacementModifier + abilityTextUpperOffset, abilityTextWidth, abilityObject.Description);
+								abilityText.text += "\n\tAP cost: " + abilityObject.Cost;
+								if (abilityObject.Lumber != null) abilityText.text += "\n\tLumber needed: " + abilityObject.Lumber;
+								if (abilityObject.Cherry != null) abilityText.text += "\n\tCherries needed: " + abilityObject.Cherry;
+								abilityText.setFormat(null, 10);
+								lyrHUD.add(tempButton);
+								lyrHUD.add(abilityText);
+								myAbility.setButton(tempButton);
+								yButtonPlacementModifier += spaceBetweenAbilities;
 							}
-
-						} catch (e:Error) {
-							//Catches Error is no abilities have been set yet
-							trace("unable to load abilities");
-							if (abilities != null) abilities.text = "No Abilities\n";
-						}
-					});
-				
-				
-				//timer = setInterval(setCameras, 100);	// set up camera after 0.1 second.... to ensure everything is set
-				trace("done with character, setting camera ***");
-				setCameras();
+						});
+						abilities.text = "Abilities:\n";
+					}
+				} catch (e:Error) {
+					//Catches Error is no abilities have been set yet
+					trace("unable to load abilities");
+					if (abilities != null) abilities.text = "No Abilities\n";
+				}
+			});
+			
+			trace("done with character, setting camera ***");
+			setCameras();
 		}
+		
 		//Add all flixel elements to the board, essentially drawing the game.
 		private function boardSetup(map_data:String, playerName:String, levelKey:String):void 
 		{
@@ -881,7 +918,7 @@ package
 					}
 				}
 			}, null, "Weak Attack: 1 AP", 120));
-			//lyrBattle.add(new FlxText(24, 286, 100, "Weak Attack"));
+			
 			//Medium Attack Button
 			lyrBattle.add(new FlxButtonPlus(540, 320, function() { 
 				if (myPlayer.inBattle ) {
@@ -895,9 +932,7 @@ package
 				}
 			}, null, "Medium Attack: 3 AP", 120));
 			
-			//lyrBattle.add(new FlxText(24, 316, 100, "Medium Attack"));
 			//Strong Attack Button
-			//lyrBattle.add(new FlxButton(22, 344, "text", function() { 
 			lyrBattle.add(new FlxButtonPlus(540, 350, function() { 
 				if (myPlayer.inBattle) {
 					if ( myPlayer.AP > 5) {
@@ -909,13 +944,12 @@ package
 					}
 				}
 			},null, "Strong Attack: 5 AP", 120));
-			//lyrBattle.add(new FlxText(24, 346, 100, "Strong Attack"));
+			
 			//Initially the battle hud is invisible, it will be visible when a user enters combat
 			lyrBattle.visible = false;
 			
 			//render game background
 			//Right Side HUD
-			//resources = new FlxText(_resourceTextOffsetX, _resourceTextOffsetY, 150, "Resources:", true);			
 			gatherLumberButton = new FlxButtonPlus(0,0, function():void { gatherResource("lumber"); }, null, "Gather lumber!");
 			gatherCherryButton = new FlxButtonPlus(0, 0, function():void { gatherResource("cherry"); }, null, "Gather cherry!");
 			amountLumberText = new FlxText(_resourceTextOffsetX, _resourceTextOffsetY, 150, "Lumber: 0", true);
@@ -997,7 +1031,6 @@ package
 			logClient.LogAction(action);
 			
 			setCameras();
-			
 			logClient.SetUid(function f(d:String):void {
 				//Starting level 1!
 				//First we need a new dqid to associate with this play of the level.
@@ -1054,16 +1087,23 @@ package
 		
 		private function levelToInt(s:String):int 
 		{
-			if (s =="Tutorial_1") {
-				return 1;
-			} else if (s =="Tutorial_2") {
-				return 2;
-			} else if (s == "Tutorial_3") {
-				return 3;
-			} else if (s=="Tutorial_4") {
-				return 4;
-			} else if (s=="Tutorial_5") {
-				return 5;
+			switch (s)
+			{
+				case "Tutorial_1":
+					return 1;
+					break;
+				case "Tutorial_2":
+					return 2;
+					break;
+				case "Tutorial_3":
+					return 3;
+					break;
+				case "Tutorial_4":
+					return 4;
+					break;
+				case "Tutorial_5":
+					return 5;
+					break;
 			}
 			return -1;
 		}
@@ -1079,10 +1119,8 @@ package
 		
 		// given x and y position of mouse, returns what tile it is hovering over
 		public static function getTileIdentity(x:int,y:int):uint {
-			//return myMap.getTile((x - _FlxG.width) / _tileSize, (y - FlxG.height) / _tileSize);
 			var xInt:Number = (x - _mapOffsetX) / _tileSize;
 			var yInt:Number = (y - _mapOffsetY) / _tileSize;
-			//trace("getting identity of tile " + xInt + "," + yInt);
 			return myMap.getTile(xInt, yInt);
 		}
 		
@@ -1090,21 +1128,29 @@ package
 		private function getTileType(x:int, y:int):uint {
 			return 0;
 		}
+		
+		// given a tile x and y position and new identity, change that tile into new identity
 		private function setTileIdentity(x:int, y:int, identity:int):void {
 			var xInt:int = (x - _mapOffsetX) / _tileSize;
 			var yInt:int = (y - _mapOffsetY) / _tileSize;			
 			myMap.setTile(xInt, yInt, identity, true);
 		}
-
+		
+		// return int identity of a tile
 		private function getTileIdentity(x:int,y:int):uint {
 			return myMap.getTile((x - _mapOffsetX) / _tileSize, (y - _mapOffsetY) / _tileSize);
 		}
-		//Callback function for the mainMenu Button
+		
+		// Callback function for the mainMenu Button
+		// kills connection and returns player to main menu
 		private function mainMenu():void {
 			connection.disconnect();
 			this.kill();
 			FlxG.switchState(new MenuState(myClient));
 		}
+		
+		// increase player's amount of given resource
+		// sample resource types: "lumber", "cherry"
 		public function gatherResource(resourceType:String):void
 		{
 			if (myPlayer.AP > 1){
@@ -1156,9 +1202,9 @@ package
 			}
 		}
 		
+		// make a notification show on screen, i.e. lost AP, gathered lumber
 		public static function fireNotification(xPos:int, yPos:int, message:String, messageType:String):void
 		{
-			// send notificatioin that AP was lost
 			var note:Notification = new Notification(xPos, yPos, message, messageType);
 			lyrHUD.add(note);
 		}

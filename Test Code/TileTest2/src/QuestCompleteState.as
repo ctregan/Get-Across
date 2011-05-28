@@ -44,16 +44,13 @@ package
 			client.bigDB.loadMyPlayerObject(loadPlayerSuccess);
 			mainMenuButton = new TextButton("Main Menu", continueButton);
 			
-			mainMenuButton.visible = false;
-			nextLevelButton.visible = false;
+			mainMenuButton.visible = nextLevelButton.visible = false;
 			if (nextLevel == "") {
-				nextLevelButton = new TextButton("Next Level", null);
-				nextLevelButton.visible = false;
-				nextLevelButton.enabled = false;
+				nextLevelButton.visible = nextLevelButton.enabled = false;
 			}else if (nextLevel == "Class_Choose") {
+				FlxG.stage.addChild(new Alert("Congratulations!  You finished all the tutorials!"));
 				nextLevelButton = new TextButton("Choose Class", chooseClassCallback);
-				mainMenuButton.visible = false;
-				mainMenuButton.enabled = false;
+				mainMenuButton.visible = mainMenuButton.enabled = false;
 			}else {
 				nextLevelButton = new TextButton("Next Level", nextLevelCallback);
 			}

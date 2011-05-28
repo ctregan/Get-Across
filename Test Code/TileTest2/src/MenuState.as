@@ -29,6 +29,7 @@ package
 		
 		private static var _windowWidth:int = 700;
 		private static var _windowHeight:int = 400;
+		private static var playerClass:String;
 		
 		public function MenuState(client:Client) 
 		{
@@ -60,7 +61,8 @@ package
 			coinLabel.setTextFormat(coinTextFormat);
 			
 			// image of player avatar
-			switch (ob.role)
+			playerClass = ob.role;
+			switch (playerClass)
 			{
 				case "Planter":
 					playerClassImg.loadGraphic(planterImg);
@@ -85,16 +87,14 @@ package
 					continueButton.visible = false;
 				}else if(tutorialLevel <= 5) {
 					continueButton = new TextButton("Continue Tutorial " + ob.tutorial + " of 5", startNewTutorial);
-				}else {
-					continueButton = new TextButton("Continue Last Quest", continueQuest);
-					tutorialButton.visible = false;
-					tutorialButton.enabled = false;
+				} else if (tutorialLevel == 6 && playerClass == "Novice") {
+					continueButton = new TextButton("You finished all tutorial levels!  Choose your class!", chooseClass);
+				}else { // player has finished tutorials
+					continueButton = new TextButton("Choose Your Class", chooseClass);
 					if (_questID == "noQuest") {
-						continueButton.visible = false;
-						continueButton.enabled = false;
+						continueButton.visible = continueButton.enabled = false;
 					}else {
-						continueButton.enabled = true;
-						continueButton.visible = true;
+						continueButton.enabled = continueButton.visible = true;
 					}
 				}
 			}
@@ -131,6 +131,12 @@ package
 			)
 			loader.width = FlxG.stage.stageWidth;
 			loader.height = FlxG.stage.stageHeight;
+		}
+		
+		// callback function for choosing class
+		private function chooseClass():void {
+			FlxG.switchState(new ClassChooseState(myClient));
+			FlxG.stage.removeChild(mainMenu);
 		}
 		
 		//Callback function for when Continue Button is pressed
@@ -197,9 +203,9 @@ package
 		//Callback function for when New Game Button is pressed
 		private function newGame():void
 		{
-			if (tutorialLevel <= 5) {
+			if (playerClass == "Novice") {
 				FlxG.stage.addChild(new Alert("To Access This Option You Must Finish All 5 Tutorial Levels"));
-			}else if (continueButton.enabled == true) {
+			} else if (continueButton.enabled == true) {
 				var prompt:InGamePrompt = new InGamePrompt(FlxG.stage, "You will lose your old quest data if you start a new game. You sure?", function() {
 					startNewGameAccept();
 				});

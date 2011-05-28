@@ -69,6 +69,7 @@ package
 					myPlayer.role = classChoice;
 					myPlayer.level = 1;
 					myPlayer.xp = 0;
+					myPlayer.sp = 0;
 					myPlayer.abilities = startingAbility;
 					myPlayer.save();
 				});
