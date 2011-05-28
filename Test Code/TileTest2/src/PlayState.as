@@ -44,7 +44,7 @@ package
 		public static const GATE_TILE:int = 14;
 		
 		//[Embed(source = "data/map_data.txt", mimeType = "application/octet-stream")] public var data_map:Class; //Tile Map array
-		[Embed(source = "data/testTileSet3_32.png")] public var data_tiles:Class; //Tile Set Image
+		[Embed(source = "data/testTileSet4_32.png")] public var data_tiles:Class; //Tile Set Image
 		[Embed(source = "data/Cursor.png")] public var cursor_img:Class; //Mouse Cursor
 		[Embed(source = "data/arrows_32.png")] public var hoverTileImg:Class;
 		[Embed(source = "data/noTileImg.png")] public var hoverTileImgNo:Class;
@@ -860,18 +860,26 @@ package
 			//Weak Attack Button
 			lyrBattle.add(new FlxButtonPlus(540, 290,  function():void { 
 				if (myPlayer.inBattle) {
-					myPlayer.combatant.attack(1, myPlayer);
-					myPlayer.AP--;
-					connection.send("updateStat", "AP", myPlayer.AP);				
+					if (myPlayer.AP > 1){
+						myPlayer.combatant.attack(1, myPlayer);
+						myPlayer.AP--;
+						connection.send("updateStat", "AP", myPlayer.AP);	
+					} else {
+						fireNotification(myPlayer.x + 20, myPlayer.y - 20, "Not enough AP to attack!", "loss");
+					}
 				}
 			}, null, "Weak Attack: 1 AP", 120));
 			//lyrBattle.add(new FlxText(24, 286, 100, "Weak Attack"));
 			//Medium Attack Button
 			lyrBattle.add(new FlxButtonPlus(540, 320, function() { 
-				if (myPlayer.inBattle) {
+				if (myPlayer.inBattle ) {
+					if (myPlayer.AP > 3){
 					myPlayer.combatant.attack(2, myPlayer);
 					myPlayer.AP -= 3;
 					connection.send("updateStat", "AP", myPlayer.AP);
+					} else {
+						fireNotification(myPlayer.x + 20, myPlayer.y - 20, "Not enough AP to attack!", "loss");
+					}
 				}
 			}, null, "Medium Attack: 3 AP", 120));
 			
@@ -880,9 +888,13 @@ package
 			//lyrBattle.add(new FlxButton(22, 344, "text", function() { 
 			lyrBattle.add(new FlxButtonPlus(540, 350, function() { 
 				if (myPlayer.inBattle) {
+					if ( myPlayer.AP > 5) {
 					myPlayer.combatant.attack(3, myPlayer);
 					myPlayer.AP -= 5;
 					connection.send("updateStat", "AP", myPlayer.AP);
+					} else {
+						fireNotification(myPlayer.x + 20, myPlayer.y - 20, "Not enough AP to attack!", "loss");
+					}
 				}
 			},null, "Strong Attack: 5 AP", 120));
 			//lyrBattle.add(new FlxText(24, 346, 100, "Strong Attack"));
@@ -1083,49 +1095,53 @@ package
 		}
 		public function gatherResource(resourceType:String):void
 		{
-			// increase player's amount of given resource
-			switch (resourceType)
-			{
-				case "lumber":
-					myPlayer.amountLumber++;
-					connection.send("updateStat", "lumber", myPlayer.amountLumber);
-					fireNotification(myPlayer.x + 30, myPlayer.y + 20, "+1 Lumber", "gain");
-					amountLumberText.text = "Lumber: " + myPlayer.amountLumber;
-					action = new ClientAction();
-					action.ts = new Date().getTime();
-					action.detail = new Object();
-					action.detail["x1"] = myPlayer.xPos;
-					action.detail["y1"] = myPlayer.yPos;					
-					action.aid = ClientActionType.COLLECT_LUMBER;
-					trace("lumber");
-					logClient.LogAction(action);						
-					break;
-				case "cherry":
-					myPlayer.amountCherry++;
-					connection.send("updateStat", "cherry", myPlayer.amountCherry);
-					fireNotification(myPlayer.x + 30, myPlayer.y + 20, "+1 Cherry", "gain");
-					amountCherryText.text = "Cherry: " + myPlayer.amountCherry;
-					action = new ClientAction();
-					action.ts = new Date().getTime();
-					action.detail = new Object();
-					action.detail["x1"] = myPlayer.xPos;
-					action.detail["y1"] = myPlayer.yPos;					
-					action.aid = ClientActionType.COLLECT_CHERRY;
-					trace("cherry");
-					logClient.LogAction(action);					
-					break;
+			if (myPlayer.AP > 1){
+				// increase player's amount of given resource
+				switch (resourceType)
+				{
+					case "lumber":
+						myPlayer.amountLumber++;
+						connection.send("updateStat", "lumber", myPlayer.amountLumber);
+						fireNotification(myPlayer.x + 30, myPlayer.y + 20, "+1 Lumber", "gain");
+						amountLumberText.text = "Lumber: " + myPlayer.amountLumber;
+						action = new ClientAction();
+						action.ts = new Date().getTime();
+						action.detail = new Object();
+						action.detail["x1"] = myPlayer.xPos;
+						action.detail["y1"] = myPlayer.yPos;					
+						action.aid = ClientActionType.COLLECT_LUMBER;
+						trace("lumber");
+						logClient.LogAction(action);						
+						break;
+					case "cherry":
+						myPlayer.amountCherry++;
+						connection.send("updateStat", "cherry", myPlayer.amountCherry);
+						fireNotification(myPlayer.x + 30, myPlayer.y + 20, "+1 Cherry", "gain");
+						amountCherryText.text = "Cherry: " + myPlayer.amountCherry;
+						action = new ClientAction();
+						action.ts = new Date().getTime();
+						action.detail = new Object();
+						action.detail["x1"] = myPlayer.xPos;
+						action.detail["y1"] = myPlayer.yPos;					
+						action.aid = ClientActionType.COLLECT_CHERRY;
+						trace("cherry");
+						logClient.LogAction(action);					
+						break;
+				}
+				
+				myPlayer.AP--;
+				connection.send("updateStat", "AP", myPlayer.AP);
+				fireNotification(myPlayer.x + 30, myPlayer.y, "-1 AP", "loss");
+				
+				// remove tree from tile, and tell server
+				myMap.setTile(myPlayer.xPos, myPlayer.yPos, GRASS_TILE);
+				
+				// tell server about new map, new values for player
+				connection.send("MapTileChanged", myPlayer.xPos, myPlayer.yPos, GRASS_TILE);
+				connection.send("QuestMapUpdate", myMap.getMapData());
+			} else {
+				fireNotification(myPlayer.x + 20, myPlayer.y - 20, "Not enough AP to gather resource!", "loss");
 			}
-			
-			myPlayer.AP--;
-			connection.send("updateStat", "AP", myPlayer.AP);
-			fireNotification(myPlayer.x + 30, myPlayer.y, "-1 AP", "loss");
-			
-			// remove tree from tile, and tell server
-			myMap.setTile(myPlayer.xPos, myPlayer.yPos, GRASS_TILE);
-			
-			// tell server about new map, new values for player
-			connection.send("MapTileChanged", myPlayer.xPos, myPlayer.yPos, GRASS_TILE);
-			connection.send("QuestMapUpdate", myMap.getMapData());
 		}
 		
 		public static function fireNotification(xPos:int, yPos:int, message:String, messageType:String):void
