@@ -61,10 +61,13 @@ package
 		
 		private var _user_id:String = "Nobody";
 		
+		private var removedCherryButton:Boolean = true;
+		
 		//[Embed(source = "data/map_data.txt", mimeType = "application/octet-stream")] public var data_map:Class; //Tile Map array
 		[Embed(source = "data/testTileSet5_32.png")] public var data_tiles:Class; //Tile Set Image
 		[Embed(source = "data/Cursor.png")] public var cursor_img:Class; //Mouse Cursor
 		[Embed(source = "data/arrows_32.png")] public var hoverTileImg:Class;
+		[Embed(source = "data/sparkle.png")] public var sparkleTileImg:Class;
 		
 		private var apInfo:FlxText; //Text field to reflect the numner of AP left
 		public static var myPlayer:Player;
@@ -157,8 +160,8 @@ package
 		
 		private var camMap:FlxCamera;
 		
-		private var _windowHeight:int = 400;
-		private var _windowWidth:int = 700;
+		public static var _windowHeight:int = 400;
+		public static var _windowWidth:int = 700;
 		
 		var camOffsetX:int = 0;
 		var camOffsetY:int = 0;
@@ -212,10 +215,6 @@ package
 				resourcesString = resources;
 				trace("level to search in newquest: " + level);
 				
-				trace("=====before copying, the userID is " + name);
-				_user_id = name;
-				
-				
 				client.bigDB.load("NewQuests", level, function(ob:DatabaseObject):void {
 					//Recieve Tile Array from database to be turned into string with line breaks between each line
 					if (ob != null)
@@ -250,6 +249,7 @@ package
 						}catch (e:Error) {
 							trace("Monster Loading Error: " + e);
 						}
+
 						
 						//Load Buttons
 						try {
@@ -326,12 +326,7 @@ package
 			}
 			
 			//New user has joined, make their character
-<<<<<<< HEAD
-			connection.addMessageHandler("UserJoined", function(m:Message, userID:int, posX:int, posY:int) {
-	
-=======
 			connection.addMessageHandler("UserJoined", function(m:Message, userID:int, posX:int, posY:int):void {
->>>>>>> map-editor
 				if (userID != imPlayer) {
 					// create other player; AP doesn't matter, so default to 20
 					playersArray[userID-1] = new Player(posX, posY, 0,_windowHeight , _tileSize, 20, null, "Novice");
@@ -380,13 +375,14 @@ package
 		
 		private function setCameras():void {
 			thingsSet++;
-			if (thingsSet > 1) {
+			if (thingsSet > 1) {		
+				myMap.makeStarSparkle(WIN_TILE, sparkleTileImg);
 				trace("make camera");
 				// Camera will show up at where the map should be
-				camMap= new FlxCamera(_mapOffsetX, _mapOffsetY, 320, 320);
+				camMap= new FlxCamera(_mapOffsetX, _mapOffsetY, myMap.width, myMap.height);
 				camMap.follow(myPlayer, FlxCamera.STYLE_TOPDOWN);
 				camMap.setBounds(0, _windowHeight, myMap.width, myMap.height, true);
-				camMap.deadzone = new FlxRect(_viewSize * 2, _viewSize * 2, 320 - _viewSize * 4, 320 - _viewSize * 4);
+				camMap.deadzone = new FlxRect(_viewSize * 2, _viewSize * 2, myMap.width- _viewSize * 4, myMap.height - _viewSize * 4);
 				//camMap.color = 0xFFCCCC;
 				FlxG.addCamera(camMap);							// camera that shows where the character is on the map
 				// report the level normally
@@ -444,13 +440,18 @@ package
 						goalsLabel.text = "Reach the red star!\n\nThe wall is open now -- go for it!";
 						sawWallOpened = true;
 					}
+					//zoomOutAction();
 				}
 				
 				// tutorial 2 messages
 				else if (tutorial_number == 2)
 				{
-					if (gatherCherryButton != null && lyrHUD != null) lyrHUD.remove(gatherCherryButton);
-					if (amountCherryText != null) amountCherryText.visible = false;
+					//if (lyrHUD == null) trace("++++++lyrHUD is null");
+					if (gatherCherryButton != null && !removedCherryButton) {
+						lyrHUD.remove(gatherCherryButton);
+						removedCherryButton = true;
+					} 
+					//zoomOutAction();
 				}
 				
 				// tutorial 4 messages
@@ -460,12 +461,14 @@ package
 					{
 						FlxG.stage.addChild(new MultiAlert(new Array( "You're almost at the monster!  It looks dangerous.", "Step forward to do battle with it!" )));
 						sawMonster = true;
+						//zoomOutAction();
 					}
 					
 					else if (!sawBattle && myPlayer.xPos == 6 && myPlayer.yPos == 4)
 					{
 						FlxG.stage.addChild(new MultiAlert(new Array( "You can choose to do weaker or stronger attacks at the bottom right.", "Stronger attacks will take more AP." )));
 						sawBattle = true;
+						//zoomOutAction();
 					}
 				}
 			}
@@ -478,6 +481,10 @@ package
 						gatherLumberButton.y = 340;
 						gatherCherryButton.y = 310;
 						gatherLumberButton.visible = gatherCherryButton.visible = true;						
+					} else if (myMap.getTile(myPlayer.xPos, myPlayer.yPos) == TREE_TILE) {
+						gatherLumberButton.x = 540;
+						gatherLumberButton.y = 340;
+						gatherLumberButton.visible = true;							
 					}
 					else { 
 						gatherLumberButton.visible = gatherCherryButton.visible = false;
@@ -937,10 +944,10 @@ package
 			lvl.setFormat(null, 15);
 			experience = new FlxText(_experienceTextOffsetX, _experienceTextOffsetY, 200, "Experience: 0", true);
 			experience.setFormat(null, 10);
-			var zoomInButton:FlxButton = new FlxButton(100, 340, "+", zoomInAction);
-			var zoomOutButton:FlxButton = new FlxButton(100, 370, "-", zoomOutAction);
-			var zoomInLabel:FlxText = new FlxText(50, 340, 100, "Zoom in");
-			var zoomOutLabel:FlxText = new FlxText(50, 370, 100, "Zoom out");
+			var zoomInButton:FlxButton = new FlxButton(100, 340, "Zoom in", zoomInAction);
+			var zoomOutButton:FlxButton = new FlxButton(100, 370, "Zoom out", zoomOutAction);
+			//var zoomInLabel:FlxText = new FlxText(50, 340, 100, "Zoom in");
+			//var zoomOutLabel:FlxText = new FlxText(50, 370, 100, "Zoom out");
 			//Battle HUD
 			//Background
 			
@@ -1020,8 +1027,8 @@ package
 			lyrHUD.add(new FlxButtonPlus(540, 15, mainMenu, null, "Main Menu"));
 			lyrHUD.add(zoomInButton);
 			lyrHUD.add(zoomOutButton);
-			lyrHUD.add(zoomInLabel);
-			lyrHUD.add(zoomOutLabel);
+			//lyrHUD.add(zoomInLabel);
+			//lyrHUD.add(zoomOutLabel);
 			lyrBackground.add(background);
 
 			tileHover = new FlxSprite(0, _windowHeight);
@@ -1035,7 +1042,7 @@ package
 			lyrSprites.add(lyrEffects);
 			lyrHUD.add(gatherLumberButton);
 			lyrHUD.add(gatherCherryButton);
-			
+			removedCherryButton = false;
 			this.add(lyrBackground);
 			this.add(lyrStage);
 			this.add(lyrHUD);
@@ -1107,11 +1114,11 @@ package
 		private function zoomInAction():void
 		{
 			_zoomedIn = true;
-			camMap= new FlxCamera(_mapOffsetX, _mapOffsetY, 320/2, 320/2, 2);
+			camMap= new FlxCamera(_mapOffsetX, _mapOffsetY, Math.max(myMap.width/2, 160),Math.max(myMap.height/2, 160), 2);
 			camMap.follow(myPlayer, FlxCamera.STYLE_TOPDOWN);
 			camMap.setBounds(0, _windowHeight, myMap.width, myMap.height, true);
 			camMap.deadzone = new FlxRect(32, 32, 48, 48);///new FlxRect(_viewSize * 2, _viewSize * 2, 320 - _viewSize * 4, 320 - _viewSize * 4);
-			FlxG.resetCameras(new FlxCamera(0, 0, _windowWidth, _windowHeight));
+			FlxG.resetCameras(new FlxCamera(0, 0, _windowWidth, _windowHeight * 2));
 			FlxG.addCamera(camMap);
 			//action = new ClientAction();
 			//action.aid = ClientActionType.ZOOMED_IN;
@@ -1127,11 +1134,11 @@ package
 		private function zoomOutAction():void 
 		{
 			_zoomedIn = false;
-			camMap= new FlxCamera(_mapOffsetX, _mapOffsetY, 320, 320);
+			camMap = new FlxCamera(_mapOffsetX, _mapOffsetY, myMap.width, myMap.height);
 			camMap.follow(myPlayer, FlxCamera.STYLE_TOPDOWN);
 			camMap.setBounds(0, _windowHeight, myMap.width, myMap.height, true);
-			camMap.deadzone = new FlxRect(_viewSize * 2, _viewSize * 2, 320 - _viewSize * 4, 320 - _viewSize * 4);
-			FlxG.resetCameras(new FlxCamera(0, 0, _windowWidth, _windowHeight));
+			camMap.deadzone = new FlxRect(_viewSize * 2, _viewSize * 2, myMap.width - _viewSize * 4, myMap.height- _viewSize * 4);
+			FlxG.resetCameras(new FlxCamera(0, 0, _windowWidth, _windowHeight * 2));
 			FlxG.addCamera(camMap);
 			//initialize log stuff if not there yet
 			//action = new ClientAction();

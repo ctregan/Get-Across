@@ -47,8 +47,9 @@ package
 			characterInfo = new Label("", 12, TextFormatAlign.CENTER);
 			client.bigDB.loadMyPlayerObject(loadPlayerSuccess);
 			mainMenuButton = new TextButton("Main Menu", continueButton);
-			mainMenuButton.visible = false;
-			//nextLevelButton.visible = false;
+			//nextLevelButton = new TextButton("Next Level", 
+			if (mainMenuButton) mainMenuButton.visible = false;
+			if (nextLevelButton) nextLevelButton.visible = false;
 			if (nextLevel == "") {
 				nextLevelButton.visible = nextLevelButton.enabled = false;
 			}else if (nextLevel == "Class_Choose") {
