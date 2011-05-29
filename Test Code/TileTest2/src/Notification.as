@@ -6,8 +6,8 @@ package
 	 */
 	public class Notification extends FlxText
 	{
-		var timer:int;// = new FlxTimer();
-		var duration:int = 50;	// how long notification will stay on screen
+		private var timer:int;			// timer for notification life
+		private var duration:int = 50;	// how long notification will stay on screen
 		
 		public function Notification(startX:int, startY:int, messageString:String, messageType:String) 
 		{

@@ -55,21 +55,21 @@ package
 		}
 		private function refresh():void 
 		{
-			_client.bigDB.loadRange("UserMaps", "ByCreator", null, "A", "Z", 20, function(abarr:Array) {
+			_client.bigDB.loadRange("UserMaps", "ByCreator", null, "A", "Z", 20, function(abarr:Array):void {
 				for (var x in abarr) {
 					roomContainer.addChild(new LobbyEntry(abarr[x].Name, abarr[x].key, "user", mapSelectCallback));
 				}
 			});
 		}
 		
-		private function mapSelectCallback(levelKey:String, mapType:String) {
+		private function mapSelectCallback(levelKey:String, mapType:String):void {
 			currentLobby = new Lobby(_client, "GetAcross", levelKey, mapType, handleJoin, handleError)
 			
 			FlxG.stage.addChild(currentLobby);
 		}
 		
 		
-		public function hide() {
+		public function hide():void {
 			FlxG.stage.removeChild(base);
 			if(currentLobby != null){
 				currentLobby.hide();

@@ -89,8 +89,9 @@ package
 					continueButton = new TextButton("Continue Tutorial " + ob.tutorial + " of 5", startNewTutorial);
 				} else if (tutorialLevel == 6 && playerClass == "Novice") {
 					continueButton = new TextButton("You finished all tutorial levels!  Choose your class!", chooseClass);
-				}else { // player has finished tutorials
+				} else { // player has finished tutorials
 					continueButton = new TextButton("Choose Your Class", chooseClass);
+					tutorialButton.visible = tutorialButton.enabled = false;
 					if (_questID == "noQuest") {
 						continueButton.visible = continueButton.enabled = false;
 					}else {
@@ -100,8 +101,7 @@ package
 			}
 			catch (e:Error)
 			{
-				continueButton.visible = false;
-				continueButton.enabled = false;
+				continueButton.visible = continueButton.enabled = false;
 			}
 			//Try to load questID, if no quest then that button is invisible
 			
@@ -167,7 +167,7 @@ package
 		//Callback function for when Start Tutorial Button is Pressed
 		private function startTutorial():void
 		{
-			var prompt:InGamePrompt = new InGamePrompt(FlxG.stage, "Would you like to start the tutorial?  Warning: All previous tutorial progress will be lost!", function() { tutorialLevel = 1;  startNewTutorial() } );
+			var prompt:InGamePrompt = new InGamePrompt(FlxG.stage, "Would you like to start the tutorial?  Warning: All previous tutorial progress will be lost!", function():void { tutorialLevel = 1;  startNewTutorial() } );
 		}
 
 		//Callback when the user wants to start new tutorial
@@ -177,7 +177,7 @@ package
 			trace("TUTORIAL TO START: " + myPlayer.tutorial);
 			myPlayer.questID = "noQuest"
 			myPlayer.save(false,false,
-			function() {
+			function():void {
 				var _levelKey:String = "Tutorial_" + myPlayer.tutorial;
 				showLoader();
 				myClient.multiplayer.createJoinRoom(
@@ -186,12 +186,12 @@ package
 					true,								//Hide room from userlist
 					{name:"Tutorial", key:_levelKey, type:"static" },						//Room Join data, data is returned to lobby list. Variabels can be modifed on the server
 					{},
-					function(connection:Connection) {
+					function(connection:Connection):void {
 						FlxG.stage.removeChild(mainMenu);
 						hideLoader();
 						FlxG.switchState( new PlayState(connection,myClient))
 					},
-					function(error:PlayerIOError) {
+					function(error:PlayerIOError):void {
 						hideLoader();
 						FlxG.stage.addChild(new Alert("Error: No connection to server!"));
 					}
@@ -206,7 +206,7 @@ package
 			if (playerClass == "Novice") {
 				FlxG.stage.addChild(new Alert("To Access This Option You Must Finish All 5 Tutorial Levels"));
 			} else if (continueButton.enabled == true) {
-				var prompt:InGamePrompt = new InGamePrompt(FlxG.stage, "You will lose your old quest data if you start a new game. You sure?", function() {
+				var prompt:InGamePrompt = new InGamePrompt(FlxG.stage, "You will lose your old quest data if you start a new game. You sure?", function():void {
 					startNewGameAccept();
 				});
 			}else {

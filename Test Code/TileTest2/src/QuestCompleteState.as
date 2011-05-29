@@ -21,17 +21,21 @@ package
 	 */
 	public class QuestCompleteState extends FlxState
 	{
-		private var _client:Client
-		private var _nextLevel:String
-		private var _xpGain:int
-		private var characterInfo:Label
+		private var _client:Client;
+		private var _nextLevel:String;
+		private var _xpGain:int;
+		private var characterInfo:Label;
 		private var levelLabel:Label;
 		private var classLabel:Label;
-		private var coinLabel:Label;
-		private var mainMenu:Box
-		private var nextLevelButton:TextButton
+		private var skillPointLabel:Label;
+		private var mainMenu:Box;
+		private var nextLevelButton:TextButton;
 		private var mainMenuButton:TextButton;
-		private var loader:Box
+		private var loader:Box;
+		
+		[Embed(source = "data/monster1.png")] private var monsterImg:Class;
+		
+		private var spGainedLabel:Label;
 		
 		public function QuestCompleteState(gainedXP:int, coin:int, client:Client, nextLevel:String) 
 		{
@@ -43,8 +47,8 @@ package
 			characterInfo = new Label("", 12, TextFormatAlign.CENTER);
 			client.bigDB.loadMyPlayerObject(loadPlayerSuccess);
 			mainMenuButton = new TextButton("Main Menu", continueButton);
-			
-			mainMenuButton.visible = nextLevelButton.visible = false;
+			mainMenuButton.visible = false;
+			//nextLevelButton.visible = false;
 			if (nextLevel == "") {
 				nextLevelButton.visible = nextLevelButton.enabled = false;
 			}else if (nextLevel == "Class_Choose") {
@@ -56,7 +60,7 @@ package
 			}
 			
 			// initialize labels for player info to show at the end
-			var playerInfoTextSize:int = 17;
+			var playerInfoTextSize:int = 15;
 			var levelTextFormat:TextFormat = new TextFormat("Abscissa", playerInfoTextSize, 0xff488921);
 			levelLabel = new Label("Level: ", playerInfoTextSize, TextFormatAlign.CENTER, 0xff488921);
 			levelLabel.setTextFormat(levelTextFormat);
@@ -65,9 +69,9 @@ package
 			classLabel = new Label("Class: ", playerInfoTextSize, TextFormatAlign.CENTER, 0xff488921);
 			classLabel.setTextFormat(classTextFormat);
 			
-			var coinTextFormat:TextFormat = new TextFormat("Abscissa", playerInfoTextSize, 0xff488921);
-			coinLabel = new Label("Coins: ", playerInfoTextSize, TextFormatAlign.CENTER, 0xff488921);
-			coinLabel.setTextFormat(coinTextFormat);
+			var skillPointTextFormat:TextFormat = new TextFormat("Abscissa", playerInfoTextSize, 0xff488921);
+			skillPointLabel = new Label("Skill Points: ", playerInfoTextSize, TextFormatAlign.CENTER, 0xff488921);
+			skillPointLabel.setTextFormat(skillPointTextFormat);
 			
 			// labels for other information
 			var questTextFormat:TextFormat = new TextFormat("Abscissa", 30, 0xff488921);
@@ -78,18 +82,18 @@ package
 			var xpGainedLabel:Label = new Label("Gained " + gainedXP + " XP!", 20, TextFormatAlign.LEFT, 0xff4af266);
 			xpGainedLabel.setTextFormat(xpGainedTextFormat);
 			
-			var coinsGainedTextFormat:TextFormat = new TextFormat("Abscissa", 20, 0xff488921);
-			var coinsGainedLabel:Label = new Label("Gained " + coin + " coins!", 20, TextFormatAlign.LEFT, 0xff4af266);
-			coinsGainedLabel.setTextFormat(coinsGainedTextFormat);
+			var spGainedTextFormat:TextFormat = new TextFormat("Abscissa", 20, 0xff488921);
+			spGainedLabel = new Label("", 20, TextFormatAlign.LEFT, 0xff4af266);
+			spGainedLabel.setTextFormat(spGainedTextFormat);
 			
 			mainMenu = new Box().fill(0xFFFFFF, 0.8, 0);
 			mainMenu.add(new Box().fill(0x00000, 0.3, 15).margin(10, 10, 10, 10).minSize(FlxG.width / 2, 400).add(
 				new Box().fill(0xffffff,1,5).margin(10,10,10,10).minSize(300,0).add(
 						new Rows(
 							questLabel,
-							new Columns(levelLabel, classLabel, coinLabel),
+							new Columns(levelLabel, classLabel, skillPointLabel),
 							xpGainedLabel,
-							coinsGainedLabel,
+							spGainedLabel,
 							new Columns().spacing(8).margin(10).add(
 							mainMenuButton,
 							nextLevelButton)
@@ -117,10 +121,8 @@ package
 		//Callback function called when Player data object has been successfully loaded
 		private function loadPlayerSuccess(ob:DatabaseObject):void 
 		{
-			
-			
 			//XP BAR - have to make a sprite to leverage the FlxHealthBar, his health will reflect the XP
-			var xpSprite:FlxSprite = new FlxSprite(0, 0, null);
+			var xpSprite:FlxSprite = new FlxSprite(0, 0, monsterImg);
 			xpSprite.health = ob.xp;
 			var neededXP:Number = needXP(ob.level + 1);
 			var xpBar:FlxHealthBar = new FlxHealthBar(xpSprite, 300, 100, needXP(ob.level), neededXP, true);
@@ -138,8 +140,12 @@ package
 				count++;
 				
 				if (xpSprite.health >= neededXP) {
-					FlxG.flash(0xffffff, 1, function() {
+					FlxG.flash(0xffffff, 1, function():void {
+						// if this is first time player gained sp, give some more info
+						if (ob.level == 1)
+							FlxG.stage.addChild(new Alert("With enough Skill Points (SP), and with a class, you can buy new abilities."));
 						FlxG.stage.addChild(new Alert("You Have Leveled Up and Gained 1 Skill Point"));
+						spGainedLabel.text = "You gained 1 level and 1 skill point!";
 					});
 					ob.level = ob.level + 1;
 					ob.sp += 1;
@@ -150,17 +156,16 @@ package
 					myTimer.stop();
 					levelLabel.text = "Level " + ob.level;
 					classLabel.text = "Class: " + ob.role;
-					coinLabel.text = "Coins: " + ob.coin;
+					skillPointLabel.text = "Skill Points: " + ob.sp;
 					mainMenuButton.visible = true;
 					nextLevelButton.visible = true;
 				}
-				xpText.text = xpSprite.health.toString() + " XP / " + neededXP.toString() + " XP";
+				if (xpText != null) xpText.text = xpSprite.health.toString() + " XP / " + neededXP.toString() + " XP";
 			});
 			myTimer.start();
 			// labels for player info
 			levelLabel.text = "Level " + ob.level;
 			classLabel.text = "Class: " + ob.role;
-			coinLabel.text = "Coins: " + ob.coin;
 		}
 		
 		//Callback for when players must choose a class
