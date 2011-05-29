@@ -1,6 +1,7 @@
 package  
 {
 	import org.flixel.FlxBasic;
+	import org.flixel.FlxEmitter;
 	import org.flixel.FlxSprite; 
 	import flash.events.TimerEvent
 	import flash.utils.Timer;
@@ -26,6 +27,7 @@ package
 		[Embed(source = "data/wine.png")] private var wine:Class;
 		[Embed(source = "data/bomb.png")] private var bomb:Class;
 		[Embed(source = "data/thornflower.png")] private var thornflower:Class;
+		[Embed(source = "data/snakecandy.png")] private var snakesnack:Class;
 		public function EffectSprite(xTile:int, yTile:int, type:String, range:int, tileSize:int, uses:int, connection:Connection, index:int) 
 		{
 			this.type = type;
@@ -47,8 +49,10 @@ package
 				classToinitialize = wine;
 			}else if (type == "bomb") {
 				classToinitialize = bomb;
-			}else if (type = "thornflower") {
+			}else if (type == "thornflower") {
 				classToinitialize = thornflower;
+			}else if (type == "snakesnack") {
+				classToinitialize = snakesnack
 			}
 			
 			super(((xTile * tileSize) + PlayState.myMap.x) - (tileSize * _range) , ((yTile * tileSize) + PlayState.myMap.y) - (tileSize * _range) , classToinitialize);
@@ -71,6 +75,15 @@ package
 				myTimer.start();
 			}else if ( type == "thornflower") {
 				PlayState.myMap.setTile(xTile, yTile, 0, true);
+			}else if (type == "snakesnack") {
+				var myTimer:Timer = new Timer(1000);
+				myTimer.addEventListener(TimerEvent.TIMER, function (event:TimerEvent):void 
+				{
+					myTimer.stop();
+					feedSnake();
+				});
+				myTimer.start();
+				
 			}
 		}
 		
@@ -100,6 +113,11 @@ package
 			addUse(true);
 		}
 		
+		private function feedSnake() {
+			PlayState.myMap.setTile(xTile, yTile, 21, true);
+			addUse(true);
+		}
+		
 		public function addUse(propogate:Boolean):void
 		{
 			if(!dead){
@@ -121,7 +139,7 @@ package
 			if (type == "redflower" && uses >= 5) {
 				kill();
 				dead = true;
-			}else if ((type == "bacon" || type == "wine" || type == "bomb")&& uses > 0) {
+			}else if ((type == "bacon" || type == "wine" || type == "bomb" || type == "snakesnack")&& uses > 0) {
 				kill();
 				dead = true;
 			}
