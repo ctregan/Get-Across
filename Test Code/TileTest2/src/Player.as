@@ -52,6 +52,8 @@ package
 		private var _move_speed:int = 400;
 		public var isMoving:Boolean = false;
 		private var isMyPlayer:Boolean; //Indicates if this player object is the one local to the client
+		private var lastXMouseTileCheck:int = -1;
+		private var lastYMouseTileCheck:int = -1;
 		
 		// player's resources
 		public var amountLumber:int;
@@ -132,7 +134,7 @@ package
 			// see if player has enough AP to move; if not, fire notification
 			if (AP < findCost(xPos + xChange, yPos + yChange, tileSize, false))
 				PlayState.fireNotification(this.x + 20, this.y - 20, "Not enough AP to move here!", "loss");
-			else if (checkMove(xPos + xChange, yPos + yChange, tileSize)) {
+			else if (checkMove(xPos + xChange, yPos + yChange, tileSize, true)) {
 				isMoving = true;
 				xPos = xPos + xChange;
 				yPos = yPos + yChange;
@@ -206,14 +208,23 @@ package
 		}
 		
 		//Sees if the desired move for the player is valid.
-		public function checkMove(proposedX:Number, proposedY:Number, tileSize:int):Boolean {
+		public function checkMove(proposedX:Number, proposedY:Number, tileSize:int, fireMessage:Boolean = false):Boolean {
+			var sameTile:Boolean = ((proposedX == lastXMouseTileCheck) && (proposedY == lastYMouseTileCheck))
+			lastXMouseTileCheck = proposedX;
+			lastYMouseTileCheck = proposedY;
+			
+			
 			var proposedTileType:int = PlayState.myMap.getTile(proposedX, proposedY)
-			if ( proposedTileType >= WATER_TILE && proposedTileType <= WATER_TILE2) {
+			if ((Math.abs(proposedX - PlayState.myPlayer.xPos) + Math.abs(proposedY - PlayState.myPlayer.yPos)) > 1) { //If tile is too far away
+				return false;
+			}else if ( proposedTileType >= WATER_TILE && proposedTileType <= WATER_TILE2) {
 				errorMessage = "Invalid Move, can't cross water";
 				//PlayState.fireNotification(this.x + 20, this.y - 20, "You can't cross water!", "loss");
 				return false;
 			}else if (proposedTileType == GATE_TILE) {
-				PlayState.fireNotification(this.x + 20, this.y - 20, "You have to open the gate first!", "loss");
+				if (!sameTile && fireMessage) {
+					PlayState.fireNotification(this.x + 20, this.y - 20, "You have to open the gate first!", "loss");
+				}
 				errorMessage = "Invalid Move, Must First Open the Gate";
 				return false;
 			}else if (proposedX >= PlayState.myMap.widthInTiles || proposedX < 0 || proposedY < 0 || proposedY >= PlayState.myMap.heightInTiles) {
@@ -221,18 +232,25 @@ package
 				//PlayState.fireNotification(this.x + 20, this.y - 20, "You can't go beyond the map's edge!", "loss");
 				return false;
 			}else if (proposedTileType == 16) {
-				PlayState.fireNotification(this.x + 20, this.y - 20, "Invalid Move, Cannot pass boulder", "loss");
+				if(!sameTile && fireMessage){
+					PlayState.fireNotification(this.x + 20, this.y - 20, "Invalid Move, Cannot pass boulder", "loss");
+				}
 				errorMessage = "Invalid Move, Cannot pass boulder";
 				return false;
 			}else if (proposedTileType == 18) {
-				PlayState.fireNotification(this.x + 20, this.y - 20, "Invalid Move, Cannot pass thorns", "loss");
+				if(!sameTile && fireMessage){
+					PlayState.fireNotification(this.x + 20, this.y - 20, "Invalid Move, Cannot pass thorns", "loss");
+				}
 				errorMessage = "Invalid Move, Cannot pass thorns";
 				return false;
 			}else if (proposedTileType == 20) {
-				PlayState.fireNotification(this.x + 20, this.y - 20, "Invalid Move, Cannot pass hungry snake", "loss");
+				if(!sameTile && fireMessage){
+					PlayState.fireNotification(this.x + 20, this.y - 20, "Invalid Move, Cannot pass hungry snake", "loss");
+				}
 				errorMessage = "Invalid Move, Cannot pass hungry snake";
 				return false;
 			}
+
 			return true;
 		}
 	}

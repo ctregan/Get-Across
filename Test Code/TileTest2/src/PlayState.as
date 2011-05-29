@@ -661,7 +661,7 @@ package
 						// then go
 						var absDis:int = Math.abs(myPlayer.xPos - xTemp) + Math.abs(myPlayer.yPos - yTemp);
 						// have to check if the move is possible beforehand... 
-						var canGo:Boolean = myPlayer.checkMove(xTemp, yTemp, _tileSize);
+						var canGo:Boolean = myPlayer.checkMove(xTemp, yTemp, _tileSize, true);
 						
 						if (absDis < 2 && absDis > 0 && canGo) {	// one away
 							//tileHover.loadGraphic(hoverTileImg);
