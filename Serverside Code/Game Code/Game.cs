@@ -122,8 +122,10 @@ namespace GetAcross {
                                 {
                                     this.quest = quest;
                                     DatabaseObject questPlayerData = new DatabaseObject();
-                                    questPlayerData.Set("positionX", 0);
-                                    questPlayerData.Set("positionY", 0);
+                                    player.positionX = startX;
+                                    player.positionY = startY;
+                                    questPlayerData.Set("positionX", startX);
+                                    questPlayerData.Set("positionY", startY);
                                     questPlayerData.Set("AP", 20);
                                     quest.GetObject("players").Set(player.ConnectUserId, questPlayerData);
                                     quest.GetObject("players").Set("numPlayers", quest.GetObject("players").Count - 1);
@@ -131,6 +133,7 @@ namespace GetAcross {
                                     {
                                         player.Send("init", player.Id, player.ConnectUserId,startX,startY, questID, 20, levelKey, "", player.characterClass);
                                     });
+                                    Broadcast("UserJoined", player.Id, player.positionX, player.positionY);
                                 });
                         }
                         // if player does not have a questID associated with it
@@ -153,8 +156,8 @@ namespace GetAcross {
                             PlayerIO.BigDB.Load(mapType, levelKey, 
                                 delegate(DatabaseObject staticMap)
                                 {
-                                    startX = staticMap.GetInt("startX",0);
-                                    startY = staticMap.GetInt("startY",0);
+                                    player.positionX = startX = staticMap.GetInt("startX", 0);
+                                    player.positionY = startY = staticMap.GetInt("startY", 0);
                                     questPlayerData.Set("positionX", startX);
                                     questPlayerData.Set("positionY", startY);
                                     questPlayerData.Set("AP", 20);
@@ -209,13 +212,13 @@ namespace GetAcross {
                                             //levelKey = addedQuest.Key;
                                             // tell client to initialize (board, monsters, player object & player sprite) with max AP amount
                                             addedQuest.Save(delegate() { quest = addedQuest; player.Send("init", player.Id, player.ConnectUserId, startX, startY, questID, 20, levelKey, "", player.characterClass); });
-                                            
+                                            Broadcast("UserJoined", player.Id, player.positionX, player.positionY);
                                         });
 
                                 });
                            
                             // save positions in the serverside
-                            player.positionX = player.positionY = 0;
+                            
                             player.AP = 20;
                         }
 
@@ -274,12 +277,13 @@ namespace GetAcross {
 
                                     // tell client to initialize (board, monsters, player object & player sprite)
                                     player.Send("init", player.Id, player.ConnectUserId, player.positionX, player.positionY, questID, player.AP, levelKey, resources, player.characterClass);
+                                    Broadcast("UserJoined", player.Id, player.positionX, player.positionY);
                                 }
                             );
                         }
                     }
                 );
-               
+                
             }
             else
             {
@@ -336,7 +340,7 @@ namespace GetAcross {
                         thisPlayer.Set("resources", resourceCount);
                     }
                 }
-
+                Broadcast("UserLeft", player.Id);
                 quest.Save(delegate()
                 {
                     Console.WriteLine("UserLeft result: " + quest.ToString());
@@ -359,10 +363,9 @@ namespace GetAcross {
                         Broadcast("PlayerMove", player.Id, messageX, messageY);
                         break;
                     }
-                case "PlayerSetUp":
+                case "LoadPlayers":
                     {
-                        // this is how you broadcast a message to all players connected to the game
-                        Broadcast("UserJoined", player.Id, player.positionX, player.positionY);
+                        // this is how you broadcast a messa"LoadPlayers":
                         //Update them on who is already in the game
                         foreach (Player x in players)
                         {

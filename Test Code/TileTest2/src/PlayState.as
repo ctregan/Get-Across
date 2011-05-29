@@ -302,7 +302,7 @@ package
 						FlxG.stage.addChild(menu);
 					}
 					playerSetup(xStartTile, yStartTile, name);
-					//connection.send("PlayerSetUp");
+					connection.send("LoadPlayers");
 				});
 				
 			})
@@ -310,18 +310,22 @@ package
 			if (myMap == null) {
 				trace("map doesn't exist....");
 			}
-			
+			connection.addMessageHandler("UserLeft", function (m:Message, userID:int):void 
+			{
+				if (userID != imPlayer) {
+					Player(playersArray[userID - 1]).kill();
+				}
+			})
 			//New user has joined, make their character
 			connection.addMessageHandler("UserJoined", function(m:Message, userID:int, posX:int, posY:int) {
 				if (userID != imPlayer) {
 					// create other player; AP doesn't matter, so default to 20
-					playersArray[userID-1] = new Player(posX, posY, 0,_windowHeight , _tileSize, 20, null, "Novice");
+					playersArray[userID-1] = new Player(posX, posY, 0,_windowHeight , _tileSize, 20, null, "Novice", false);
 					if (playersArray[userID-1] != null && lyrSprites != null) lyrSprites.add(playersArray[userID-1]);
 				}
 			})
 			//Player has moved and we hear about it
 			connection.addMessageHandler("PlayerMove", function(m:Message, userID:int, posX:int, posY:int) {
-				var tileType:int = getTileIdentity(posX, posY);
 				if(userID != imPlayer){
 					Player(playersArray[userID - 1]).movePlayer(posX, posY, _tileSize, connection);
 				}

@@ -43,9 +43,10 @@ package
 			characterInfo = new Label("", 12, TextFormatAlign.CENTER);
 			client.bigDB.loadMyPlayerObject(loadPlayerSuccess);
 			mainMenuButton = new TextButton("Main Menu", continueButton);
-			
+			nextLevelButton = new TextButton("blank", null);
 			mainMenuButton.visible = nextLevelButton.visible = false;
 			if (nextLevel == "") {
+				
 				nextLevelButton.visible = nextLevelButton.enabled = false;
 			}else if (nextLevel == "Class_Choose") {
 				FlxG.stage.addChild(new Alert("Congratulations!  You finished all the tutorials!"));
@@ -152,7 +153,9 @@ package
 					classLabel.text = "Class: " + ob.role;
 					coinLabel.text = "Coins: " + ob.coin;
 					mainMenuButton.visible = true;
-					nextLevelButton.visible = true;
+					if(nextLevelButton.text.text != "blank"){
+						nextLevelButton.visible = true;
+					}
 				}
 				xpText.text = xpSprite.health.toString() + " XP / " + neededXP.toString() + " XP";
 			});

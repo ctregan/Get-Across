@@ -90,7 +90,8 @@ package
 				} else if (tutorialLevel == 6 && playerClass == "Novice") {
 					continueButton = new TextButton("You finished all tutorial levels!  Choose your class!", chooseClass);
 				}else { // player has finished tutorials
-					continueButton = new TextButton("Choose Your Class", chooseClass);
+					tutorialButton.visible = tutorialButton.enabled = false;
+					continueButton = new TextButton("Continue Level", continueQuest);
 					if (_questID == "noQuest") {
 						continueButton.visible = continueButton.enabled = false;
 					}else {

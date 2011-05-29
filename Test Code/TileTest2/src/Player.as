@@ -51,13 +51,15 @@ package
 		public var combatant:Monster;
 		private var _move_speed:int = 400;
 		public var isMoving:Boolean = false;
+		private var isMyPlayer:Boolean; //Indicates if this player object is the one local to the client
 		
 		// player's resources
 		public var amountLumber:int;
 		public var amountCherry:int;
 		
-		public function Player(startX:Number, startY:Number, xOffset:int, yOffset:int, tileSize:int, startAP:int, resourcesString:String, playerClass:String) 
+		public function Player(startX:Number, startY:Number, xOffset:int, yOffset:int, tileSize:int, startAP:int, resourcesString:String, playerClass:String, myPlayer:Boolean = true) 
 		{
+			isMyPlayer = myPlayer;
 			errorMessage = "";
 			xPos = startX;
 			yPos = startY;
@@ -141,7 +143,10 @@ package
 
 				this.x = desiredX;
 				this.y = desiredY;
-				connection.send("move", xChange, yChange);
+				if (isMyPlayer) {
+					connection.send("move", xChange, yChange);
+				}
+				
 				//trace("x:" + xPos + " y:" + yPos + " change_x:" + xChange + " change_y:" + yChange + " tile_size:" + tileSize + " type:" + PlayState.myMap.getTile(xPos, yPos));
 				if (PlayState.myMap.getTile(xPos, yPos) == WIN_TILE) {
 					trace("at win!");
@@ -155,7 +160,9 @@ package
 			}
 			
 			// sends AP this player has to the server
-			connection.send("updateStat", "AP", AP);
+			if(isMyPlayer){
+				connection.send("updateStat", "AP", AP);
+			}
 			if (cost > 0) PlayState.fireNotification(this.x + 20, this.y - 20, "-" + cost + " AP", "loss");
 			return false;
 		}
@@ -211,6 +218,18 @@ package
 			}else if (proposedX >= PlayState.myMap.widthInTiles || proposedX < 0 || proposedY < 0 || proposedY >= PlayState.myMap.heightInTiles) {
 				errorMessage = "Invalid Move, edge reached";
 				//PlayState.fireNotification(this.x + 20, this.y - 20, "You can't go beyond the map's edge!", "loss");
+				return false;
+			}else if (proposedTileType == 16) {
+				PlayState.fireNotification(this.x + 20, this.y - 20, "Invalid Move, Cannot pass boulder", "loss");
+				errorMessage = "Invalid Move, Cannot pass boulder";
+				return false;
+			}else if (proposedTileType == 18) {
+				PlayState.fireNotification(this.x + 20, this.y - 20, "Invalid Move, Cannot pass thorns", "loss");
+				errorMessage = "Invalid Move, Cannot pass thorns";
+				return false;
+			}else if (proposedTileType == 20) {
+				PlayState.fireNotification(this.x + 20, this.y - 20, "Invalid Move, Cannot pass hungry snake", "loss");
+				errorMessage = "Invalid Move, Cannot pass hungry snake";
 				return false;
 			}
 			return true;
