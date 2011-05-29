@@ -65,6 +65,7 @@ package
 			yPos = startY;
 			AP = startAP;
 			
+			trace("player constructed: " + xPos + "," + yPos);
 			// load amount of resources player has saved			
 			// split list of resources from
 			// "Lumber:0/Cherry:3/Seed:2"

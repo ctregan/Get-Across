@@ -281,8 +281,10 @@ package org.flixel
 				members.splice(index,1);
 				length--;
 			}
-			else
+			else 
+			{	
 				members[index] = null;
+			}
 			return Object;
 		}
 		

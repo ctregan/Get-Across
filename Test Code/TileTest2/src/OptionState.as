@@ -49,6 +49,7 @@ package
 							),
 							error,
 							new Columns().margin(10).spacing(10).add(
+								new TextButton("Cancel", function():void { FlxG.switchState(new MenuState(_myClient)); FlxG.stage.removeChild(base)} ),
 								new TextButton("Continue", continueCallback)
 						).spacing(10)
 					)

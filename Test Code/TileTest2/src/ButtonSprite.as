@@ -27,7 +27,7 @@ package
 			
 		}
 		
-		public function clickButton(connection:Connection) {
+		public function clickButton(connection:Connection):void {
 			PlayState.myMap.setTile(_xOpen, _yOpen, 0, true);
 			kill();
 		}

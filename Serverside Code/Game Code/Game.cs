@@ -156,8 +156,8 @@ namespace GetAcross {
                             PlayerIO.BigDB.Load(mapType, levelKey, 
                                 delegate(DatabaseObject staticMap)
                                 {
-                                    player.positionX = startX = staticMap.GetInt("startX", 0);
-                                    player.positionY = startY = staticMap.GetInt("startY", 0);
+                                    player.positionX = startX = staticMap.GetInt("startX",0);
+                                    player.positionY = startY = staticMap.GetInt("startY",0);
                                     questPlayerData.Set("positionX", startX);
                                     questPlayerData.Set("positionY", startY);
                                     questPlayerData.Set("AP", 20);
@@ -218,7 +218,8 @@ namespace GetAcross {
                                 });
                            
                             // save positions in the serverside
-                            
+                            player.positionX = startX;
+                            player.positionY = startY;
                             player.AP = 20;
                         }
 
@@ -355,6 +356,7 @@ namespace GetAcross {
                 // player has moved up, down, left, or right
                 case "move":
                     {
+                        Console.WriteLine("Player position before move: " + player.positionX + ", " + player.positionY); //debug 
                         int messageX = message.GetInt(0);
                         int messageY = message.GetInt(1);
                         player.positionX = player.positionX + messageX;
@@ -424,8 +426,8 @@ namespace GetAcross {
                             delegate(DatabaseObject result)
                             {
                                 // todo: change these based on what you got in the level
-                                int gainedxp = result.GetInt("XP");
-                                int gainedcoin = result.GetInt("Coin");
+                                int gainedxp = 0;// = result.GetInt("XP");
+                                int gainedcoin = 0;// = result.GetInt("Coin");
 
                                 if (result != null)
                                 {
