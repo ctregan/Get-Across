@@ -61,6 +61,8 @@ package
 		
 		private var _user_id:String = "Nobody";
 		
+		private var hintAdded:Boolean = false;
+		
 		private var removedCherryButton:Boolean = true;
 		
 		//[Embed(source = "data/map_data.txt", mimeType = "application/octet-stream")] public var data_map:Class; //Tile Map array
@@ -68,6 +70,10 @@ package
 		[Embed(source = "data/Cursor.png")] public var cursor_img:Class; //Mouse Cursor
 		[Embed(source = "data/arrows_32.png")] public var hoverTileImg:Class;
 		[Embed(source = "data/sparkle.png")] public var sparkleTileImg:Class;
+		[Embed(source = "data/hint_button.png")] public var hintImg:Class;
+		[Embed(source = "data/hint_button_clicked.png")] public var hintClickImg:Class;
+		
+		private var hintButtonClicked:Boolean = false;
 		
 		private var apInfo:FlxText; //Text field to reflect the numner of AP left
 		public static var myPlayer:Player;
@@ -107,6 +113,7 @@ package
 		public static var lyrMonster:FlxGroup;
 		public static var lyrTop:FlxGroup;
 		public static var lyrEffects:FlxGroup;
+		private var hintBox:MessageBox;
 		
 		private static var abilitySelected:Boolean = false; //Indicates whether an ability is activated
 		private static var activeAbility:Ability; //Which ability is currently chosen
@@ -117,23 +124,25 @@ package
 		private var client:Client;
 		private var connection:Connection; //connection to server
 		
+		private var hintAlert:MultiAlert;
+		
 		// buttons for side menu
 		public static var gatherLumberButton:FlxButtonPlus;
 		public static var gatherCherryButton:FlxButtonPlus;
 		
 		private var win:Boolean = false; //This variable will indicate if a user has won or not
-		
+		private var hintArray:Array;
 		// constants/offset numbers
-		public static var _mapOffsetX:int = 204; 	// left border of map
-		public static var _mapOffsetY:int = 46;	// top border of map
+		public static var _mapOffsetX:int = 192; 	// left border of map
+		public static var _mapOffsetY:int = 34;	// top border of map
 		private var _apBoxOffsetX:int = 265;
 		private var _apBoxOffsetY:int = 10;
 		private var _timerOffsetX:int = 360;
 		private var _timerOffsetY:int = 5;
 		private var _positionInfoOffsetX:int = 480;
-		private var _positionInfoOffsetY:int = 368;
+		private var _positionInfoOffsetY:int = 357;
 		private var _terrainMessageBoxOffsetX:int = 210;
-		private var _terrainMessageBoxOffsetY:int = 368;
+		private var _terrainMessageBoxOffsetY:int = 357;
 		private var _errorMessageOffsetX: int = 600;
 		private var _errorMessageOffsetY: int = 368;
 		private var _goalsBoxOffsetX:int = 540;
@@ -149,6 +158,10 @@ package
 		private var _experienceTextOffsetY:int = 30;
 		private static var _resourceTextOffsetX:int = 540;
 		private static var _resourceTextOffsetY:int = 250;
+		private var _hintOffsetX:int = 192;
+		private var _hintOffsetY:int = 453;
+		private var _friendsListOffsetX:int = 118;
+		private var _friendsListOffsetY:int = 354; 			
 		
 		private var ContextButton:FlxButtonPlus;
 		
@@ -160,8 +173,10 @@ package
 		
 		private var camMap:FlxCamera;
 		
-		public static var _windowHeight:int = 400;
+		public static var _windowHeight:int = 500;
 		public static var _windowWidth:int = 700;
+		
+		private var hintButton:FlxButtonPlus;
 		
 		var camOffsetX:int = 0;
 		var camOffsetY:int = 0;
@@ -416,6 +431,7 @@ package
 					if (!sawHill && myPlayer.xPos == 4 && myPlayer.yPos == 7)
 					{
 						FlxG.stage.addChild(new MultiAlert(new Array( "A hill!", "It takes 3 AP to get across.", "Exhausting!" )));
+						hintArray.concat(new Array( "A hill!", "It takes 3 AP to get across.", "Exhausting!" ));
 						sawHill = true;
 					}
 					
@@ -423,33 +439,43 @@ package
 					{
 						FlxG.stage.addChild(new MultiAlert(new Array( "A mountain!", "It takes 15 AP to get across.", "SUPER exhausting!" )));
 						sawMountain = true;
+						hintArray.concat(new Array( "A mountain!", "It takes 15 AP to get across.", "SUPER exhausting!" ));
 					}
 					
 					else if (!sawNearStar && myPlayer.xPos == 8 && myPlayer.yPos == 2)
 					{
-						FlxG.stage.addChild(new MultiAlert(new Array( "You're almost at the red star!", "Just go one more place to reach the end!" )));
+						var a:Array = new Array( "You're almost at the red star!", "Just go one more place to reach the end!" );
+						FlxG.stage.addChild(new MultiAlert(a));
 						sawNearStar = true;
+						hintArray.concat(a);
+						
 					}
 					
 					else if (!sawWall && myPlayer.xPos == 7 && myPlayer.yPos == 2)
 					{
-						FlxG.stage.addChild(new MultiAlert(new Array( "Oh no, a wall's in your way!", "Is there a button somewhere you can press to open it?" )));
+						var a:Array = new Array( "Oh no, a wall's in your way!", "Is there a button somewhere you can press to open it?" );
+						FlxG.stage.addChild(new MultiAlert(a));
 						goalsLabel.text += "\n\nPress a button to open the gate!";
 						sawWall = true;
+						hintArray.concat(a);
 					}
 					
 					else if (!sawWallOpened && myPlayer.xPos == 0 && myPlayer.yPos == 6)
 					{
-						FlxG.stage.addChild(new MultiAlert(new Array( "Looks like the wall's gone now!", "Go for the red star!" )));
+						var a:Array = new Array( "Looks like the wall's gone now!", "Go for the red star!");
+						FlxG.stage.addChild(new MultiAlert(a));
 						goalsLabel.text = "Reach the red star!\n\nThe wall is open now -- go for it!";
 						sawWallOpened = true;
+						hintArray.concat(a);
 					}
 					
 					else if (!sawWallOpened && myPlayer.xPos == 0 && myPlayer.yPos == 6)
 					{
-						FlxG.stage.addChild(new MultiAlert(new Array( "Looks like the wall's gone now!", "Go for the red star!" )));
+						var a:Array = new Array( "Looks like the wall's gone now!", "Go for the red star!" )
+						FlxG.stage.addChild(new MultiAlert(a));
 						goalsLabel.text = "Reach the red star!\n\nThe wall is open now -- go for it!";
 						sawWallOpened = true;
+						hintArray.concat(a);
 					}
 					//zoomOutAction();
 				}
@@ -468,16 +494,18 @@ package
 				{
 					if (!sawMonster && myPlayer.xPos == 5 && myPlayer.yPos == 4)
 					{
-						FlxG.stage.addChild(new MultiAlert(new Array( "You're almost at the monster!  It looks dangerous.", "Step forward to do battle with it!" )));
+						var a:Array = new Array(new Array( "You're almost at the monster!  It looks dangerous.", "Step forward to do battle with it!" ));
+						FlxG.stage.addChild(new MultiAlert(a));
 						sawMonster = true;
-						//zoomOutAction();
+						hintArray.concat(a);
 					}
 					
 					else if (!sawBattle && myPlayer.xPos == 6 && myPlayer.yPos == 4)
 					{
-						FlxG.stage.addChild(new MultiAlert(new Array( "You can choose to do weaker or stronger attacks at the bottom right.", "Stronger attacks will take more AP." )));
+						var a:Array = new Array( "You can choose to do weaker or stronger attacks at the bottom right.", "Stronger attacks will take more AP." );
+						FlxG.stage.addChild(new MultiAlert(a));
 						sawBattle = true;
-						//zoomOutAction();
+						hintArray.concat(a);
 					}
 				}
 			}
@@ -920,10 +948,31 @@ package
 			setCameras();
 		}
 		
+		private function showHint() {
+			if (hintButtonClicked) {
+				hintBox =  new MessageBox(240, 100, hintArray);
+				FlxG.stage.addChild(hintBox);
+				// add it
+			} else {
+				// remove it
+				FlxG.stage.removeChild(hintBox);
+			}
+			hintButtonClicked = !hintButtonClicked;
+		}
+		
+		
 		//Add all flixel elements to the board, essentially drawing the game.
 		private function boardSetup(map_data:String, playerName:String, levelKey:String):void 
 		{
+			
 
+			// set up button
+			hintButton = new FlxButtonPlus(_hintOffsetX, _hintOffsetY, showHint, null, null, 32, 32);
+			hintButton.loadGraphic(new FlxSprite(0,0,hintImg), new FlxSprite(0,0,hintClickImg));			
+			hintAlert = new MultiAlert(new Array(""));
+			hintArray = new Array();
+//FlxG.stage.addChild(new MultiAlert(dbo.Messages));
+			
 			counter = _APcounterMax; // 1ap gained every 3 minutes
 			alert = new Alert("");
 			//Add chat to game
@@ -1010,8 +1059,8 @@ package
 			amountCherryText = new FlxText(_resourceTextOffsetX, _resourceTextOffsetY + 20, 150, "Cherry: 0", true);
 			amountLumberText.setFormat(null, 12);
 			amountCherryText.setFormat(null, 12);
-			goalsLabel = new FlxText(_goalsBoxOffsetX, _goalsBoxOffsetY, 150, "Reach the red star!", true).setFormat(null,12); 
-			goalsLabel.frameHeight = 75;	
+			//goalsLabel = new FlxText(_goalsBoxOffsetX, _goalsBoxOffsetY, 150, "Reach the red star!", true).setFormat(null,12); 
+			//goalsLabel.frameHeight = 75;	
 			errorMessage = new FlxText(_errorMessageOffsetX, _errorMessageOffsetY, 120, "Errors Appear Here", true);
 			location = new FlxText(_positionInfoOffsetX, _positionInfoOffsetY, 100, "(0,0)", true);
 			mouseLocation = new FlxText(_terrainMessageBoxOffsetX, _terrainMessageBoxOffsetY, 260, "(0,0)", true);
@@ -1027,7 +1076,7 @@ package
 			lyrHUD.add(lvl);
 			lyrHUD.add(experience);
 			lyrHUD.add(abilities);
-			lyrHUD.add(goalsLabel);
+			//lyrHUD.add(goalsLabel);
 			lyrHUD.add(secCounter);
 			lyrHUD.add(location);
 			lyrHUD.add(errorMessage);
@@ -1058,6 +1107,7 @@ package
 			this.add(lyrBattle);
 			this.add(lyrSprites);
 			this.add(lyrTop);
+			//lyrHUD.add(hintAlert);
 			
 			// change goals text in lyrHUD based on what tutorial you're on
 			switch (levelToInt(level_name))
