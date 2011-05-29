@@ -184,12 +184,12 @@ package
 		public var vid:int = -2;
 		// variables for tutorial levels
 		private var sawHill:Boolean = false;
-		private var sawCherryTree:Boolean = false;
-		private var sawBridge:Boolean = false;
+		private var sawMountain:Boolean = false;
 		private var sawNearStar:Boolean = false;
 		private var sawMonster:Boolean = false;
 		private var sawBattle:Boolean = false;
-
+		private var sawWall:Boolean = false;
+		private var sawWallOpened:Boolean = false;
 		
 		public function PlayState(connection:Connection, client:Client):void
 		{
@@ -206,7 +206,7 @@ package
 			logClient = new CGSClient(CGSClientConstants.URL, 5, 1, -2);
 			
 			//Connection successful, load board and player
-			connection.addMessageHandler("init", function(m:Message, iAm:int, name:String, xStartTile:int, yStartTile:int, level:String, startAP:int, levelKey:String, resources:String) {
+			connection.addMessageHandler("init", function(m:Message, iAm:int, name:String, xStartTile:int, yStartTile:int, level:String, startAP:int, levelKey:String, resources:String):void {
 				imPlayer = iAm;
 				playerAP = startAP;
 				level_name = levelKey;
@@ -316,7 +316,7 @@ package
 						FlxG.stage.addChild(menu);
 					}
 					playerSetup(xStartTile, yStartTile, name);
-					//connection.send("PlayerSetUp");
+					connection.send("LoadPlayers");
 				});
 				
 			})
@@ -324,26 +324,29 @@ package
 			if (myMap == null) {
 				trace("map doesn't exist....");
 			}
-			
+			connection.addMessageHandler("UserLeft", function (m:Message, userID:int):void 
+			{
+				if (userID != imPlayer) {
+					Player(playersArray[userID - 1]).kill();
+				}
+			})
 			//New user has joined, make their character
-			connection.addMessageHandler("UserJoined", function(m:Message, userID:int, posX:int, posY:int) {
-	
+			connection.addMessageHandler("UserJoined", function(m:Message, userID:int, posX:int, posY:int):void {
 				if (userID != imPlayer) {
 					// create other player; AP doesn't matter, so default to 20
-					playersArray[userID-1] = new Player(posX, posY, 0,_windowHeight , _tileSize, 20, null, "Novice");
+					playersArray[userID-1] = new Player(posX, posY, 0,_windowHeight , _tileSize, 20, null, "Novice", false);
 					if (playersArray[userID-1] != null && lyrSprites != null) lyrSprites.add(playersArray[userID-1]);
 				}
 			})
 			trace("======copied user id " + _user_id);
 			//Player has moved and we hear about it
-			connection.addMessageHandler("PlayerMove", function(m:Message, userID:int, posX:int, posY:int) {
-				var tileType:int = getTileIdentity(posX, posY);
+			connection.addMessageHandler("PlayerMove", function(m:Message, userID:int, posX:int, posY:int):void {
 				if(userID != imPlayer){
 					Player(playersArray[userID - 1]).movePlayer(posX, posY, _tileSize, connection);
 				}
 			})
 			//A tile has changed and needs to be updated locally
-			connection.addMessageHandler("MapTileChanged", function(m:Message, userID:int, posX:int, posY:int, newTileType:int) {
+			connection.addMessageHandler("MapTileChanged", function(m:Message, userID:int, posX:int, posY:int, newTileType:int):void {
 				myMap.setTile( posX, posY, newTileType);
 				//myMap.setTile(posX, posY, newTileType, true);
 			})
@@ -404,31 +407,49 @@ package
 			// show messages for when player reaches relevant parts of the map
 			if (myPlayer != null && level_name != null && levelToInt(level_name) > 0) {
 				var tutorial_number: int = levelToInt(level_name);
+				
 				// tutorial 1 messages
 				if (tutorial_number == 1)
 				{
-					if (!sawHill && myPlayer.xPos == 0 && myPlayer.yPos == 5)
+					if (amountCherryText != null && amountLumberText != null)
+						amountCherryText.visible = amountLumberText.visible = false;
+					if (!sawHill && myPlayer.xPos == 4 && myPlayer.yPos == 7)
 					{
 						FlxG.stage.addChild(new MultiAlert(new Array( "A hill!", "It takes 3 AP to get across.", "Exhausting!" )));
 						sawHill = true;
 					}
 					
-					else if (!sawCherryTree && myPlayer.xPos == 2 && myPlayer.yPos == 0)
+					else if (!sawMountain && myPlayer.xPos == 7 && myPlayer.yPos == 5)
 					{
-						FlxG.stage.addChild(new MultiAlert(new Array( "This is a cherry tree!", "You can harvest a cherry or lumber for 1 AP.", "But then the tree will disappear!" )));
-						sawCherryTree = true;
+						FlxG.stage.addChild(new MultiAlert(new Array( "A mountain!", "It takes 15 AP to get across.", "SUPER exhausting!" )));
+						sawMountain = true;
 					}
 					
-					else if (!sawBridge && myPlayer.xPos == 6 && myPlayer.yPos == 2)
-					{
-						FlxG.stage.addChild(new MultiAlert(new Array( "This is a bridge!", "You can use a bridge to get across water!")));
-						sawBridge = true;
-					}
-					
-					else if (!sawNearStar && ((myPlayer.xPos == 8 && myPlayer.yPos == 9) || (myPlayer.xPos == 9 && myPlayer.yPos == 8)))
+					else if (!sawNearStar && myPlayer.xPos == 8 && myPlayer.yPos == 2)
 					{
 						FlxG.stage.addChild(new MultiAlert(new Array( "You're almost at the red star!", "Just go one more place to reach the end!" )));
 						sawNearStar = true;
+					}
+					
+					else if (!sawWall && myPlayer.xPos == 7 && myPlayer.yPos == 2)
+					{
+						FlxG.stage.addChild(new MultiAlert(new Array( "Oh no, a wall's in your way!", "Is there a button somewhere you can press to open it?" )));
+						goalsLabel.text += "\n\nPress a button to open the gate!";
+						sawWall = true;
+					}
+					
+					else if (!sawWallOpened && myPlayer.xPos == 0 && myPlayer.yPos == 6)
+					{
+						FlxG.stage.addChild(new MultiAlert(new Array( "Looks like the wall's gone now!", "Go for the red star!" )));
+						goalsLabel.text = "Reach the red star!\n\nThe wall is open now -- go for it!";
+						sawWallOpened = true;
+					}
+					
+					else if (!sawWallOpened && myPlayer.xPos == 0 && myPlayer.yPos == 6)
+					{
+						FlxG.stage.addChild(new MultiAlert(new Array( "Looks like the wall's gone now!", "Go for the red star!" )));
+						goalsLabel.text = "Reach the red star!\n\nThe wall is open now -- go for it!";
+						sawWallOpened = true;
 					}
 					//zoomOutAction();
 				}
@@ -436,15 +457,13 @@ package
 				// tutorial 2 messages
 				else if (tutorial_number == 2)
 				{
-					//if (lyrHUD == null) trace("++++++lyrHUD is null");
 					if (gatherCherryButton != null && !removedCherryButton) {
 						lyrHUD.remove(gatherCherryButton);
 						removedCherryButton = true;
 					} 
-					//zoomOutAction();
 				}
 				
-				// tutorial 3 messages
+				// tutorial 4 messages
 				else if (tutorial_number == 4)
 				{
 					if (!sawMonster && myPlayer.xPos == 5 && myPlayer.yPos == 4)
@@ -533,7 +552,7 @@ package
 					if (!myPlayer.inBattle) {
 						var monster:int = 0;
 						while (monster < monsterArray.length && !myPlayer.inBattle) {
-							FlxG.overlap(monsterArray[monster], myPlayer, function() {
+							FlxG.overlap(monsterArray[monster], myPlayer, function():void {
 								trace("is overlapping monster!");
 								// show notification if player is not already in battle
 								FlxG.flash(0xFFFFFF, 1,function ():void 
@@ -840,7 +859,7 @@ package
 		}
 		
 		//Set Up the Player
-		private function playerSetup(posX:int, posY:int, name:String) {
+		private function playerSetup(posX:int, posY:int, name:String):void {
 			//Load Abilities for Player From Database
 			var abilityObject:DatabaseObject;
 			var abilityTextWidth:int = 210;
@@ -851,6 +870,7 @@ package
 			var spaceBetweenAbilities:int = 90;
 			client.bigDB.loadMyPlayerObject(function(db:DatabaseObject):void {
 				try {
+					trace("setup player at this starting position: " + posX + "," + posY);
 					playerName = name;
 					if (posX < 0) posX = 0;
 					if (posY < 0) posY = 0;
@@ -954,7 +974,7 @@ package
 			}, null, "Weak Attack: 1 AP", 120));
 			
 			//Medium Attack Button
-			lyrBattle.add(new FlxButtonPlus(540, 320, function() { 
+			lyrBattle.add(new FlxButtonPlus(540, 320, function():void { 
 				if (myPlayer.inBattle ) {
 					if (myPlayer.AP > 3){
 					myPlayer.combatant.attack(2, myPlayer);
@@ -967,7 +987,7 @@ package
 			}, null, "Medium Attack: 3 AP", 120));
 			
 			//Strong Attack Button
-			lyrBattle.add(new FlxButtonPlus(540, 350, function() { 
+			lyrBattle.add(new FlxButtonPlus(540, 350, function():void { 
 				if (myPlayer.inBattle) {
 					if ( myPlayer.AP > 5) {
 					myPlayer.combatant.attack(3, myPlayer);
@@ -990,14 +1010,14 @@ package
 			amountCherryText = new FlxText(_resourceTextOffsetX, _resourceTextOffsetY + 20, 150, "Cherry: 0", true);
 			amountLumberText.setFormat(null, 12);
 			amountCherryText.setFormat(null, 12);
-			goalsLabel = new FlxText(_goalsBoxOffsetX, _goalsBoxOffsetY, 100, "Reach the red star", true); 
+			goalsLabel = new FlxText(_goalsBoxOffsetX, _goalsBoxOffsetY, 150, "Reach the red star!", true).setFormat(null,12); 
 			goalsLabel.frameHeight = 75;	
 			errorMessage = new FlxText(_errorMessageOffsetX, _errorMessageOffsetY, 120, "Errors Appear Here", true);
 			location = new FlxText(_positionInfoOffsetX, _positionInfoOffsetY, 100, "(0,0)", true);
 			mouseLocation = new FlxText(_terrainMessageBoxOffsetX, _terrainMessageBoxOffsetY, 260, "(0,0)", true);
 			secCounter = new FlxText(_timerOffsetX, _timerOffsetY, 100, "15 Sec until AP", true);			
 			abilities = new FlxText(_cardBoxOffsetX, _cardBoxOffsetY, 100, "", true);
-												
+			
 			// background
 			background = new Background();
 			
@@ -1012,7 +1032,7 @@ package
 			lyrHUD.add(location);
 			lyrHUD.add(errorMessage);
 			lyrHUD.add(mouseLocation);
-
+			
 			lyrHUD.add(new FlxButtonPlus(540, 15, mainMenu, null, "Main Menu"));
 			lyrHUD.add(zoomInButton);
 			lyrHUD.add(zoomOutButton);
@@ -1039,15 +1059,35 @@ package
 			this.add(lyrSprites);
 			this.add(lyrTop);
 			
-
-
+			// change goals text in lyrHUD based on what tutorial you're on
+			switch (levelToInt(level_name))
+			{
+				case 1:
+					goalsLabel.text = "Reach the red star!";
+					break;
+				case 2:
+					goalsLabel.text = "Gather lumber, build a bridge to reach the red star!";
+					break;
+				case 3:
+					goalsLabel.text = "Use the Red Flower ability to navigate this brutal terrain, and reach the red star!";
+					break;
+				case 4:
+					goalsLabel.text = "Find a way past this monster to reach the red star!";
+					break;
+				case 5:
+					goalsLabel.text = "Use the Monster Bacon ability to lure these strong monsters away from the red star you want to reach!";
+					break;
+				default:
+					goalsLabel.text = "";
+					break;
+			}
 			// gather resources button is not visible unless you can gather something
 			gatherLumberButton.visible = gatherCherryButton.visible = false;
 			// ask server for data about this player
 			// server will send back data so client can create this player's sprite
 			connection.send("playerInfo");
 			client.bigDB.load("StaticMaps", levelKey,
-				function(dbo:DatabaseObject) {					
+				function(dbo:DatabaseObject):void {					
 					trace("level key: " + levelKey);
 					// if map has intro messages, fill them in
 					if (dbo != null && dbo.Messages != null)
@@ -1266,7 +1306,7 @@ package
 			infoBox.Show("waiting");
 		}
 		
-		private function handleMessages(m:Message){
+		private function handleMessages(m:Message):void{
 			trace("Recived the message", m)
 		}
 		

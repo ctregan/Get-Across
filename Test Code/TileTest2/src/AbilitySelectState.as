@@ -18,8 +18,8 @@ package
 		private var myClient:Client;
 		private var cancel:TextButton
 		private var roomContainer:Rows;
-		private var toolTip:FlxText
-		private var spCount:FlxText
+		private var toolTip:FlxText;
+		private var spCount:FlxText;
 		
 		public function AbilitySelectState(client:Client) 
 		{
@@ -41,16 +41,16 @@ package
 					).add(
 						new Box().margin(NaN,0,0,0).add(
 							new Columns().spacing(10).add(
-								cancel = new TextButton("Main Menu", hide)
+								cancel = new TextButton("Back to Main Menu", hide)
 							)				
 						)
 					)
 				)
 			)
-			spCount = new FlxText(375, 20, 100, "", true).setFormat(null, 16);
-			toolTip = new FlxText(375,50, 200, "", true).setFormat(null, 16)
-			mainMenu.width = FlxG.stage.stageWidth / 2
-			mainMenu.height = FlxG.stage.stageHeight
+			spCount = new FlxText(375, 20, 200, "", true).setFormat(null, 20);
+			toolTip = new FlxText(375, 50, 200, "", true).setFormat(null, 16);
+			mainMenu.width = FlxG.stage.stageWidth / 2;
+			mainMenu.height = FlxG.stage.stageHeight;
 			refresh();
 			FlxG.stage.addChild(mainMenu);
 			add(toolTip);
@@ -58,14 +58,14 @@ package
 		}
 		private function refresh():void 
 		{
-			
 			//TO DO ADD LOADING SCREEN!!!!!!!
-			myClient.bigDB.loadMyPlayerObject(function(myPlayer:DatabaseObject) {
-				spCount.text = "You Have " + myPlayer.sp + " SP"
-				var abilityArray:Array = myPlayer.abilities
-				myClient.bigDB.loadRange("Abilities", "Class", null, myPlayer.role, myPlayer.role, 10, function(abarr:Array) {
+			myClient.bigDB.loadMyPlayerObject(function(myPlayer:DatabaseObject):void {
+				spCount.text = "You Have " + myPlayer.sp + " SP";
+				var abilityArray:Array = myPlayer.abilities;
+				myClient.bigDB.loadRange("Abilities", "Class", null, myPlayer.role, myPlayer.role, 10, function(abarr:Array):void {
+					trace("abarr length: " + abarr.length);
 					if (abarr.length == 0) {
-						roomContainer.addChild(new Label("No Abilities Currently Available for " + myPlayer.role));
+						roomContainer.addChild(new Label("Sorry, no Abilities Currently Available for " + myPlayer.role + "!"));
 					}else{
 						for (var x in abarr) {
 							var contains:Boolean = false;
@@ -92,14 +92,14 @@ package
 		}
 		
 		private function AbilitySelectCallback(key:String, cost:int) {
-			myClient.bigDB.loadMyPlayerObject(function(myPlayer:DatabaseObject) {
+			myClient.bigDB.loadMyPlayerObject(function(myPlayer:DatabaseObject):void {
 				if (myPlayer.sp >= cost) {
-					var prompt:InGamePrompt = new InGamePrompt(FlxG.stage, "Are you sure?\n Cost: " + cost + " SP", function(){
+					var prompt:InGamePrompt = new InGamePrompt(FlxG.stage, "Are you sure?\n Cost: " + cost + " SP", function():void{
 						myPlayer.sp -= cost;
 						var abilities:Array = myPlayer.abilities
 						abilities.push(key);
 						myPlayer.save();
-						FlxG.flash(0xffffff,1,function() { FlxG.stage.addChild(new Alert("You have learned a new ability")) })
+						FlxG.flash(0xffffff,1,function():void { FlxG.stage.addChild(new Alert("You have learned a new ability")) })
 					});
 				}else {
 					FlxG.stage.addChild(new Alert("You do not have enough skill points!"));

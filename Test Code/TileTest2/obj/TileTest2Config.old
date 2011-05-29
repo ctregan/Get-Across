@@ -6,15 +6,15 @@
   <compiler>
     <define append="true">
       <name>CONFIG::debug</name>
-      <value>true</value>
-    </define>
-    <define append="true">
-      <name>CONFIG::release</name>
       <value>false</value>
     </define>
     <define append="true">
+      <name>CONFIG::release</name>
+      <value>true</value>
+    </define>
+    <define append="true">
       <name>CONFIG::timeStamp</name>
-      <value>'5/28/2011'</value>
+      <value>'5/29/2011'</value>
     </define>
     <source-path append="true">
       <path-element>C:\Users\Ji\Documents\School\CSE481_GamesCapstone\GetAcrossGit2\Get-Across\Test Code\TileTest2\src</path-element>

@@ -21,6 +21,7 @@ package
 		[Embed(source = "data/Selected.png")] public var select:Class; 
 		private static var TILE_VALUES:Array = ["Grass", "Hill", "Tree", "Cherry Tree", "River", "Star"];
 		private var STAR_TILE:int = 4;
+		private var STARTING_TILE:int = 5;
 		private static var _tileSize:int = 32;
 	
 		private var _name:String
@@ -75,10 +76,10 @@ package
 			brushInfo = new FlxText(400, 230, 300, "", true).setFormat(null, 15,0xff33591d);
 			add(brushInfo);
 			
-			palet = new FlxSprite(20, 40, data_tiles)
+			palet = new FlxSprite(5, 40, data_tiles)
 			add(palet);
 			
-			selectedTile = new FlxSprite(20, 40, select)
+			selectedTile = new FlxSprite(5, 40, select)
 			add(selectedTile);
 			
 			add(new FlxButtonPlus(10, 80, sendMapData, null, "Upload", 55, 40));
@@ -137,7 +138,7 @@ package
 					brushInfo.text = "You currently have STAR selected.\n\nPlayers need to reach this to win the level.  Make sure your map has one!"
 					break;
 				case 5:
-					brushInfo.text = "You currently have Start SQUARE selected.\n\nIt takes no AP to cross.  Player will start here.";
+					brushInfo.text = "You currently have START SQUARE selected.\n\nIt takes no AP to cross.  Player will start here.";
 					break;
 				case 6:
 					brushInfo.text = "You currently have VERTICAL BRIDGE selected.\n\nBridge allow players to cross over water for 1 AP."
@@ -166,13 +167,32 @@ package
 				case 14:
 					brushInfo.text = "You currently have WALL selected.\n\nPlayers can't get across walls."
 					break;
+				case 15:
+					brushInfo.text = "You currently have MOUNTAIN selected.\n\nPlayers can get only get across mountains if they have 15 AP!"
+					break;
+				case 16:
+					brushInfo.text = "You currently have BOULDER selected.\n\nYou need a special ability to get over this heartbreakingly large boulder."
+					break;
+				case 17:
+					brushInfo.text = "You currently have RUBBLE selected.\n\nThere used to be a boulder here.  Oh well."
+					break;
+				case 18:
+					brushInfo.text = "You currently have BRAMBLE selected.\n\nIt's so spiky!  Ouch!  You need a special ability to get through it."
+					break;
+				case 20:
+					brushInfo.text = "You currently have SNAKE selected.\n\nActually, it's a VERY HUNGRY SNAKE.  You need a special ability to make it not eat YOU."
+					break;
+				case 21:
+					brushInfo.text = "You currently have HOLE selected.\n\nSnakes that have eaten their fill go take a nice nap."
+					break;
 				default:
 					brushInfo.text = "You currently have a tile selected to paint with!  Go you, yeah!!"
 					break;
 			}
 		}
+		
 		//Changes the brush value to whatever tile value is sent in
-		private function switchBrush(tileValue:int) {
+		private function switchBrush(tileValue:int):void {
 			tileBrush = tileValue;
 		}
 		//Returns true if the mouse is within the tile map
@@ -204,6 +224,8 @@ package
 		private function sendMapData():void {
 			if (!mapHasEnd())
 				FlxG.stage.addChild(new Alert("No one can complete this map if it doesn't have a goal!\n\nAdd a goal tile (the one with the red star) to the map!"));
+			else if (!mapHasStart())
+				FlxG.stage.addChild(new Alert("You don't have a start tile!  Why don't you put one down? (It's the tile with the yellow square.)"));
 			else {
 				var newMap:DatabaseObject = new DatabaseObject();
 				newMap.Name = _name;
@@ -214,7 +236,7 @@ package
 				newMap.MonsterCount = 0;
 				newMap.startX = startX;
 				newMap.startY = startY;
-				_myClient.bigDB.createObject("UserMaps", null, newMap, function() {
+				_myClient.bigDB.createObject("UserMaps", null, newMap, function():void {
 					FlxG.stage.addChild(new Alert("Map Uploaded"));
 				});
 				
@@ -238,6 +260,10 @@ package
 			return (starTiles != null);
 		}
 		
+		private function mapHasStart():Boolean {
+			var startTile:Array = map.getTileInstances(STARTING_TILE);
+			return (startTile != null);
+		}
 	}
 
 }
