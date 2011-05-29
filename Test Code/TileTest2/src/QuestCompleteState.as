@@ -143,7 +143,7 @@ package
 				if (xpSprite.health >= neededXP) {
 					FlxG.flash(0xffffff, 1, function():void {
 						// if this is first time player gained sp, give some more info
-						if (ob.level == 1)
+						if (ob.level == 2)
 							FlxG.stage.addChild(new Alert("With enough Skill Points (SP), and with a class, you can buy new abilities."));
 						FlxG.stage.addChild(new Alert("You Have Leveled Up and Gained 1 Skill Point"));
 						spGainedLabel.text = "You gained 1 level and 1 skill point!";

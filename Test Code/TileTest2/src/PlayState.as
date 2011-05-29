@@ -440,18 +440,23 @@ package
 						goalsLabel.text = "Reach the red star!\n\nThe wall is open now -- go for it!";
 						sawWallOpened = true;
 					}
+					
+					else if (!sawWallOpened && myPlayer.xPos == 0 && myPlayer.yPos == 6)
+					{
+						FlxG.stage.addChild(new MultiAlert(new Array( "Looks like the wall's gone now!", "Go for the red star!" )));
+						goalsLabel.text = "Reach the red star!\n\nThe wall is open now -- go for it!";
+						sawWallOpened = true;
+					}
 					//zoomOutAction();
 				}
 				
 				// tutorial 2 messages
 				else if (tutorial_number == 2)
 				{
-					//if (lyrHUD == null) trace("++++++lyrHUD is null");
 					if (gatherCherryButton != null && !removedCherryButton) {
 						lyrHUD.remove(gatherCherryButton);
 						removedCherryButton = true;
 					} 
-					//zoomOutAction();
 				}
 				
 				// tutorial 4 messages
