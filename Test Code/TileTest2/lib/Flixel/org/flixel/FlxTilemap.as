@@ -23,7 +23,7 @@ package org.flixel
 	{
 		[Embed(source="data/autotiles.png")] static public var ImgAuto:Class;
 		[Embed(source="data/autotiles_alt.png")] static public var ImgAutoAlt:Class;
-		
+	
 		/**
 		 * No auto-tiling.
 		 */
@@ -118,6 +118,8 @@ package org.flixel
 		 * Internal, used to sort of insert blank tiles in front of the tiles in the provided graphic.
 		 */
 		protected var _startingIndex:uint;
+		
+		public var _winTiles:Array;
 		
 		
 		/**
@@ -976,7 +978,9 @@ package org.flixel
 			{
 				if(_data[i] == Index)
 				{
-					point = new FlxPoint(uint(i%widthInTiles)*_tileWidth,uint(i/widthInTiles)*_tileHeight);
+					point = new FlxPoint(uint(i % widthInTiles) * _tileWidth, uint(i / widthInTiles) * _tileHeight);
+					trace("----get tile coords i " + i + " widthInTiles " + widthInTiles + " _tileWidth " + _tileWidth + " tileHeight " + _tileHeight);
+					trace("----x,y " + point.x + "," + point.y);
 					if(Midpoint)
 					{
 						point.x += _tileWidth*0.5;
@@ -984,12 +988,41 @@ package org.flixel
 					}
 					if(array == null)
 						array = new Array();
-					array.push(point);
+					//array.push(point);
+					if (_winTiles == null) _winTiles = new Array();
+					this._winTiles.push(point);
 				}
 				i++;
 			}
-			
+			var j:int;
+			for (j = 0;j < array.length; j++) {
+				trace("----x,y in loop " + array[j].x + "," + array[j].y);
+			}
 			return array;
+		}
+		
+		public function makeStarSparkle(Index:uint, img:Class):void {
+			var array:Array = null;
+			
+			var point:FlxPoint;
+			var i:uint = 0;
+			var l:uint = widthInTiles * heightInTiles ;
+			while(i < l)
+			{
+				if(_data[i] == Index)
+				{
+					point = new FlxPoint(uint(i % widthInTiles) * _tileWidth, uint(i / widthInTiles) * _tileHeight);
+					trace("----get tile coords i " + i + " widthInTiles " + widthInTiles + " _tileWidth " + _tileWidth + " tileHeight " + _tileHeight);
+					trace("----x,y " + point.x + "," + point.y);
+					// make a sprite here...
+					var sparkle:FlxSprite = new FlxSprite(point.x, point.y + PlayState._windowHeight);
+					sparkle.loadGraphic(img, true, false, 32, 32);
+					sparkle.addAnimation("sparkle", [0, 1, 2], 5, true);
+					sparkle.play("sparkle");
+					PlayState.lyrSprites.add(sparkle);
+				}
+				i++;
+			}			
 		}
 		
 		/**

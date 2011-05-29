@@ -237,6 +237,7 @@ package
 			var starTiles:Array = map.getTileInstances(STAR_TILE);
 			return (starTiles != null);
 		}
+		
 	}
 
 }
