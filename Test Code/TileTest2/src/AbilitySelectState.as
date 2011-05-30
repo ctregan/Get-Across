@@ -58,6 +58,7 @@ package
 		}
 		private function refresh():void 
 		{
+			roomContainer.removeChildren();
 			//TO DO ADD LOADING SCREEN!!!!!!!
 			myClient.bigDB.loadMyPlayerObject(function(myPlayer:DatabaseObject):void {
 				spCount.text = "You Have " + myPlayer.sp + " SP";
@@ -78,16 +79,11 @@ package
 								}
 							}
 							if (!contains) {
-								var abilityE:AbilityEntry = new AbilityEntry(abarr[x].Name, abarr[x].key, abarr[x].SPcost, AbilitySelectCallback)
-								abilityE.addEventListener(MouseEvent.MOUSE_OVER, function ():void 
-								{
-									trace("hovering over ability " + x + ", " + abarr[x].Name);
-									toolTip.text = abarr[x].Name + "\n\n" + "Cost: " + abarr[x].SPcost + " Skill Points\n\n" + "Description:\n" + abarr[x].Description;
-								})
+								var abilityE:AbilityEntry = new AbilityEntry(abarr[x], toolTip, AbilitySelectCallback)
 								roomContainer.addChild(abilityE);
 							}else {
 								trace("not adding event listener for " + x);
-								roomContainer.addChild(new AbilityEntry(abarr[x].Name, abarr[x].key, abarr[x].SPcost, AbilitySelectCallback, true));
+								roomContainer.addChild(new AbilityEntry(abarr[x], toolTip, AbilitySelectCallback, true));
 							}
 						}
 					}
@@ -102,9 +98,14 @@ package
 					var prompt:InGamePrompt = new InGamePrompt(FlxG.stage, "Are you sure?\n Cost: " + cost + " SP", function():void{
 						myPlayer.sp -= cost;
 						var abilities:Array = myPlayer.abilities
-						abilities.push(key);
+						if (abilities == null) {
+							abilities = [key];
+							myPlayer.abilities = abilities
+						}else{
+							abilities.push(key);
+						}
 						myPlayer.save();
-						FlxG.flash(0xffffff,1,function():void { FlxG.stage.addChild(new Alert("You have learned a new ability")) })
+						FlxG.flash(0xffffff, 1, function():void { FlxG.stage.addChild(new Alert("You have learned a new ability")); refresh(); } )
 					});
 				}else {
 					FlxG.stage.addChild(new Alert("You do not have enough skill points!  You'll need " + (cost - myPlayer.sp) + " more!"));
