@@ -144,7 +144,7 @@ package
 				var cost:int = findCost(xPos, yPos, tileSize, true);
 				if (usingSprite >= 0) {
 					trace("walking within sprite's area of influence");
-					if (activeSprite.uses > 0) PlayState.fireNotification(this.x + 20, this.y + 20, (5 - activeSprite.uses) + " moves left", "flower");
+					if (activeSprite.uses > 1) PlayState.fireNotification(this.x + 20, this.y + 20, (5 - activeSprite.uses) + " moves left", "flower");
 					PlayState.fireParticles(activeSprite.x + (activeSprite._tileSize * 2), activeSprite.y + (activeSprite._tileSize * 2), "flower");
 					usingSprite = -1;
 				} else trace("not walking within sprite's area of influence");

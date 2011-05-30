@@ -71,7 +71,7 @@ namespace GetAcross {
             }
             // anything you write to the Console will show up in the 
             // output window of the development server
-            Console.WriteLine("Game is started: " + RoomId + "\nLevel Key: " + levelKey);
+            //Console.WriteLine("Game is started: " + RoomId + "\nLevel Key: " + levelKey);
 
             /*
 			// This is how you setup a timer
@@ -94,7 +94,7 @@ namespace GetAcross {
         // This method is called when the last player leaves the room, and it's closed down.
         public override void GameClosed()
         {
-            Console.WriteLine("RoomId: " + RoomId);
+            //Console.WriteLine("RoomId: " + RoomId);
         }
 
         // This method is called whenever a player joins the game
@@ -106,7 +106,7 @@ namespace GetAcross {
             if (numPlayers < players.Length)
             {
                 players[numPlayers] = player;
-                Console.WriteLine("New Player " + player.Id);
+                //Console.WriteLine("New Player " + player.Id);
                 numPlayers++;
 
                 // if player is not attached to a quest, give them a new quest ID
@@ -115,7 +115,7 @@ namespace GetAcross {
                     {
                         player.characterClass = result.GetString("role", "Novice");
                         player.tutorialLevel = result.GetInt("tutorial", 1);
-                        Console.WriteLine("player class: " + player.characterClass);
+                        //Console.WriteLine("player class: " + player.characterClass);
                         if (questID != null)
                         {
                             result.Set("questID", questID);
@@ -153,9 +153,8 @@ namespace GetAcross {
                             // create new object for this player and their quest data
                             DatabaseObject questPlayerData = new DatabaseObject();
 
-
-                            Console.WriteLine("questPlayers contents: " + questPlayers.ToString());
-                            Console.WriteLine("Level key: " + levelKey);
+                            //Console.WriteLine("questPlayers contents: " + questPlayers.ToString());
+                            //Console.WriteLine("Level key: " + levelKey);
                             //Add Static Map to Quest, to be updated later
                             PlayerIO.BigDB.Load(mapType, levelKey,
                                 delegate(DatabaseObject staticMap)
@@ -347,7 +346,7 @@ namespace GetAcross {
                 Broadcast("UserLeft", player.Id);
                 quest.Save(delegate()
                 {
-                    Console.WriteLine("UserLeft result: " + quest.ToString());
+                    //Console.WriteLine("UserLeft result: " + quest.ToString());
                 });
             }
 		}
@@ -503,7 +502,7 @@ namespace GetAcross {
                             },
                             delegate(PlayerIOError error)
                             {
-                                Console.WriteLine(error.ToString());
+                                //Console.WriteLine(error.ToString());
                             });
 
                         break;
@@ -649,7 +648,7 @@ namespace GetAcross {
 		// Whenever you click the button, your code will run.
 		[DebugAction("Play", DebugAction.Icon.Play)]
 		public void PlayNow() {
-			Console.WriteLine("The play button was clicked!");
+			//Console.WriteLine("The play button was clicked!");
 		}
 
 		// If you use the [DebugAction] attribute on a method with
