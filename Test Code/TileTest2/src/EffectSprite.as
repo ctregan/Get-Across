@@ -2,6 +2,8 @@ package
 {
 	import org.flixel.FlxBasic;
 	import org.flixel.FlxEmitter;
+	import org.flixel.FlxParticle;
+	import org.flixel.FlxRect;
 	import org.flixel.FlxSprite; 
 	import flash.events.TimerEvent
 	import flash.utils.Timer;
@@ -14,9 +16,9 @@ package
 	public class EffectSprite extends FlxSprite 
 	{
 		private var _range:int
-		private var _tileSize:int
+		public var _tileSize:int
 		public var type:String;
-		private var uses:int;
+		public var uses:int;
 		public var xTile:int;
 		public var yTile:int
 		private var _index:int;
@@ -28,6 +30,8 @@ package
 		[Embed(source = "data/bomb.png")] private var bomb:Class;
 		[Embed(source = "data/thornflower.png")] private var thornflower:Class;
 		[Embed(source = "data/snakecandy.png")] private var snakesnack:Class;
+		private var RUBBLE_TILE:int = 17;
+		
 		public function EffectSprite(xTile:int, yTile:int, type:String, range:int, tileSize:int, uses:int, connection:Connection, index:int) 
 		{
 			this.type = type;
@@ -38,6 +42,8 @@ package
 			this.uses = uses;
 			this.xTile = xTile;
 			this.yTile = yTile;
+			var xPixel:int = ((xTile * tileSize) + PlayState.myMap.x) - (tileSize * _range);
+			var yPixel:int = ((yTile * tileSize) + PlayState.myMap.y) - (tileSize * _range);
 			var classToinitialize:Class;
 			
 			if(type == "bacon"){
@@ -45,17 +51,22 @@ package
 			}
 			else if (type == "redflower") {
 				classToinitialize = redflower;
+				PlayState.fireParticles(xPixel + (_tileSize * 2), yPixel + (_tileSize * 2), "flower");
 			}else if (type == "wine") {
 				classToinitialize = wine;
 			}else if (type == "bomb") {
 				classToinitialize = bomb;
 			}else if (type == "thornflower") {
 				classToinitialize = thornflower;
+				PlayState.fireParticles(xPixel + (_tileSize), yPixel + (_tileSize), "thornflower");
 			}else if (type == "snakesnack") {
 				classToinitialize = snakesnack
+				
+>>>>>>> explosion
 			}
 			
-			super(((xTile * tileSize) + PlayState.myMap.x) - (tileSize * _range) , ((yTile * tileSize) + PlayState.myMap.y) - (tileSize * _range) , classToinitialize);
+			super(xPixel, yPixel , classToinitialize);
+			
 			if(type == "bacon" && uses < 1){
 				var myTimer:Timer = new Timer(1000);
 				myTimer.addEventListener(TimerEvent.TIMER, function (event:TimerEvent):void 
@@ -108,8 +119,11 @@ package
 			}
 		}
 		
-		private function bombExplode() {
-			PlayState.myMap.setTile(xTile, yTile, 17, true);
+		// when bomb explodes, set tile to rubble
+		// create particle emitter for bomb exploding
+		private function bombExplode():void {
+			PlayState.fireParticles(this.x, this.y, "bomb");
+			PlayState.myMap.setTile(xTile, yTile, RUBBLE_TILE, true);
 			addUse(true);
 		}
 		

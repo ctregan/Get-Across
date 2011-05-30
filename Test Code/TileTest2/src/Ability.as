@@ -102,9 +102,11 @@ package
 		{
 			var tileType:int = PlayState.myMap.getTile(tileX,tileY)
 			if (_object.Effect.Type == "Terrain" &&  tileType == _object.Effect.From) {
-				PlayState.myMap.setTile(tileX, tileY, _object.Effect.To)
+				PlayState.myMap.setTile(tileX, tileY, _object.Effect.To);
 				connection.send("MapTileChanged", tileX, tileY, _object.Effect.To);
 				connection.send("QuestMapUpdate", PlayState.myMap.getMapData());
+				if (_object.Effect.To == PlayState.CHERRY_TILE)
+					PlayState.fireParticles( PlayState.myPlayer.x,PlayState.myPlayer.y, "cherrytree");
 			}else if (_object.Effect.Type == "Terrain" && _object.Effect.From2 != null && tileType == _object.Effect.From2) {
 				PlayState.myMap.setTile(tileX, tileY, _object.Effect.To2)
 				connection.send("MapTileChanged", tileX, tileY, _object.Effect.To2);

@@ -23,6 +23,8 @@ package
 				case "gain": // green
 					this.setFormat(null, 8, 0x2200ff00, "left", 1);
 					break;
+				case "flower":	// blue
+					this.setFormat(null, 8, 0x223bb9ff, "left", 1);
 				default: // white
 					this.setFormat(null, 8, 0x00000000, "left", 1);
 			}

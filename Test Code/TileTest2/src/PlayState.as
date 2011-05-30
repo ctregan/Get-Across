@@ -1,5 +1,6 @@
 package  
 {
+	import flash.display.Graphics;
 	import flash.display.Sprite;
 	import flash.events.ContextMenuEvent;
 	import flash.sampler.NewObjectSample;
@@ -191,6 +192,11 @@ package
 		private var sawWall:Boolean = false;
 		private var sawWallOpened:Boolean = false;
 		
+		[Embed(source = "data/particles.png")] private static var particleImg:Class;
+		[Embed(source = "data/bombParticles.png")] private static var bombParticles:Class;
+		[Embed(source = "data/flowerParticles.png")] private static var flowerParticles:Class;
+		[Embed(source = "data/thornflowerParticles.png")] private static var thornflowerParticles:Class;
+		[Embed(source = "data/cherryTreeParticles.png")] private static var cherryTreeParticles:Class;
 		public function PlayState(connection:Connection, client:Client):void
 		{
 			super();
@@ -211,7 +217,6 @@ package
 				playerAP = startAP;
 				level_name = levelKey;
 				trace("init: starting ap: " + playerAP);
-				//boardSetup(level);
 				resourcesString = resources;
 				trace("level to search in newquest: " + level);
 				
@@ -374,7 +379,50 @@ package
 					EffectSprite(effectArray[index]).addUse(false);
 				}
 			});
+		}
 		
+		// given places to emit particles & type of particle to emit,
+		// fire particles!  fire!
+		public static function fireParticles(x:int, y:int, type:String):void
+		{
+			// set up emitter
+			var emitter:FlxEmitterExt = new FlxEmitterExt();
+			emitter.setRotation(0, 0);
+			emitter.x = x + (_tileSize / 2);
+			emitter.y = y + (_tileSize / 2);
+			lyrHUD.add(emitter);
+			
+			switch (type)
+			{
+				case "bomb":
+					emitter.setMotion(0, 6, 0.5, 360, 1, 1.8);
+					emitter.setXSpeed(5, 10);
+					emitter.setYSpeed(5, 10);
+					emitter.makeParticles(bombParticles, 600, 0, true, 0);
+					break;
+				case "flower":
+					emitter.setMotion(90,6, 0.5,360,30, 1.8);
+					emitter.setXSpeed(0, 5);
+					emitter.setYSpeed(100, 200);
+					emitter.makeParticles(flowerParticles, 100, 0, true, 0);
+					break;
+				case "thornflower":
+					emitter.setMotion(90,6, 0.5,360,30, 1.8);
+					emitter.setXSpeed(0, 5);
+					emitter.setYSpeed(100, 200);
+					emitter.makeParticles(thornflowerParticles, 100, 0, true, 0);
+					break;
+				case "cherrytree":
+					emitter.setMotion(0,6, 0.5,360,30, 1.8);
+					emitter.setXSpeed(0, 5);
+					emitter.setYSpeed(100, 200);
+					emitter.makeParticles(cherryTreeParticles, 100, 0, true, 0);
+					break;
+				default:
+					emitter.makeParticles(particleImg, 500, 0, true, 0);
+					break;
+			}
+			emitter.start();
 		}
 		
 		private function setCameras():void {
@@ -620,7 +668,7 @@ package
 							var resourceNote:String = "";
 							if (cost > 0) resourceNote += "-" + cost + " AP";
 							if (activeAbility._neededLumber > 0) resourceNote += "\n-" + activeAbility._neededLumber + " lumber";
-							PlayState.fireNotification(myPlayer.x + 20, myPlayer.y - 20, resourceNote, "loss");
+							fireNotification(myPlayer.x + 20, myPlayer.y - 20, resourceNote, "loss");
 							// depending on what ability... 
 							action = new ClientAction();
 							action.aid = ClientActionType.UNKNOWN_ABILITY;
@@ -955,8 +1003,6 @@ package
 			experience.setFormat(null, 10);
 			var zoomInButton:FlxButton = new FlxButton(100, 340, "Zoom in", zoomInAction);
 			var zoomOutButton:FlxButton = new FlxButton(100, 370, "Zoom out", zoomOutAction);
-			//var zoomInLabel:FlxText = new FlxText(50, 340, 100, "Zoom in");
-			//var zoomOutLabel:FlxText = new FlxText(50, 370, 100, "Zoom out");
 			//Battle HUD
 			//Background
 			
@@ -1036,8 +1082,6 @@ package
 			lyrHUD.add(new FlxButtonPlus(540, 15, mainMenu, null, "Main Menu"));
 			lyrHUD.add(zoomInButton);
 			lyrHUD.add(zoomOutButton);
-			//lyrHUD.add(zoomInLabel);
-			//lyrHUD.add(zoomOutLabel);
 			lyrBackground.add(background);
 
 			tileHover = new FlxSprite(0, _windowHeight);
