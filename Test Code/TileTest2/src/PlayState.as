@@ -158,8 +158,8 @@ package
 		private var _experienceTextOffsetY:int = 30;
 		private static var _resourceTextOffsetX:int = 540;
 		private static var _resourceTextOffsetY:int = 250;
-		private var _hintOffsetX:int = 192;
-		private var _hintOffsetY:int = 453;
+		private var _hintOffsetX:int = 453; 
+		private var _hintOffsetY:int = 192;
 		private var _friendsListOffsetX:int = 118;
 		private var _friendsListOffsetY:int = 354; 			
 		
@@ -689,7 +689,7 @@ package
 						// then go
 						var absDis:int = Math.abs(myPlayer.xPos - xTemp) + Math.abs(myPlayer.yPos - yTemp);
 						// have to check if the move is possible beforehand... 
-						var canGo:Boolean = myPlayer.checkMove(xTemp, yTemp, _tileSize);
+						var canGo:Boolean = myPlayer.checkMove(xTemp, yTemp, _tileSize, true);
 						
 						if (absDis < 2 && absDis > 0 && canGo) {	// one away
 							//tileHover.loadGraphic(hoverTileImg);
@@ -948,12 +948,14 @@ package
 			setCameras();
 		}
 		
-		private function showHint() {
-			if (hintButtonClicked) {
+		private function showHint():void {
+			if (!hintButtonClicked) {
+				trace("show hint");
 				hintBox =  new MessageBox(240, 100, hintArray);
 				FlxG.stage.addChild(hintBox);
 				// add it
 			} else {
+				trace("hide hint");
 				// remove it
 				FlxG.stage.removeChild(hintBox);
 			}
@@ -964,11 +966,11 @@ package
 		//Add all flixel elements to the board, essentially drawing the game.
 		private function boardSetup(map_data:String, playerName:String, levelKey:String):void 
 		{
-			
-
 			// set up button
 			hintButton = new FlxButtonPlus(_hintOffsetX, _hintOffsetY, showHint, null, null, 32, 32);
-			hintButton.loadGraphic(new FlxSprite(0,0,hintImg), new FlxSprite(0,0,hintClickImg));			
+			//hintButton.loadGraphic(new FlxSprite(_hintOffsetY, _hintOffsetX, hintImg), new FlxSprite(_hintOffsetX, _hintOffsetY, hintClickImg));	
+			//hintButton.x = _hintOffsetX;
+			//hintButton.y = _hintOffsetY;
 			hintAlert = new MultiAlert(new Array(""));
 			hintArray = new Array();
 //FlxG.stage.addChild(new MultiAlert(dbo.Messages));
@@ -1002,7 +1004,7 @@ package
 			lvl.setFormat(null, 15);
 			experience = new FlxText(_experienceTextOffsetX, _experienceTextOffsetY, 200, "Experience: 0", true);
 			experience.setFormat(null, 10);
-			var zoomInButton:FlxButton = new FlxButton(100, 340, "Zoom in", zoomInAction);
+			var zoomInButton:FlxButton = new FlxButton(100, 355, "Zoom in", zoomInAction);
 			var zoomOutButton:FlxButton = new FlxButton(100, 370, "Zoom out", zoomOutAction);
 			//var zoomInLabel:FlxText = new FlxText(50, 340, 100, "Zoom in");
 			//var zoomOutLabel:FlxText = new FlxText(50, 370, 100, "Zoom out");
@@ -1053,7 +1055,7 @@ package
 			
 			//render game background
 			//Right Side HUD
-			gatherLumberButton = new FlxButtonPlus(0,0, function():void { gatherResource("lumber"); }, null, "Gather lumber!");
+			gatherLumberButton = new FlxButtonPlus(0, 0, function():void { gatherResource("lumber"); }, null, "Gather lumber!");
 			gatherCherryButton = new FlxButtonPlus(0, 0, function():void { gatherResource("cherry"); }, null, "Gather cherry!");
 			amountLumberText = new FlxText(_resourceTextOffsetX, _resourceTextOffsetY, 150, "Lumber: 0", true);
 			amountCherryText = new FlxText(_resourceTextOffsetX, _resourceTextOffsetY + 20, 150, "Cherry: 0", true);
@@ -1107,6 +1109,7 @@ package
 			this.add(lyrBattle);
 			this.add(lyrSprites);
 			this.add(lyrTop);
+			lyrHUD.add(hintButton);
 			//lyrHUD.add(hintAlert);
 			
 			// change goals text in lyrHUD based on what tutorial you're on
@@ -1128,7 +1131,7 @@ package
 					goalsLabel.text = "Use the Monster Bacon ability to lure these strong monsters away from the red star you want to reach!";
 					break;
 				default:
-					goalsLabel.text = "";
+					if (goalsLabel)	goalsLabel.text = "";
 					break;
 			}
 			// gather resources button is not visible unless you can gather something

@@ -92,7 +92,6 @@ package
 				} else { // player has finished tutorials
 					tutorialButton.visible = tutorialButton.enabled = false;
 					continueButton = new TextButton("Continue Level", continueQuest);
-					tutorialButton.visible = tutorialButton.enabled = false;
 					if (_questID == "noQuest") {
 						continueButton.visible = continueButton.enabled = false;
 					}else {
@@ -152,7 +151,7 @@ package
 				null,								//Room id, null for auto generted
 				"GetAcross",							//RoomType to create, bounce is a simple bounce server
 				true,								//Hide room from userlist
-				{name:"Tutorial", key:_levelKey, type:"static" },						//Room Join data, data is returned to lobby list. Variabels can be modifed on the server
+				{name:"Tutorial", key:_levelKey, type:"static", continueQuest:_questID },						//Room Join data, data is returned to lobby list. Variabels can be modifed on the server
 				{},
 				function(connection:Connection):void  {
 					FlxG.stage.removeChild(mainMenu);
@@ -185,7 +184,7 @@ package
 					null,								//Room id, null for auto generted
 					"GetAcross",							//RoomType to create, bounce is a simple bounce server
 					true,								//Hide room from userlist
-					{name:"Tutorial", key:_levelKey, type:"static" },						//Room Join data, data is returned to lobby list. Variabels can be modifed on the server
+					{name:"Tutorial", key:_levelKey, type:"static", continueQuest:"noQuest" },						//Room Join data, data is returned to lobby list. Variabels can be modifed on the server
 					{},
 					function(connection:Connection):void {
 						FlxG.stage.removeChild(mainMenu);
