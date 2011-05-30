@@ -52,13 +52,10 @@ package
 		private var _move_speed:int = 400;
 		public var isMoving:Boolean = false;
 		private var isMyPlayer:Boolean; //Indicates if this player object is the one local to the client
-<<<<<<< HEAD
 		private var lastXMouseTileCheck:int = -1;
-		private var lastYMouseTileCheck:int = -1;
-=======
+		private var lastYMouseTileCheck:int = -1;		
 		private var usingSprite:int = -1;	// true if player if moving with a sprite's area of effect
 		private var activeSprite:EffectSprite;
->>>>>>> explosion
 		
 		// player's resources
 		public var amountLumber:int;
@@ -139,22 +136,18 @@ package
 			// see if player has enough AP to move; if not, fire notification
 			if (AP < findCost(xPos + xChange, yPos + yChange, tileSize, false))
 				PlayState.fireNotification(this.x + 20, this.y - 20, "Not enough AP to move here!", "loss");
-<<<<<<< HEAD
-			else if (checkMove(xPos + xChange, yPos + yChange, tileSize, true)) {
-=======
-				
 			// player has enough AP to move
 			else if (checkMove(xPos + xChange, yPos + yChange, tileSize)) {
->>>>>>> explosion
 				isMoving = true;
 				xPos = xPos + xChange;
 				yPos = yPos + yChange;
 				var cost:int = findCost(xPos, yPos, tileSize, true);
-				if (usingSprite > 0) {
+				if (usingSprite >= 0) {
+					trace("walking within sprite's area of influence");
 					if (activeSprite.uses > 0) PlayState.fireNotification(this.x + 20, this.y + 20, (5 - activeSprite.uses) + " moves left", "flower");
 					PlayState.fireParticles(activeSprite.x + (activeSprite._tileSize * 2), activeSprite.y + (activeSprite._tileSize * 2), "flower");
 					usingSprite = -1;
-				}
+				} else trace("not walking within sprite's area of influence");
 				AP = AP - cost;
 				play("walk" + facing);
 				var desiredX:int = this.x + (tileSize * xChange);

@@ -30,6 +30,7 @@ package
 		[Embed(source = "data/bomb.png")] private var bomb:Class;
 		[Embed(source = "data/thornflower.png")] private var thornflower:Class;
 		[Embed(source = "data/snakecandy.png")] private var snakesnack:Class;
+		
 		private var RUBBLE_TILE:int = 17;
 		
 		public function EffectSprite(xTile:int, yTile:int, type:String, range:int, tileSize:int, uses:int, connection:Connection, index:int) 
@@ -61,8 +62,6 @@ package
 				PlayState.fireParticles(xPixel + (_tileSize), yPixel + (_tileSize), "thornflower");
 			}else if (type == "snakesnack") {
 				classToinitialize = snakesnack
-				
->>>>>>> explosion
 			}
 			
 			super(xPixel, yPixel , classToinitialize);
