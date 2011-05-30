@@ -91,7 +91,7 @@ package
 					continueButton = new TextButton("You finished all tutorial levels!  Choose your class!", chooseClass);
 				} else { // player has finished tutorials
 					tutorialButton.visible = tutorialButton.enabled = false;
-					continueButton = new TextButton("Continue Level", continueQuest);
+					continueButton = new TextButton("Continue Your Previous Quest", continueQuest);
 					if (_questID == "noQuest") {
 						continueButton.visible = continueButton.enabled = false;
 					}else {

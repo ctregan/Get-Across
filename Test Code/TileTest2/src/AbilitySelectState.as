@@ -48,7 +48,7 @@ package
 				)
 			)
 			spCount = new FlxText(375, 20, 200, "", true).setFormat(null, 20);
-			toolTip = new FlxText(375, 50, 200, "", true).setFormat(null, 16);
+			toolTip = new FlxText(375, 70, 200, "", true).setFormat(null, 16);
 			mainMenu.width = FlxG.stage.stageWidth / 2;
 			mainMenu.height = FlxG.stage.stageHeight;
 			refresh();
@@ -58,9 +58,13 @@ package
 		}
 		private function refresh():void 
 		{
+			roomContainer.removeChildren();
 			//TO DO ADD LOADING SCREEN!!!!!!!
 			myClient.bigDB.loadMyPlayerObject(function(myPlayer:DatabaseObject):void {
 				spCount.text = "You Have " + myPlayer.sp + " SP";
+				
+				if (myPlayer.sp == 0)
+					FlxG.stage.addChild(new Alert("You can't gain new abilities with only 0 SP!  Play some games to get more!"))
 				var abilityArray:Array = myPlayer.abilities;
 				myClient.bigDB.loadRange("Abilities", "Class", null, myPlayer.role, myPlayer.role, 10, function(abarr:Array):void {
 					trace("abarr length: " + abarr.length);
@@ -75,14 +79,11 @@ package
 								}
 							}
 							if (!contains) {
-								var abilityE:AbilityEntry = new AbilityEntry(abarr[x].Name, abarr[x].key, abarr[x].SPcost, AbilitySelectCallback)
-								abilityE.addEventListener(MouseEvent.MOUSE_OVER, function ():void 
-								{
-									toolTip.text = abarr[x].Name + "\n\n" + "Cost: " + abarr[x].SPcost + " Skill Points\n\n" + "Description:\n" + abarr[x].Description	
-								})
+								var abilityE:AbilityEntry = new AbilityEntry(abarr[x], toolTip, AbilitySelectCallback)
 								roomContainer.addChild(abilityE);
 							}else {
-								roomContainer.addChild(new AbilityEntry(abarr[x].Name, abarr[x].key, abarr[x].SPcost, AbilitySelectCallback, true));
+								trace("not adding event listener for " + x);
+								roomContainer.addChild(new AbilityEntry(abarr[x], toolTip, AbilitySelectCallback, true));
 							}
 						}
 					}
@@ -97,12 +98,17 @@ package
 					var prompt:InGamePrompt = new InGamePrompt(FlxG.stage, "Are you sure?\n Cost: " + cost + " SP", function():void{
 						myPlayer.sp -= cost;
 						var abilities:Array = myPlayer.abilities
-						abilities.push(key);
+						if (abilities == null) {
+							abilities = [key];
+							myPlayer.abilities = abilities
+						}else{
+							abilities.push(key);
+						}
 						myPlayer.save();
-						FlxG.flash(0xffffff,1,function():void { FlxG.stage.addChild(new Alert("You have learned a new ability")) })
+						FlxG.flash(0xffffff, 1, function():void { FlxG.stage.addChild(new Alert("You have learned a new ability")); refresh(); } )
 					});
 				}else {
-					FlxG.stage.addChild(new Alert("You do not have enough skill points!"));
+					FlxG.stage.addChild(new Alert("You do not have enough skill points!  You'll need " + (cost - myPlayer.sp) + " more!"));
 				}
 			});
 			

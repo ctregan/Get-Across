@@ -1,5 +1,6 @@
 package  
 {
+	import flash.display.Graphics;
 	import flash.display.Sprite;
 	import flash.events.ContextMenuEvent;
 	import flash.sampler.NewObjectSample;
@@ -206,6 +207,11 @@ package
 		private var sawWall:Boolean = false;
 		private var sawWallOpened:Boolean = false;
 		
+		[Embed(source = "data/particles.png")] private static var particleImg:Class;
+		[Embed(source = "data/bombParticles.png")] private static var bombParticles:Class;
+		[Embed(source = "data/flowerParticles.png")] private static var flowerParticles:Class;
+		[Embed(source = "data/thornflowerParticles.png")] private static var thornflowerParticles:Class;
+		[Embed(source = "data/cherryTreeParticles.png")] private static var cherryTreeParticles:Class;
 		public function PlayState(connection:Connection, client:Client):void
 		{
 			super();
@@ -226,7 +232,6 @@ package
 				playerAP = startAP;
 				level_name = levelKey;
 				trace("init: starting ap: " + playerAP);
-				//boardSetup(level);
 				resourcesString = resources;
 				trace("level to search in newquest: " + level);
 				
@@ -389,7 +394,50 @@ package
 					EffectSprite(effectArray[index]).addUse(false);
 				}
 			});
+		}
 		
+		// given places to emit particles & type of particle to emit,
+		// fire particles!  fire!
+		public static function fireParticles(x:int, y:int, type:String):void
+		{
+			// set up emitter
+			var emitter:FlxEmitterExt = new FlxEmitterExt();
+			emitter.setRotation(0, 0);
+			emitter.x = x + (_tileSize / 2);
+			emitter.y = y + (_tileSize / 2);
+			lyrHUD.add(emitter);
+			
+			switch (type)
+			{
+				case "bomb":
+					emitter.setMotion(0, 6, 0.5, 360, 1, 1.8);
+					emitter.setXSpeed(5, 10);
+					emitter.setYSpeed(5, 10);
+					emitter.makeParticles(bombParticles, 600, 0, true, 0);
+					break;
+				case "flower":
+					emitter.setMotion(90,6, 0.5,360,30, 1.8);
+					emitter.setXSpeed(0, 5);
+					emitter.setYSpeed(100, 200);
+					emitter.makeParticles(flowerParticles, 100, 0, true, 0);
+					break;
+				case "thornflower":
+					emitter.setMotion(90,6, 0.5,360,30, 1.8);
+					emitter.setXSpeed(0, 5);
+					emitter.setYSpeed(100, 200);
+					emitter.makeParticles(thornflowerParticles, 100, 0, true, 0);
+					break;
+				case "cherrytree":
+					emitter.setMotion(0,6, 0.5,360,30, 1.8);
+					emitter.setXSpeed(0, 5);
+					emitter.setYSpeed(100, 200);
+					emitter.makeParticles(cherryTreeParticles, 100, 0, true, 0);
+					break;
+				default:
+					emitter.makeParticles(particleImg, 500, 0, true, 0);
+					break;
+			}
+			emitter.start();
 		}
 		
 		private function setCameras():void {
@@ -648,7 +696,7 @@ package
 							var resourceNote:String = "";
 							if (cost > 0) resourceNote += "-" + cost + " AP";
 							if (activeAbility._neededLumber > 0) resourceNote += "\n-" + activeAbility._neededLumber + " lumber";
-							PlayState.fireNotification(myPlayer.x + 20, myPlayer.y - 20, resourceNote, "loss");
+							fireNotification(myPlayer.x + 20, myPlayer.y - 20, resourceNote, "loss");
 							// depending on what ability... 
 							action = new ClientAction();
 							action.aid = ClientActionType.UNKNOWN_ABILITY;
@@ -793,7 +841,7 @@ package
 					return "Hill -- travel cost is 3 AP!";
 					break;
 				case TREE_TILE:
-					return "A tree -- no travel cost!  Pretty nice-looking, isn't it?";
+					return "A tree -- no travel cost!  Pretty nice, isn't it?";
 					break;
 				case CHERRY_TILE:
 					return "A cherry tree -- gather lumber or cherries for 1 AP!";
@@ -802,7 +850,7 @@ package
 					return "A red star -- reach here to win the level!";
 					break;
 				case YELLOW_TILE:
-					return "A yellow square.  Why is this here?  No one remembers.";
+					return "This is where you started from!";
 					break;
 				case BRIDGE_TILE_UP:
 					return "A bridge.  Use it to get across water!";
@@ -829,22 +877,22 @@ package
 					return "A river.  Impassible without help.";
 					break;
 				case GATE_TILE:
-					return "A gate.  You can't get past it without opening it first.";
+					return "A gate.  You can't get past it without opening it.";
 					break;
 				case MOUNTAIN_TILE:
 					return "A mountain.  You need 15 AP to cross to cross it!";
 					break;
 				case ROCK_TILE:
-					return "A rock.  It's too high to pass.  A crafter could probably destroy it..."
+					return "A huge rock.  A crafter could probably destroy it..."
 					break;
 				case RUBBLE_TILE:
 					return "Rubble.  Get across it!  Yeah!";
 					break;
 				case BRAMBLE_TILE:
-					return "Brambles.  Ouch!  They're too painful to get through!"
+					return "Brambles.  Ouch!  They're too painful to pass!"
 					break;
 				case SNAKE_TILE:
-					return "An extremely hungry snake.  DON'T GET CLOSE TO IT, IT MIGHT EAT YOU";
+					return "A very hungry snake.  DON'T GET CLOSE, IT MIGHT EAT YOU";
 					break;
 				case SNAKE_GONE_TILE:
 					return "There used to be a snake here.  Looks like it fled!"
@@ -1006,8 +1054,6 @@ package
 			experience.setFormat(null, 10);
 			var zoomInButton:FlxButton = new FlxButton(100, 355, "Zoom in", zoomInAction);
 			var zoomOutButton:FlxButton = new FlxButton(100, 370, "Zoom out", zoomOutAction);
-			//var zoomInLabel:FlxText = new FlxText(50, 340, 100, "Zoom in");
-			//var zoomOutLabel:FlxText = new FlxText(50, 370, 100, "Zoom out");
 			//Battle HUD
 			//Background
 			
@@ -1065,7 +1111,7 @@ package
 			//goalsLabel.frameHeight = 75;	
 			errorMessage = new FlxText(_errorMessageOffsetX, _errorMessageOffsetY, 120, "Errors Appear Here", true);
 			location = new FlxText(_positionInfoOffsetX, _positionInfoOffsetY, 100, "(0,0)", true);
-			mouseLocation = new FlxText(_terrainMessageBoxOffsetX, _terrainMessageBoxOffsetY, 260, "(0,0)", true);
+			mouseLocation = new FlxText(_terrainMessageBoxOffsetX, _terrainMessageBoxOffsetY, 260, "(0,0)", true).setFormat(null,8,0x000000);
 			secCounter = new FlxText(_timerOffsetX, _timerOffsetY, 100, "15 Sec until AP", true);			
 			abilities = new FlxText(_cardBoxOffsetX, _cardBoxOffsetY, 100, "", true);
 			
@@ -1087,8 +1133,6 @@ package
 			lyrHUD.add(new FlxButtonPlus(540, 15, mainMenu, null, "Main Menu"));
 			lyrHUD.add(zoomInButton);
 			lyrHUD.add(zoomOutButton);
-			//lyrHUD.add(zoomInLabel);
-			//lyrHUD.add(zoomOutLabel);
 			lyrBackground.add(background);
 
 			tileHover = new FlxSprite(0, _windowHeight);
