@@ -813,7 +813,7 @@ package
 					return "Hill -- travel cost is 3 AP!";
 					break;
 				case TREE_TILE:
-					return "A tree -- no travel cost!  Pretty nice-looking, isn't it?";
+					return "A tree -- no travel cost!  Pretty nice, isn't it?";
 					break;
 				case CHERRY_TILE:
 					return "A cherry tree -- gather lumber or cherries for 1 AP!";
@@ -822,7 +822,7 @@ package
 					return "A red star -- reach here to win the level!";
 					break;
 				case YELLOW_TILE:
-					return "A yellow square.  Why is this here?  No one remembers.";
+					return "This is where you started from!";
 					break;
 				case BRIDGE_TILE_UP:
 					return "A bridge.  Use it to get across water!";
@@ -849,22 +849,22 @@ package
 					return "A river.  Impassible without help.";
 					break;
 				case GATE_TILE:
-					return "A gate.  You can't get past it without opening it first.";
+					return "A gate.  You can't get past it without opening it.";
 					break;
 				case MOUNTAIN_TILE:
 					return "A mountain.  You need 15 AP to cross to cross it!";
 					break;
 				case ROCK_TILE:
-					return "A rock.  It's too high to pass.  A crafter could probably destroy it..."
+					return "A huge rock.  A crafter could probably destroy it..."
 					break;
 				case RUBBLE_TILE:
 					return "Rubble.  Get across it!  Yeah!";
 					break;
 				case BRAMBLE_TILE:
-					return "Brambles.  Ouch!  They're too painful to get through!"
+					return "Brambles.  Ouch!  They're too painful to pass!"
 					break;
 				case SNAKE_TILE:
-					return "An extremely hungry snake.  DON'T GET CLOSE TO IT, IT MIGHT EAT YOU";
+					return "A very hungry snake.  DON'T GET CLOSE, IT MIGHT EAT YOU";
 					break;
 				case SNAKE_GONE_TILE:
 					return "There used to be a snake here.  Looks like it fled!"
@@ -1060,7 +1060,7 @@ package
 			goalsLabel.frameHeight = 75;	
 			errorMessage = new FlxText(_errorMessageOffsetX, _errorMessageOffsetY, 120, "Errors Appear Here", true);
 			location = new FlxText(_positionInfoOffsetX, _positionInfoOffsetY, 100, "(0,0)", true);
-			mouseLocation = new FlxText(_terrainMessageBoxOffsetX, _terrainMessageBoxOffsetY, 260, "(0,0)", true);
+			mouseLocation = new FlxText(_terrainMessageBoxOffsetX, _terrainMessageBoxOffsetY, 260, "(0,0)", true).setFormat(null,8,0x000000);
 			secCounter = new FlxText(_timerOffsetX, _timerOffsetY, 100, "15 Sec until AP", true);			
 			abilities = new FlxText(_cardBoxOffsetX, _cardBoxOffsetY, 100, "", true);
 			
