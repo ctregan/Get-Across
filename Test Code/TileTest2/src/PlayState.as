@@ -359,6 +359,7 @@ package
 			//New user has joined, make their character
 			connection.addMessageHandler("UserJoined", function(m:Message, userID:int, posX:int, posY:int):void {
 				if (userID != imPlayer) {
+					logClient.ReportLevel(logClient.message.dqid, 0, function g(d:String):void {}, PLAY_TOGETHER, _user_id, level_name);
 					// create other player; AP doesn't matter, so default to 20
 					playersArray[userID-1] = new Player(posX, posY, 0,_windowHeight , _tileSize, 20, null, "Novice", false);
 					if (playersArray[userID-1] != null && lyrSprites != null) lyrSprites.add(playersArray[userID-1]);
@@ -979,6 +980,7 @@ package
 					if (posY < 0) posY = 0;
 					myPlayer = new Player(posX, posY, 0, _windowHeight, _tileSize, playerAP, resourcesString, db.role);
 					playersArray[imPlayer - 1] = myPlayer;
+					_user_id = name;
 					connected = true;	// player is made; now allow update() to go
 					var playerHealthBar:FlxHealthBar = new FlxHealthBar(myPlayer, 100, 20, 0, 20, true);
 					playerHealthBar.x = _apBoxOffsetX - 35
@@ -1235,6 +1237,7 @@ package
 				//Starting level 1!
 				//First we need a new dqid to associate with this play of the level.
 				logClient.SetDqid(function f(d:String):void {
+				
 					trace("user id" + _user_id);
 					trace("level name" + level_name);
 					logClient.ReportLevel(logClient.message.dqid, 0, function g(d:String):void {}, PLAY, _user_id, level_name);
