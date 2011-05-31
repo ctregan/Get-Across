@@ -6,6 +6,7 @@ package
 	import flash.text.*;
 	import sample.ui.components.*
 	import flash.text.TextFormatAlign
+	import Facebook.FB
 
 	/**
 	 * ...
@@ -106,7 +107,7 @@ package
 			//Try to load questID, if no quest then that button is invisible
 			
 			var titleTextFormat:TextFormat = new TextFormat("Abscissa", 40, 0xff488921);
-			var titleLabel:Label = new Label("welcome!", 40, TextFormatAlign.CENTER, 0xff488921);
+			var titleLabel:Label = new Label("Get Across", 40, TextFormatAlign.CENTER, 0xff488921);
 			titleLabel.setTextFormat(titleTextFormat);
 			
 			mainMenu = new Box().fill(0xFFFFFF, 0.8, 0);

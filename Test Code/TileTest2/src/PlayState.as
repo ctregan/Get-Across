@@ -302,11 +302,11 @@ package
 						);
 						var menu:Box = new Box().fill(0xFFFFFF, 0.8, 0);
 						// create new menu for player to navigate back to main screen
-						var button:TextButton = new TextButton("Start a new quest!",
+						var button:TextButton = new TextButton("Collect Your Reward!",
 							function ():void
 							{
 								FlxG.stage.removeChild(menu);
-								FlxG.switchState(new MenuState(client));
+								FlxG.switchState(new QuestCompleteState(20, 100, client, ""));
 							}
 						);
 						menu.add(new Box().fill(0x00000, .5, 15).margin(10, 10, 10, 10).minSize(FlxG.width/2, FlxG.height).add(
