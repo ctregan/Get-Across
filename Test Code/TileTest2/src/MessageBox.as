@@ -8,16 +8,51 @@ package
 	import flash.display.*;
 	import flash.text.*;
 	import flash.events.*;
+	import sample.ui.components.*;
+	import org.flixel.*;
+	import sample.ui.components.scroll.ScrollBox;	
+	import org.flixel.FlxState;
+	import org.flixel.*;
+	import playerio.*;
+	import sample.ui.components.*;
+	import sample.ui.*;
+	import flash.text.TextFormatAlign;
+	import sample.ui.components.scroll.ScrollBox
+	import flash.events.Event
  
+	
     public class MessageBox extends Sprite {
 
 		//private var _addCopyButton:Sprite;
 		private var _paragraph:Sprite;
 		private var _paragraphTextField:TextField;
 		private var _copy:String;
+		private var roomContainer:Rows
+		
+		private var base:ScrollBox 
 		
         function MessageBox(x:int, y:int, textArray:Array):void {
-		
+			//base = new ScrollBox().fill(0xffffff,.8).margin(20,20,20,20).add(
+			//	new Box().fill(0x000000,.5,10).margin(10,10,10,10).add(
+			//		new Box().fill(0xffffff,1,5).margin(10,10,10,10).add(
+			//			new Label("Select Map", 20, TextFormatAlign.LEFT)
+			//		).add(
+			//			new Box().margin(35,0,35,0).add(
+			//				new Box().margin(0,0,0,0).fill(0x0,0,10).border(1,0x555555,1).add(
+			//					new Box().margin(3,1,3,3)
+			//				)
+			//			)
+			//		).add(
+			//			new Box().margin(NaN,0,0,0).add(
+			//				new Columns().spacing(10).add(
+			//					new TextButton("Cancel", null)
+			//				)				
+			//			)
+			//		)
+			//	)
+			//)
+			//addChild(base);
+			
 			var msgbox:Sprite = new Sprite();
 
 			// drawing a white rectangle
@@ -50,16 +85,8 @@ package
 
 			msgbox.addChild(textfield);
 			
-			addEventListener(Event.ADDED_TO_STAGE, onAddedToStage, false, 0, true);
-		}
-		//============================================================================================================================
-		private function onAddedToStage(e:Event):void
-		//============================================================================================================================
-		{
-			init();
-			removeEventListener(Event.ADDED_TO_STAGE, onAddedToStage);
-		}
-		
+
+		}		
 	}
 
 }
