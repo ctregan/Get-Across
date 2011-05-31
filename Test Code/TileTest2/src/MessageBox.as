@@ -2,15 +2,12 @@ package
 {
 	// from a wiki page
 
-	import com.warmforestflash.ui.FullScreenScrollBar;
     import flash.display.Sprite;
 	import flash.geom.Rectangle;
     import flash.text.TextField;
 	import flash.display.*;
 	import flash.text.*;
 	import flash.events.*;
-	import gs.TweenLite;
-	import org.libspark.ui.SWFWheel;	
  
     public class MessageBox extends Sprite {
 
@@ -18,10 +15,9 @@ package
 		private var _paragraph:Sprite;
 		private var _paragraphTextField:TextField;
 		private var _copy:String;
-		private var _scrollBar:FullScreenScrollBar;		
 		
         function MessageBox(x:int, y:int, textArray:Array):void {
-			SWFWheel.initialize(stage);				
+		
 			var msgbox:Sprite = new Sprite();
 
 			// drawing a white rectangle
@@ -54,8 +50,6 @@ package
 
 			msgbox.addChild(textfield);
 			
-			_scrollBar = new FullScreenScrollBar(msgbox, 0x000000, 0xff4400, 0x05b59a, 0xffffff, 15, 15, 4, true);
-			addChild(_scrollBar);
 			addEventListener(Event.ADDED_TO_STAGE, onAddedToStage, false, 0, true);
 		}
 		//============================================================================================================================
