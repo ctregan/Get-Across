@@ -6,15 +6,15 @@
   <compiler>
     <define append="true">
       <name>CONFIG::debug</name>
-      <value>false</value>
-    </define>
-    <define append="true">
-      <name>CONFIG::release</name>
       <value>true</value>
     </define>
     <define append="true">
+      <name>CONFIG::release</name>
+      <value>false</value>
+    </define>
+    <define append="true">
       <name>CONFIG::timeStamp</name>
-      <value>'5/30/2011'</value>
+      <value>'5/31/2011'</value>
     </define>
     <source-path append="true">
       <path-element>C:\Users\Charlie\Desktop\Get Across\Test Code\TileTest2\src</path-element>

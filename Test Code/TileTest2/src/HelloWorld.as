@@ -18,9 +18,9 @@ package
 
 		public function HelloWorld() 
 		{
-			super(700, 400, LoginState,1);
+			//super(700, 800, LoginState,1);
 			//super(700, 800, KongregateLoadState, 1);
-			//super(700, 800, FacebookLoadState, 1);
+			super(700, 800, FacebookLoadState, 1);
 		}
 	}
 
