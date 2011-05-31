@@ -43,7 +43,7 @@ package
 		
 		public function MapEditorState(name:String, height:String, width:String, myClient:Client) 
 		{
-			logClient = new CGSClient(CGSClientConstants.URL, 5, 1, -2);
+			logClient = new CGSClient(CGSClientConstants.URL, 5, 1, 3);
 			_height = int(height);
 			_width = int(width);
 			_name = name;
