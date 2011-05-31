@@ -8,8 +8,10 @@ package
 	import org.flixel.plugin.photonstorm.FlxButtonPlus;
 	import org.flixel.plugin.photonstorm.FlxHealthBar;
 	import org.flixel.system.input.*;// data.FlxMouse;
+	import sample.ui.components.scroll.ScrollBox;
 	import sample.ui.MultiAlert;
 	import playerio.*
+	import flash.text.TextField;
 	import sample.ui.Alert;
 	import sample.ui.components.AbilityButton;
 	import sample.ui.components.Box;
@@ -60,7 +62,11 @@ package
 		public static const INVITE_FRIEND:int = 4;
 		public static const PLAY_TOGETHER:int = 5;
 		
+		public var firstMove:Boolean = true;
+		
 		private var _user_id:String = "Nobody";
+		
+		private var hintAdded:Boolean = false;
 		
 		private var removedCherryButton:Boolean = true;
 		
@@ -69,6 +75,10 @@ package
 		[Embed(source = "data/Cursor.png")] public var cursor_img:Class; //Mouse Cursor
 		[Embed(source = "data/arrows_32.png")] public var hoverTileImg:Class;
 		[Embed(source = "data/sparkle.png")] public var sparkleTileImg:Class;
+		[Embed(source = "data/hint_button.png")] public var hintImg:Class;
+		[Embed(source = "data/hint_button_clicked.png")] public var hintClickImg:Class;
+		
+		private var hintButtonClicked:Boolean = false;
 		
 		private var apInfo:FlxText; //Text field to reflect the numner of AP left
 		public static var myPlayer:Player;
@@ -98,6 +108,7 @@ package
 		private var playerStartX: int = 0;	// starting x position of this player
 		private var playerStartY: int = 0;	// starting y position of this player
 		private static var alert:Alert;
+		private var hinttextfield:TextField;
 		
 		public static var myMap:FlxTilemap; //The tile map where the tileset is drawn
 		public static var lyrStage:FlxGroup;
@@ -108,6 +119,8 @@ package
 		public static var lyrMonster:FlxGroup;
 		public static var lyrTop:FlxGroup;
 		public static var lyrEffects:FlxGroup;
+		private var hintBox:MessageBox;
+		//private var hintBox:ScrollBox;
 		
 		private static var abilitySelected:Boolean = false; //Indicates whether an ability is activated
 		private static var activeAbility:Ability; //Which ability is currently chosen
@@ -118,23 +131,25 @@ package
 		private var client:Client;
 		private var connection:Connection; //connection to server
 		
+		private var hintAlert:MultiAlert;
+		
 		// buttons for side menu
 		public static var gatherLumberButton:FlxButtonPlus;
 		public static var gatherCherryButton:FlxButtonPlus;
 		
 		private var win:Boolean = false; //This variable will indicate if a user has won or not
-		
+		private var hintArray:Array;
 		// constants/offset numbers
-		public static var _mapOffsetX:int = 204; 	// left border of map
-		public static var _mapOffsetY:int = 46;	// top border of map
+		public static var _mapOffsetX:int = 192; 	// left border of map
+		public static var _mapOffsetY:int = 34;	// top border of map
 		private var _apBoxOffsetX:int = 265;
 		private var _apBoxOffsetY:int = 10;
 		private var _timerOffsetX:int = 360;
 		private var _timerOffsetY:int = 5;
 		private var _positionInfoOffsetX:int = 480;
-		private var _positionInfoOffsetY:int = 368;
+		private var _positionInfoOffsetY:int = 357;
 		private var _terrainMessageBoxOffsetX:int = 210;
-		private var _terrainMessageBoxOffsetY:int = 368;
+		private var _terrainMessageBoxOffsetY:int = 357;
 		private var _errorMessageOffsetX: int = 600;
 		private var _errorMessageOffsetY: int = 368;
 		private var _goalsBoxOffsetX:int = 540;
@@ -148,8 +163,12 @@ package
 		private var _lvlTextOffsetY:int = 5;
 		private var _experienceTextOffsetX:int = 5;
 		private var _experienceTextOffsetY:int = 30;
-		private static var _resourceTextOffsetX:int = 540;
+		private static var _resourceTextOffsetX:int = 560;
 		private static var _resourceTextOffsetY:int = 250;
+		private var _hintOffsetX:int = 650; 
+		private var _hintOffsetY:int = 10;
+		private var _friendsListOffsetX:int = 118;
+		private var _friendsListOffsetY:int = 354; 			
 		
 		private var ContextButton:FlxButtonPlus;
 		
@@ -161,8 +180,10 @@ package
 		
 		private var camMap:FlxCamera;
 		
-		public static var _windowHeight:int = 400;
+		public static var _windowHeight:int = 500;
 		public static var _windowWidth:int = 700;
+		
+		private var hintButton:FlxButtonPlus;
 		
 		var camOffsetX:int = 0;
 		var camOffsetY:int = 0;
@@ -427,18 +448,35 @@ package
 		
 		private function setCameras():void {
 			thingsSet++;
-			if (thingsSet > 1) {		
+			if (thingsSet > 1 ) {	
 				myMap.makeStarSparkle(WIN_TILE, sparkleTileImg);
 				trace("make camera");
 				// Camera will show up at where the map should be
-				camMap= new FlxCamera(_mapOffsetX, _mapOffsetY, myMap.width, myMap.height);
-				camMap.follow(myPlayer, FlxCamera.STYLE_TOPDOWN);
+				camMap= new FlxCamera(_mapOffsetX, _mapOffsetY, 320, 320);
+
 				camMap.setBounds(0, _windowHeight, myMap.width, myMap.height, true);
-				camMap.deadzone = new FlxRect(_viewSize * 2, _viewSize * 2, myMap.width- _viewSize * 4, myMap.height - _viewSize * 4);
+				camMap.deadzone = new FlxRect(64, 64, 320 - 64 , 320 - 64);
+				
+				//camMap.deadzone = new FlxRect(_viewSize * 2, _viewSize * 2, 320 - _viewSize * 4, 320 - _viewSize * 4);
 				//camMap.color = 0xFFCCCC;
+				camMap.follow(myPlayer, FlxCamera.STYLE_TOPDOWN);
 				FlxG.addCamera(camMap);							// camera that shows where the character is on the map
 				// report the level normally
-				zoomOutAction();		// do it just in case...!
+				
+				
+				
+				
+				
+				
+			//_zoomedIn = true;
+			//camMap= new FlxCamera(_mapOffsetX, _mapOffsetY, Math.min(myMap.width/2, 160),Math.min(myMap.height/2, 160), 2);
+			//camMap.follow(myPlayer, FlxCamera.STYLE_TOPDOWN);
+			//camMap.setBounds(0, _windowHeight, myMap.width, myMap.height, true);
+			//camMap.deadzone = new FlxRect(32, 32, 48, 48);///new FlxRect(_viewSize * 2, _viewSize * 2, 320 - _viewSize * 4, 320 - _viewSize * 4);
+				FlxG.resetCameras(new FlxCamera(0, 0, _windowWidth, _windowHeight * 2));
+				//FlxG.addCamera(camMap);		
+				zoomOutAction();		// do it just in case...!					
+				
 			}
 		}
 		
@@ -464,6 +502,7 @@ package
 					if (!sawHill && myPlayer.xPos == 4 && myPlayer.yPos == 7)
 					{
 						FlxG.stage.addChild(new MultiAlert(new Array( "A hill!", "It takes 3 AP to get across.", "Exhausting!" )));
+						hintArray.concat(new Array( "A hill!", "It takes 3 AP to get across.", "Exhausting!" ));
 						sawHill = true;
 					}
 					
@@ -471,33 +510,43 @@ package
 					{
 						FlxG.stage.addChild(new MultiAlert(new Array( "A mountain!", "It takes 15 AP to get across.", "SUPER exhausting!" )));
 						sawMountain = true;
+						hintArray.concat(new Array( "A mountain!", "It takes 15 AP to get across.", "SUPER exhausting!" ));
 					}
 					
 					else if (!sawNearStar && myPlayer.xPos == 8 && myPlayer.yPos == 2)
 					{
-						FlxG.stage.addChild(new MultiAlert(new Array( "You're almost at the red star!", "Just go one more place to reach the end!" )));
+						var a:Array = new Array( "You're almost at the red star!", "Just go one more place to reach the end!" );
+						FlxG.stage.addChild(new MultiAlert(a));
 						sawNearStar = true;
+						hintArray.concat(a);
+						
 					}
 					
 					else if (!sawWall && myPlayer.xPos == 7 && myPlayer.yPos == 2)
 					{
-						FlxG.stage.addChild(new MultiAlert(new Array( "Oh no, a wall's in your way!", "Is there a button somewhere you can press to open it?" )));
+						var a:Array = new Array( "Oh no, a wall's in your way!", "Is there a button somewhere you can press to open it?" );
+						FlxG.stage.addChild(new MultiAlert(a));
 						goalsLabel.text += "\n\nPress a button to open the gate!";
 						sawWall = true;
+						hintArray.concat(a);
 					}
 					
 					else if (!sawWallOpened && myPlayer.xPos == 0 && myPlayer.yPos == 6)
 					{
-						FlxG.stage.addChild(new MultiAlert(new Array( "Looks like the wall's gone now!", "Go for the red star!" )));
+						var a:Array = new Array( "Looks like the wall's gone now!", "Go for the red star!");
+						FlxG.stage.addChild(new MultiAlert(a));
 						goalsLabel.text = "Reach the red star!\n\nThe wall is open now -- go for it!";
 						sawWallOpened = true;
+						hintArray.concat(a);
 					}
 					
 					else if (!sawWallOpened && myPlayer.xPos == 0 && myPlayer.yPos == 6)
 					{
-						FlxG.stage.addChild(new MultiAlert(new Array( "Looks like the wall's gone now!", "Go for the red star!" )));
+						var a:Array = new Array( "Looks like the wall's gone now!", "Go for the red star!" )
+						FlxG.stage.addChild(new MultiAlert(a));
 						goalsLabel.text = "Reach the red star!\n\nThe wall is open now -- go for it!";
 						sawWallOpened = true;
+						hintArray.concat(a);
 					}
 					//zoomOutAction();
 				}
@@ -516,22 +565,28 @@ package
 				{
 					if (!sawMonster && myPlayer.xPos == 5 && myPlayer.yPos == 4)
 					{
-						FlxG.stage.addChild(new MultiAlert(new Array( "You're almost at the monster!  It looks dangerous.", "Step forward to do battle with it!" )));
+						var a:Array = new Array(new Array( "You're almost at the monster!  It looks dangerous.", "Step forward to do battle with it!" ));
+						FlxG.stage.addChild(new MultiAlert(a));
 						sawMonster = true;
-						//zoomOutAction();
+						hintArray.concat(a);
 					}
 					
 					else if (!sawBattle && myPlayer.xPos == 6 && myPlayer.yPos == 4)
 					{
-						FlxG.stage.addChild(new MultiAlert(new Array( "You can choose to do weaker or stronger attacks at the bottom right.", "Stronger attacks will take more AP." )));
+						var a:Array = new Array( "You can choose to do weaker or stronger attacks at the bottom right.", "Stronger attacks will take more AP." );
+						FlxG.stage.addChild(new MultiAlert(a));
 						sawBattle = true;
-						//zoomOutAction();
+						hintArray.concat(a);
 					}
 				}
 			}
 
 			if (connected == true) {
 				if (myPlayer != null) {
+					if (firstMove) {
+						zoomOutAction();
+						firstMove = false;
+					}
 					if (myMap.getTile(myPlayer.xPos, myPlayer.yPos) == CHERRY_TILE)
 					{
 						gatherLumberButton.x = gatherCherryButton.x = 540;
@@ -968,10 +1023,34 @@ package
 			setCameras();
 		}
 		
+		private function showHint():void {
+			if (!hintButtonClicked) {
+				trace("show hint");
+				hintBox =  new MessageBox(240, 100, new Array("hey", "world", "go", "awesome", "hello", "wonder", "wonsssssssssssssssssssssssssssssssssssssssderful", "woot", "go", "go", "go"));
+				FlxG.stage.addChild(hintBox);
+				// add it
+			} else {
+				trace("hide");
+				// remove it
+				//hintBox.removeChild(hinttextfield);
+				FlxG.stage.removeChild(hintBox);
+			}
+			hintButtonClicked = !hintButtonClicked;
+		}
+		
+		
 		//Add all flixel elements to the board, essentially drawing the game.
 		private function boardSetup(map_data:String, playerName:String, levelKey:String):void 
 		{
-
+			// set up button
+			hintButton = new FlxButtonPlus(_hintOffsetX, _hintOffsetY, showHint, null, null, 32, 32);
+			hintButton.loadGraphic(new FlxSprite(_hintOffsetX, _hintOffsetY, hintImg), new FlxSprite(_hintOffsetX, _hintOffsetY, hintClickImg));	
+			//hintButton.x = _hintOffsetX;
+			//hintButton.y = _hintOffsetY;
+			hintAlert = new MultiAlert(new Array(""));
+			hintArray = new Array();
+//FlxG.stage.addChild(new MultiAlert(dbo.Messages));
+			
 			counter = _APcounterMax; // 1ap gained every 3 minutes
 			alert = new Alert("");
 			//Add chat to game
@@ -1001,7 +1080,7 @@ package
 			lvl.setFormat(null, 15);
 			experience = new FlxText(_experienceTextOffsetX, _experienceTextOffsetY, 200, "Experience: 0", true);
 			experience.setFormat(null, 10);
-			var zoomInButton:FlxButton = new FlxButton(100, 340, "Zoom in", zoomInAction);
+			var zoomInButton:FlxButton = new FlxButton(100, 351, "Zoom in", zoomInAction);
 			var zoomOutButton:FlxButton = new FlxButton(100, 370, "Zoom out", zoomOutAction);
 			//Battle HUD
 			//Background
@@ -1050,14 +1129,14 @@ package
 			
 			//render game background
 			//Right Side HUD
-			gatherLumberButton = new FlxButtonPlus(0,0, function():void { gatherResource("lumber"); }, null, "Gather lumber!");
+			gatherLumberButton = new FlxButtonPlus(0, 0, function():void { gatherResource("lumber"); }, null, "Gather lumber!");
 			gatherCherryButton = new FlxButtonPlus(0, 0, function():void { gatherResource("cherry"); }, null, "Gather cherry!");
 			amountLumberText = new FlxText(_resourceTextOffsetX, _resourceTextOffsetY, 150, "Lumber: 0", true);
 			amountCherryText = new FlxText(_resourceTextOffsetX, _resourceTextOffsetY + 20, 150, "Cherry: 0", true);
 			amountLumberText.setFormat(null, 12);
 			amountCherryText.setFormat(null, 12);
-			goalsLabel = new FlxText(_goalsBoxOffsetX, _goalsBoxOffsetY, 150, "Reach the red star!", true).setFormat(null,12); 
-			goalsLabel.frameHeight = 75;	
+			//goalsLabel = new FlxText(_goalsBoxOffsetX, _goalsBoxOffsetY, 150, "Reach the red star!", true).setFormat(null,12); 
+			//goalsLabel.frameHeight = 75;	
 			errorMessage = new FlxText(_errorMessageOffsetX, _errorMessageOffsetY, 120, "Errors Appear Here", true);
 			location = new FlxText(_positionInfoOffsetX, _positionInfoOffsetY, 100, "(0,0)", true);
 			mouseLocation = new FlxText(_terrainMessageBoxOffsetX, _terrainMessageBoxOffsetY, 260, "(0,0)", true).setFormat(null,8,0x000000);
@@ -1073,7 +1152,7 @@ package
 			lyrHUD.add(lvl);
 			lyrHUD.add(experience);
 			lyrHUD.add(abilities);
-			lyrHUD.add(goalsLabel);
+			//lyrHUD.add(goalsLabel);
 			lyrHUD.add(secCounter);
 			lyrHUD.add(location);
 			lyrHUD.add(errorMessage);
@@ -1102,6 +1181,8 @@ package
 			this.add(lyrBattle);
 			this.add(lyrSprites);
 			this.add(lyrTop);
+			lyrHUD.add(hintButton);
+			//lyrHUD.add(hintAlert);
 			
 			// change goals text in lyrHUD based on what tutorial you're on
 			switch (levelToInt(level_name))
@@ -1122,7 +1203,7 @@ package
 					goalsLabel.text = "Use the Monster Bacon ability to lure these strong monsters away from the red star you want to reach!";
 					break;
 				default:
-					goalsLabel.text = "";
+					if (goalsLabel)	goalsLabel.text = "";
 					break;
 			}
 			// gather resources button is not visible unless you can gather something
@@ -1167,7 +1248,7 @@ package
 		private function zoomInAction():void
 		{
 			_zoomedIn = true;
-			camMap= new FlxCamera(_mapOffsetX, _mapOffsetY, Math.max(myMap.width/2, 160),Math.max(myMap.height/2, 160), 2);
+			camMap= new FlxCamera(_mapOffsetX, _mapOffsetY, Math.min(myMap.width/2, 160),Math.min(myMap.height/2, 160), 2);
 			camMap.follow(myPlayer, FlxCamera.STYLE_TOPDOWN);
 			camMap.setBounds(0, _windowHeight, myMap.width, myMap.height, true);
 			camMap.deadzone = new FlxRect(32, 32, 48, 48);///new FlxRect(_viewSize * 2, _viewSize * 2, 320 - _viewSize * 4, 320 - _viewSize * 4);
@@ -1187,10 +1268,10 @@ package
 		private function zoomOutAction():void 
 		{
 			_zoomedIn = false;
-			camMap = new FlxCamera(_mapOffsetX, _mapOffsetY, myMap.width, myMap.height);
+			camMap = new FlxCamera(_mapOffsetX, _mapOffsetY, 320, 320);
 			camMap.follow(myPlayer, FlxCamera.STYLE_TOPDOWN);
 			camMap.setBounds(0, _windowHeight, myMap.width, myMap.height, true);
-			camMap.deadzone = new FlxRect(_viewSize * 2, _viewSize * 2, myMap.width - _viewSize * 4, myMap.height- _viewSize * 4);
+			camMap.deadzone = new FlxRect(_viewSize * 2, _viewSize * 2, 320 - _viewSize * 4, 320 - _viewSize * 4);
 			FlxG.resetCameras(new FlxCamera(0, 0, _windowWidth, _windowHeight * 2));
 			FlxG.addCamera(camMap);
 			//initialize log stuff if not there yet
