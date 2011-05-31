@@ -8,8 +8,10 @@ package
 	import org.flixel.plugin.photonstorm.FlxButtonPlus;
 	import org.flixel.plugin.photonstorm.FlxHealthBar;
 	import org.flixel.system.input.*;// data.FlxMouse;
+	import sample.ui.components.scroll.ScrollBox;
 	import sample.ui.MultiAlert;
 	import playerio.*
+	import flash.text.TextField;
 	import sample.ui.Alert;
 	import sample.ui.components.AbilityButton;
 	import sample.ui.components.Box;
@@ -60,6 +62,8 @@ package
 		public static const INVITE_FRIEND:int = 4;
 		public static const PLAY_TOGETHER:int = 5;
 		
+		public var firstMove:Boolean = true;
+		
 		private var _user_id:String = "Nobody";
 		
 		private var hintAdded:Boolean = false;
@@ -104,6 +108,7 @@ package
 		private var playerStartX: int = 0;	// starting x position of this player
 		private var playerStartY: int = 0;	// starting y position of this player
 		private static var alert:Alert;
+		private var hinttextfield:TextField;
 		
 		public static var myMap:FlxTilemap; //The tile map where the tileset is drawn
 		public static var lyrStage:FlxGroup;
@@ -115,6 +120,7 @@ package
 		public static var lyrTop:FlxGroup;
 		public static var lyrEffects:FlxGroup;
 		private var hintBox:MessageBox;
+		//private var hintBox:ScrollBox;
 		
 		private static var abilitySelected:Boolean = false; //Indicates whether an ability is activated
 		private static var activeAbility:Ability; //Which ability is currently chosen
@@ -157,10 +163,10 @@ package
 		private var _lvlTextOffsetY:int = 5;
 		private var _experienceTextOffsetX:int = 5;
 		private var _experienceTextOffsetY:int = 30;
-		private static var _resourceTextOffsetX:int = 540;
+		private static var _resourceTextOffsetX:int = 560;
 		private static var _resourceTextOffsetY:int = 250;
-		private var _hintOffsetX:int = 453; 
-		private var _hintOffsetY:int = 192;
+		private var _hintOffsetX:int = 650; 
+		private var _hintOffsetY:int = 10;
 		private var _friendsListOffsetX:int = 118;
 		private var _friendsListOffsetY:int = 354; 			
 		
@@ -442,18 +448,35 @@ package
 		
 		private function setCameras():void {
 			thingsSet++;
-			if (thingsSet > 1) {		
+			if (thingsSet > 1 ) {	
 				myMap.makeStarSparkle(WIN_TILE, sparkleTileImg);
 				trace("make camera");
 				// Camera will show up at where the map should be
-				camMap= new FlxCamera(_mapOffsetX, _mapOffsetY, myMap.width, myMap.height);
-				camMap.follow(myPlayer, FlxCamera.STYLE_TOPDOWN);
+				camMap= new FlxCamera(_mapOffsetX, _mapOffsetY, 320, 320);
+
 				camMap.setBounds(0, _windowHeight, myMap.width, myMap.height, true);
-				camMap.deadzone = new FlxRect(_viewSize * 2, _viewSize * 2, myMap.width- _viewSize * 4, myMap.height - _viewSize * 4);
+				camMap.deadzone = new FlxRect(64, 64, 320 - 64 , 320 - 64);
+				
+				//camMap.deadzone = new FlxRect(_viewSize * 2, _viewSize * 2, 320 - _viewSize * 4, 320 - _viewSize * 4);
 				//camMap.color = 0xFFCCCC;
+				camMap.follow(myPlayer, FlxCamera.STYLE_TOPDOWN);
 				FlxG.addCamera(camMap);							// camera that shows where the character is on the map
 				// report the level normally
-				zoomOutAction();		// do it just in case...!
+				
+				
+				
+				
+				
+				
+			//_zoomedIn = true;
+			//camMap= new FlxCamera(_mapOffsetX, _mapOffsetY, Math.min(myMap.width/2, 160),Math.min(myMap.height/2, 160), 2);
+			//camMap.follow(myPlayer, FlxCamera.STYLE_TOPDOWN);
+			//camMap.setBounds(0, _windowHeight, myMap.width, myMap.height, true);
+			//camMap.deadzone = new FlxRect(32, 32, 48, 48);///new FlxRect(_viewSize * 2, _viewSize * 2, 320 - _viewSize * 4, 320 - _viewSize * 4);
+				FlxG.resetCameras(new FlxCamera(0, 0, _windowWidth, _windowHeight * 2));
+				//FlxG.addCamera(camMap);		
+				zoomOutAction();		// do it just in case...!					
+				
 			}
 		}
 		
@@ -560,6 +583,10 @@ package
 
 			if (connected == true) {
 				if (myPlayer != null) {
+					if (firstMove) {
+						zoomOutAction();
+						firstMove = false;
+					}
 					if (myMap.getTile(myPlayer.xPos, myPlayer.yPos) == CHERRY_TILE)
 					{
 						gatherLumberButton.x = gatherCherryButton.x = 540;
@@ -999,12 +1026,13 @@ package
 		private function showHint():void {
 			if (!hintButtonClicked) {
 				trace("show hint");
-				hintBox =  new MessageBox(240, 100, hintArray);
+				hintBox =  new MessageBox(240, 100, new Array("hey", "world", "go", "awesome", "hello", "wonder", "wonsssssssssssssssssssssssssssssssssssssssderful", "woot", "go", "go", "go"));
 				FlxG.stage.addChild(hintBox);
 				// add it
 			} else {
-				trace("hide hint");
+				trace("hide");
 				// remove it
+				//hintBox.removeChild(hinttextfield);
 				FlxG.stage.removeChild(hintBox);
 			}
 			hintButtonClicked = !hintButtonClicked;
@@ -1016,7 +1044,7 @@ package
 		{
 			// set up button
 			hintButton = new FlxButtonPlus(_hintOffsetX, _hintOffsetY, showHint, null, null, 32, 32);
-			//hintButton.loadGraphic(new FlxSprite(_hintOffsetY, _hintOffsetX, hintImg), new FlxSprite(_hintOffsetX, _hintOffsetY, hintClickImg));	
+			hintButton.loadGraphic(new FlxSprite(_hintOffsetX, _hintOffsetY, hintImg), new FlxSprite(_hintOffsetX, _hintOffsetY, hintClickImg));	
 			//hintButton.x = _hintOffsetX;
 			//hintButton.y = _hintOffsetY;
 			hintAlert = new MultiAlert(new Array(""));
@@ -1052,7 +1080,7 @@ package
 			lvl.setFormat(null, 15);
 			experience = new FlxText(_experienceTextOffsetX, _experienceTextOffsetY, 200, "Experience: 0", true);
 			experience.setFormat(null, 10);
-			var zoomInButton:FlxButton = new FlxButton(100, 355, "Zoom in", zoomInAction);
+			var zoomInButton:FlxButton = new FlxButton(100, 351, "Zoom in", zoomInAction);
 			var zoomOutButton:FlxButton = new FlxButton(100, 370, "Zoom out", zoomOutAction);
 			//Battle HUD
 			//Background
@@ -1220,7 +1248,7 @@ package
 		private function zoomInAction():void
 		{
 			_zoomedIn = true;
-			camMap= new FlxCamera(_mapOffsetX, _mapOffsetY, Math.max(myMap.width/2, 160),Math.max(myMap.height/2, 160), 2);
+			camMap= new FlxCamera(_mapOffsetX, _mapOffsetY, Math.min(myMap.width/2, 160),Math.min(myMap.height/2, 160), 2);
 			camMap.follow(myPlayer, FlxCamera.STYLE_TOPDOWN);
 			camMap.setBounds(0, _windowHeight, myMap.width, myMap.height, true);
 			camMap.deadzone = new FlxRect(32, 32, 48, 48);///new FlxRect(_viewSize * 2, _viewSize * 2, 320 - _viewSize * 4, 320 - _viewSize * 4);
@@ -1240,10 +1268,10 @@ package
 		private function zoomOutAction():void 
 		{
 			_zoomedIn = false;
-			camMap = new FlxCamera(_mapOffsetX, _mapOffsetY, myMap.width, myMap.height);
+			camMap = new FlxCamera(_mapOffsetX, _mapOffsetY, 320, 320);
 			camMap.follow(myPlayer, FlxCamera.STYLE_TOPDOWN);
 			camMap.setBounds(0, _windowHeight, myMap.width, myMap.height, true);
-			camMap.deadzone = new FlxRect(_viewSize * 2, _viewSize * 2, myMap.width - _viewSize * 4, myMap.height- _viewSize * 4);
+			camMap.deadzone = new FlxRect(_viewSize * 2, _viewSize * 2, 320 - _viewSize * 4, 320 - _viewSize * 4);
 			FlxG.resetCameras(new FlxCamera(0, 0, _windowWidth, _windowHeight * 2));
 			FlxG.addCamera(camMap);
 			//initialize log stuff if not there yet

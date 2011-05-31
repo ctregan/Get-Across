@@ -30,6 +30,7 @@ package
 		{
 			roomContainer = new Rows().spacing(2);
 			_client = myClient;
+			var test:Box = new ScrollBox();
 			base = new Box().fill(0xffffff,.8).margin(20,20,20,20).add(
 				new Box().fill(0x000000,.5,10).margin(10,10,10,10).add(
 					new Box().fill(0xffffff,1,5).margin(10,10,10,10).add(
@@ -37,7 +38,7 @@ package
 					).add(
 						new Box().margin(35,0,35,0).add(
 							new Box().margin(0,0,0,0).fill(0x0,0,10).border(1,0x555555,1).add(
-								new ScrollBox().margin(3,1,3,3).add(roomContainer)
+								new Box().margin(3,1,3,3).add(roomContainer)
 							)
 						)
 					).add(
