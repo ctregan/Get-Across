@@ -7,7 +7,7 @@ package
 	import flash.events.Event;
 	import flash.system.Security;
 	
-	[SWF(width="700", height="500", backgroundColor="#FFFFFF")] //Set the size and color of the Flash file
+	[SWF(width="700", height="400", backgroundColor="#FFFFFF")] //Set the size and color of the Flash file
 
 	/**
 	 * ...
@@ -18,7 +18,7 @@ package
 
 		public function HelloWorld() 
 		{
-			super(700, 1000, LoginState,1);
+			super(700, 400, LoginState,1);
 			//super(700, 800, KongregateLoadState, 1);
 			//super(700, 800, FacebookLoadState, 1);
 		}

@@ -3,6 +3,7 @@ package
 	import flash.display.SimpleButton;
 	import flash.geom.Rectangle;
 	import flash.sampler.Sample;
+	import flash.utils.SetIntervalTimer;
 	import org.flixel.FlxState;
 	import org.flixel.*;
 	import org.flixel.plugin.photonstorm.FlxButtonPlus;
@@ -24,6 +25,7 @@ package
 		private var _handleJoinError:Function
 		private var _client:Client
 		private var _levelKey:String
+		private var _type:String
 		private var base:Box 
 		private var createDialog:Box
 		private var loader:Box
@@ -31,17 +33,20 @@ package
 		private var cancel:TextButton
 		private var currentLobby:Lobby;
 		
+		
 		private var up_button:TextButton;
 		private var down_button:TextButton;
 		
-		[Embed(source = "data/up_button.png")] private static var upButtonImg:Class;
-		[Embed(source = "data/down_button.png")] private static var downButtonImg:Class;
-		[Embed(source = "data/up_button_down.png")] private static var upButtonHoverImg:Class;
-		[Embed(source = "data/down_button_hover.png")] private static var downButtonHoverImg:Class;		
-		public function LevelChooseState(myClient:Client) 
+		//[Embed(source = "data/up_button.png")] private static var upButtonImg:Class;
+		//[Embed(source = "data/down_button.png")] private static var downButtonImg:Class;
+		//[Embed(source = "data/up_button_down.png")] private static var upButtonHoverImg:Class;
+		//[Embed(source = "data/down_button_hover.png")] private static var downButtonHoverImg:Class;		
+		public function LevelChooseState(myClient:Client, type:String ) 
 		{
+			_type = type;
 			roomContainer = new Rows().spacing(2);
 			_client = myClient;
+			
 			var sb:ScrollBox = new ScrollBox();
 			base = new Box().fill(0xffffff,.8).margin(20,20,20,20).add(
 				new Box().fill(0x000000,.5,10).margin(10,10,10,10).add(
@@ -56,7 +61,7 @@ package
 					).add(
 						new Box().margin(NaN,0,0,0).add(
 							new Columns().spacing(10).add(
-								cancel = new TextButton("Cancel", hide)
+								cancel = new TextButton("Back to Main Menu", hide)
 							).add(
 								new TextButton("down", scrollDown)
 							).add(
@@ -71,6 +76,7 @@ package
 			// add up/down buttons
 			
 			up_button = new TextButton("up", scrollUp);
+			
 			up_button.x = 550;
 			up_button.y = 40;
 			up_button.width = 20;
@@ -104,11 +110,19 @@ package
 		
 		private function refresh():void 
 		{
-			_client.bigDB.loadRange("UserMaps", "ByCreator", null, "A", "Z", 20, function(abarr:Array):void {
-				for (var x in abarr) {
-					roomContainer.addChild(new LobbyEntry(abarr[x].Name, abarr[x].key, "user", mapSelectCallback));
-				}
-			});
+			if(_type == "User"){
+				_client.bigDB.loadRange("UserMaps", "ByCreator", null, "A", "Z", 20, function(abarr:Array):void {
+					for (var x in abarr) {
+						roomContainer.addChild(new LobbyEntry(abarr[x].Name, abarr[x].key, "user", mapSelectCallback));
+					}
+				});
+			}else {
+				_client.bigDB.loadRange("StaticMaps", "ByType",null, _type, _type, 20, function(abarr:Array):void {
+					for (var x in abarr) {
+						roomContainer.addChild(new LobbyEntry(abarr[x].Name, abarr[x].key, "Static", mapSelectCallback));
+					}
+				});
+			}
 		}
 		
 		private function mapSelectCallback(levelKey:String, mapType:String):void {
