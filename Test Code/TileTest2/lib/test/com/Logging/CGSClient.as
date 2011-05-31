@@ -52,6 +52,7 @@ package com.Logging
 		public static const MAKE_MAP:int = 3;
 		public static const INVITE_FRIEND:int = 4;
 		public static const PLAY_TOGETHER:int = 5;		
+		public static const CHOOSE_CLASS:int = 6;
 		
 		//----------- Constructor -------------------------------------------------------------------------------
 		public function CGSClient(serverURL:String, gid:int, cid:int, vid:Number=0, bufferLogs:Boolean = true):void
@@ -183,7 +184,11 @@ package com.Logging
 				o["dqid"] = userID;
 				//o["dqid"] = _message.dqid;
 				o["uid"] = level_name;// 0;				// report friend name...
-			} 
+			} else if (typeReport == CHOOSE_CLASS) {
+				o["dqid"] = userID;
+				//o["dqid"] = _message.dqid;
+				o["uid"] = level_name;// 0;				// class chosen....				
+			}
 			//if (_message.qid == null) {
 				_message.qid = qid;
 			//}

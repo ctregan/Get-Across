@@ -8,6 +8,7 @@ package
 	import playerio.DatabaseObject;
 	import sample.ui.Alert;
 	import sample.ui.InGamePrompt;
+	import com.Logging.*;
 	/**
 	 * ...
 	 * @author Charlie Regan
@@ -66,6 +67,7 @@ package
 			}else if (classChoice == "Cook") {
 				startingAbility[0] = "Cook_MonsterBacon"
 			}
+
 			var prompt:InGamePrompt = new InGamePrompt(FlxG.stage, "You Want to Choose the " + classChoice + "?", function():void {
 				_client.bigDB.loadMyPlayerObject(function (myPlayer:DatabaseObject):void 
 				{
@@ -75,6 +77,10 @@ package
 					myPlayer.sp = 0;
 					myPlayer.abilities = startingAbility;
 					myPlayer.save();
+					var logClient:CGSClient  = new CGSClient(CGSClientConstants.URL, 5, 1, -2);					
+					var CHOOSE_CLASS:int = 6;
+					logClient.ReportLevel(logClient.message.dqid, 0, function g(d:String):void {}, CHOOSE_CLASS, myPlayer.name, classChoice);
+										
 				});
 				FlxG.flash(0xFFFFFF, 1, function():void {
 					FlxG.stage.addChild(new Alert("Congratulations!  You are now a " + classChoice));
