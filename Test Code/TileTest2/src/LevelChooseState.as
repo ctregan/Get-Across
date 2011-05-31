@@ -91,14 +91,14 @@ package
 		private function scrollUp():void {
 			// the first 200y of the container, or 40+ than before
 			//roomContainer.y = Math.max(roomContainer.height - 200, roomContainer.y + 40);	
-			//if (roomContainer.y >= 0) 
-			roomContainer.y += 40;
+			if (roomContainer.y < roomContainer.height - 540) 
+				roomContainer.y += 40;
 			//else roomContainer.y = 0;
 		}
 		
 		private function scrollDown():void {
-			//if (roomContainer.y < roomContainer.height - 200) 
-			roomContainer.y -= 40;
+			if (roomContainer.y > -1 * roomContainer.height + 350) 
+				roomContainer.y -= 40;
 			//roomContainer.y = Math.min(-1 * roomContainer.height + 200, roomContainer.y - 40);						
 		}
 		
