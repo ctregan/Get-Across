@@ -7,6 +7,7 @@ package
 	import sample.ui.components.*
 	import flash.text.TextFormatAlign
 	import Facebook.FB
+	import org.flixel.plugin.photonstorm.FlxHealthBar;
 
 	/**
 	 * ...
@@ -27,11 +28,18 @@ package
 		[Embed(source = "data/Cook2.png")] private var cookImg:Class;
 		[Embed(source = "data/Crafter2.png")] private var crafterImg:Class;
 		[Embed(source = "data/Novice2.png")] private var noviceImg:Class;
-		private var playerClassImg:FlxSprite = new FlxSprite();
 		
 		private static var _windowWidth:int = 700;
 		private static var _windowHeight:int = 400;
 		private static var playerClass:String;
+		
+		// stuff about the player on the right side of the screen
+		private var playerClassImg:FlxSprite = new FlxSprite();
+		private static var xpBar:FlxHealthBar;
+		private static var xpText:FlxText;
+		private static var levelText:FlxText;
+		private static var spText:FlxText;
+		private static var coinText:FlxText;
 		
 		public function MenuState(client:Client) 
 		{
@@ -40,27 +48,34 @@ package
 			add(new Background("Map"));
 			client.bigDB.loadMyPlayerObject(loadPlayerSuccess);
 			playerClassImg = new FlxSprite(450, 130, noviceImg);
+			levelText = new FlxText(360, 10, 300, "Level " ).setFormat(null, 25);
+			xpBar = new FlxHealthBar(playerClassImg,200,50);
+			xpBar.x = levelText.x;
+			xpBar.y = levelText.y + 50;
+			xpText = new FlxText(xpBar.x, xpBar.y + 50, 300, "").setFormat(null, 13);
+			
+			spText = new FlxText(levelText.x, playerClassImg.y + 150, 300, "Skill Points: " ).setFormat(null, 20);
+			coinText = new FlxText(levelText.x, spText.y + 50, 300, "Coins: " ).setFormat(null, 20);
+			
 			add(playerClassImg);
+			add(xpBar);
+			add(xpText);
+			add(levelText);
+			add(spText);
+			add(coinText);
 		}
 		
 		//Callback function called when Player data object has been successfully loaded
 		private function loadPlayerSuccess(ob:DatabaseObject):void 
 		{
 			myPlayer = ob;
-			
-			// labels for level, class, coins
-			var playerInfoTextSize:int = 15;
-			var levelTextFormat:TextFormat = new TextFormat("Abscissa", playerInfoTextSize, 0xff488921);
-			var levelLabel:Label = new Label("Level: " + ob.level, playerInfoTextSize, TextFormatAlign.CENTER, 0xff488921);
-			levelLabel.setTextFormat(levelTextFormat);
-			
-			var classTextFormat:TextFormat = new TextFormat("Abscissa", playerInfoTextSize, 0xff488921);
-			var classLabel:Label = new Label("Class: " + ob.role, playerInfoTextSize, TextFormatAlign.CENTER, 0xff488921);
-			classLabel.setTextFormat(classTextFormat);
-			
-			var coinTextFormat:TextFormat = new TextFormat("Abscissa", playerInfoTextSize, 0xff488921);
-			var coinLabel:Label = new Label("Skill Points: " + ob.sp, playerInfoTextSize, TextFormatAlign.CENTER, 0xff488921);
-			coinLabel.setTextFormat(coinTextFormat);
+			playerClassImg.health = myPlayer.xp;
+			var neededXP:Number = QuestCompleteState.needXP(myPlayer.level + 1);
+			xpBar = new FlxHealthBar(playerClassImg, 200, 70, QuestCompleteState.needXP(myPlayer.level), neededXP, true);
+			xpText.text = "You have " + playerClassImg.health.toString() + " XP.  " + neededXP.toString() + " XP until level " + (myPlayer.level + 1) + "!";
+			levelText.text += myPlayer.level + " " + myPlayer.role;
+			spText.text += myPlayer.sp;
+			coinText.text += myPlayer.coin;
 			
 			// image of player avatar
 			playerClass = ob.role;
@@ -115,7 +130,6 @@ package
 				new Box().fill(0xffffff,1,5).margin(10,10,10,10).minSize(300,0).add(
 						new Rows(
 							new Label("Select a Map Type", 35, TextFormatAlign.CENTER, 0xff488921),
-							new Columns(levelLabel, classLabel, coinLabel),
 							new TextButton(myPlayer.role + " Maps", classMaps),
 							new TextButton("Large Maps (Play with your Friends!)", largeMaps),
 							new TextButton("User Made Maps", userMaps),
@@ -127,7 +141,6 @@ package
 				new Box().fill(0xffffff,1,5).margin(10,10,10,10).minSize(300,0).add(
 						new Rows(
 							titleLabel,
-							new Columns(levelLabel, classLabel, coinLabel),
 							continueButton,
 							tutorialButton,
 							new TextButton("Start New Quest", newGame),

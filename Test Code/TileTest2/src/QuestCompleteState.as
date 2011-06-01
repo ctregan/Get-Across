@@ -221,7 +221,7 @@ package
 			if(loader.parent)FlxG.stage.removeChild(loader)
 		}
 		
-		private function needXP(level:int):Number {
+		public static function needXP(level:int):Number {
 			return Math.floor(Math.pow((level - 1), 1.2) * 25)
 		}
 
