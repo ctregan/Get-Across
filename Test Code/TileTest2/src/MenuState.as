@@ -24,10 +24,16 @@ package
 		private var loader:Box
 		private var _questID:String;
 		private var myPlayer:DatabaseObject;
-		[Embed(source = "data/Planter2.png")] private var planterImg:Class;
-		[Embed(source = "data/Cook2.png")] private var cookImg:Class;
-		[Embed(source = "data/Crafter2.png")] private var crafterImg:Class;
+		[Embed(source = "data/Planter2.png")] public var planterImg:Class;
+		[Embed(source = "data/Cook2.png")] public var cookImg:Class;
+		[Embed(source = "data/Crafter2.png")] public var crafterImg:Class;
 		[Embed(source = "data/Novice2.png")] private var noviceImg:Class;
+		[Embed(source = "data/Crafter_wrench.png")] public var crafterWrenchImg:Class;
+		[Embed(source = "data/Crafter_hammer.png")] public var crafterHammerImg:Class;
+		[Embed(source = "data/Cook_chef.png")] public var cookChefImg:Class;
+		[Embed(source = "data/Cook_spaghetti.png")] public var cookSpaghettiImg:Class;
+		[Embed(source = "data/Planter_tulips.png")] public var planterTulipsImg:Class;
+		[Embed(source = "data/Planter_thorns.png")] public var planterThornsImg:Class;
 		
 		private static var _windowWidth:int = 700;
 		private static var _windowHeight:int = 400;
@@ -79,20 +85,60 @@ package
 			
 			// image of player avatar
 			playerClass = ob.role;
-			switch (playerClass)
-			{
-				case "Planter":
-					playerClassImg.loadGraphic(planterImg);
-					break;
-				case "Cook":
-					playerClassImg.loadGraphic(cookImg);
-					break;
-				case "Crafter":
-					playerClassImg.loadGraphic(crafterImg);
-					break;
-				default:
-					playerClassImg.loadGraphic(noviceImg);
-					break;
+			// image of player avatar
+			// if has costume, show; otherwise, just show basic class image
+			if (myPlayer.costume != null) {
+				switch (myPlayer.costume)
+				{
+					case "cook_normal":
+						playerClassImg.loadGraphic(cookImg);
+						break;
+					case "spaghetti":
+						playerClassImg.loadGraphic(cookSpaghettiImg);
+						break;
+					case "chef":
+						playerClassImg.loadGraphic(cookChefImg);
+						break;
+					case "crafter_normal":
+						playerClassImg.loadGraphic(crafterImg);
+						break;
+					case "wrench":
+						playerClassImg.loadGraphic(crafterWrenchImg);
+						break;
+					case "hammer":
+						playerClassImg.loadGraphic(crafterHammerImg);
+						break;
+					case "planter_normal":
+						playerClassImg.loadGraphic(planterImg);
+						break;
+					case "tulips":
+						playerClassImg.loadGraphic(planterTulipsImg);
+						break;
+					case "thorns":
+						playerClassImg.loadGraphic(planterThornsImg);
+						break;
+					default:
+						playerClassImg.loadGraphic(noviceImg);
+						break;
+				}
+			}
+			
+			else {
+				switch (playerClass)
+				{
+					case "Planter":
+						playerClassImg.loadGraphic(planterImg);
+						break;
+					case "Cook":
+						playerClassImg.loadGraphic(cookImg);
+						break;
+					case "Crafter":
+						playerClassImg.loadGraphic(crafterImg);
+						break;
+					default:
+						playerClassImg.loadGraphic(noviceImg);
+						break;
+				}
 			}
 			
 			tutorialButton = new TextButton("Start Tutorial", startTutorial);
@@ -132,7 +178,7 @@ package
 							new Label("Select a Map Type", 35, TextFormatAlign.CENTER, 0xff488921),
 							new TextButton(myPlayer.role + " Maps", classMaps),
 							new TextButton("Large Maps (Play with your Friends!)", largeMaps),
-							new TextButton("User Made Maps", userMaps),
+							new TextButton("User-Made Maps", userMaps),
 							new TextButton("Back to Main Menu", back)
 						).spacing(15)
 					)))
@@ -141,18 +187,19 @@ package
 				new Box().fill(0xffffff,1,5).margin(10,10,10,10).minSize(300,0).add(
 						new Rows(
 							titleLabel,
+							new TextButton("Character Screen", function():void { FlxG.switchState(new CharacterScreen(myClient)); FlxG.stage.removeChild(mainMenu); } ),
 							continueButton,
 							tutorialButton,
 							new TextButton("Start New Quest", newGame),
 							new TextButton("Quest Editor", mapEditor),
-							new TextButton("Spend Skill Points", skillPoints),
-							new TextButton("Spend Coins", coins)
+							new TextButton("Buy abilities with Skill Points", skillPoints),
+							new TextButton("Buy items with Coins", coins)
 						).spacing(15)
 					)))
 			FlxG.stage.addChild(mainMenu);
 			
 			loader = new Box().fill(0xffffff,.8).add(
-				new Label("Creating Tutorial Level.", 20)
+				new Label("Creating Level.", 20)
 			).add(
 				new Box().margin(20).add(new Label("Please wait while we connect to the server.", 12))
 			)
@@ -285,6 +332,18 @@ package
 				FlxG.switchState(new StoreState(myClient));
 			}
 		}
+		
+		// callback function for character screen
+		private function character():void {
+			if (tutorialLevel <= 5) {
+				FlxG.stage.addChild(new Alert("To Access This Option You Must Finish All 5 Tutorial Levels"));
+			}else{
+				this.kill();
+				FlxG.stage.removeChild(mainMenu);
+				FlxG.switchState(new CharacterScreen(myClient));
+			}
+		}
+		
 		//Callback function for when Spend Skill Points Button is pressed
 		private function skillPoints():void
 		{

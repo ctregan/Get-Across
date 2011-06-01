@@ -54,7 +54,6 @@ package
 		public static const SNAKE_TILE:int = 20;
 		public static const SNAKE_GONE_TILE:int = 21;
 		
-		
 		// some constants for logging
 		public static const PLAY:int = 1;
 		public static const WON:int = 2;
@@ -965,7 +964,7 @@ package
 					_user_id = name;
 					if (posX < 0) posX = 0;
 					if (posY < 0) posY = 0;
-					myPlayer = new Player(posX, posY, 0, _windowHeight, _tileSize, playerAP, resourcesString, db.role);
+					myPlayer = new Player(posX, posY, 0, _windowHeight, _tileSize, playerAP, resourcesString, db.costume);
 					playersArray[imPlayer - 1] = myPlayer;
 					_user_id = name;
 					connected = true;	// player is made; now allow update() to go

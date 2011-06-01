@@ -40,6 +40,14 @@ package
 		[Embed(source = "data/character3_cook.png")] public var cook_avatar:Class;
 		[Embed(source = "data/character3_crafter.png")] public var crafter_avatar:Class;
 		[Embed(source = "data/character3_planter.png")] public var planter_avatar:Class;
+		
+		[Embed(source = "data/character3_cookSpaghetti.png")] public var cookSpaghetti_avatar:Class;
+		[Embed(source = "data/character3_cookChef.png")] public var cookChef_avatar:Class;
+		[Embed(source = "data/character3_crafterWrench.png")] public var crafterWrench_avatar:Class;
+		[Embed(source = "data/character3_crafterHammer.png")] public var crafterHammer_avatar:Class;
+		[Embed(source = "data/character3_planterTulips.png")] public var planterTulips_avatar:Class;
+		[Embed(source = "data/character3_planterThorns.png")] public var planterThorns_avatar:Class;
+		
 		public var AP:Number; //Amount of AP
 		public var level:Number;
 		public var coin:Number;
@@ -61,7 +69,7 @@ package
 		public var amountLumber:int;
 		public var amountCherry:int;
 		
-		public function Player(startX:Number, startY:Number, xOffset:int, yOffset:int, tileSize:int, startAP:int, resourcesString:String, playerClass:String, myPlayer:Boolean = true) 
+		public function Player(startX:Number, startY:Number, xOffset:int, yOffset:int, tileSize:int, startAP:int, resourcesString:String, playerCostume:String, myPlayer:Boolean = true) 
 		{
 			isMyPlayer = myPlayer;
 			errorMessage = "";
@@ -100,17 +108,35 @@ package
 			}
 			
 			super(((startX) * tileSize) + xOffset, ((startY) * tileSize) + yOffset);
-			
-			switch (playerClass)
+			trace("costume: " + playerCostume);
+			switch (playerCostume)
 			{
-				case "Cook":
+				case "cook_normal":
 					loadGraphic(cook_avatar, true, false, 32 , 32);
 					break;
-				case "Planter":
+				case "planter_normal":
 					loadGraphic(planter_avatar, true, false, 32 , 32);
 					break;
-				case "Crafter":
+				case "crafter_normal":
 					loadGraphic(crafter_avatar, true, false, 32 , 32);
+					break;
+				case "spaghetti":
+					loadGraphic(cookSpaghetti_avatar, true, false, 32, 32);
+					break;
+				case "chef":
+					loadGraphic(cookChef_avatar, true, false, 32, 32);
+					break;
+				case "wrench":
+					loadGraphic(crafterWrench_avatar, true, false, 32, 32);
+					break;
+				case "hammer":
+					loadGraphic(crafterHammer_avatar, true, false, 32, 32);
+					break;
+				case "tulips":
+					loadGraphic(planterTulips_avatar, true, false, 32 , 32);
+					break;
+				case "thorns":
+					loadGraphic(planterThorns_avatar, true, false, 32 , 32);
 					break;
 				default:
 					loadGraphic(player_avatar, true, false, 32 , 32);
@@ -143,11 +169,10 @@ package
 				yPos = yPos + yChange;
 				var cost:int = findCost(xPos, yPos, tileSize, true);
 				if (usingSprite >= 0) {
-					trace("walking within sprite's area of influence");
 					if (activeSprite.uses > 1) PlayState.fireNotification(this.x + 20, this.y + 20, (5 - activeSprite.uses) + " moves left", "flower");
 					PlayState.fireParticles(activeSprite.x + (activeSprite._tileSize * 2), activeSprite.y + (activeSprite._tileSize * 2), "flower");
 					usingSprite = -1;
-				} else trace("not walking within sprite's area of influence");
+				}
 				AP = AP - cost;
 				play("walk" + facing);
 				var desiredX:int = this.x + (tileSize * xChange);

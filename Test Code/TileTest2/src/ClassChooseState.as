@@ -7,6 +7,7 @@ package
 	import playerio.Client;
 	import playerio.DatabaseObject;
 	import sample.ui.Alert;
+	import sample.ui.MultiAlert;
 	import sample.ui.InGamePrompt;
 	import com.Logging.*;
 	/**
@@ -75,6 +76,9 @@ package
 					myPlayer.level = 1;
 					myPlayer.xp = 0;
 					myPlayer.sp = 0;
+					myPlayer.costume = classChoice + "_normal";
+					myPlayer.items = new Array();
+					myPlayer.items.push(classChoice + "_Skin_0");	// push base costume to player
 					myPlayer.abilities = startingAbility;
 					myPlayer.save();
 					var logClient:CGSClient  = new CGSClient(CGSClientConstants.URL, 5, 1, 3);					
@@ -83,9 +87,9 @@ package
 										
 				});
 				FlxG.flash(0xFFFFFF, 1, function():void {
-					FlxG.stage.addChild(new Alert("Congratulations!  You are now a " + classChoice));
 					FlxG.switchState(new MenuState(_client));
 				});
+				FlxG.stage.addChild(new MultiAlert(new Array("Congratulations!  You are now a " + classChoice +"!","Now that you're an expert at Get Across, try playing some campaign levels with your friends or make your own map!")));
 			});
 		}
 		

@@ -79,7 +79,7 @@ package
 					myClient.bigDB.loadRange("StoreItems", "ByClass", null, myPlayer.role, myPlayer.role, 10, function(abarr:Array):void {
 					trace("abarr length: " + abarr.length);
 					if (abarr.length == 0) {
-						roomContainer.addChild(new Label("Sorry, no Items are Currently Available for " + myPlayer.role + "!"));
+						roomContainer.addChild(new Label("Sorry, no items are currently available for " + myPlayer.role + "!"));
 					}else{
 						for (var x in abarr) {
 							var contains:Boolean = false;
@@ -101,12 +101,12 @@ package
 			
 		}
 		
-		private function ItemSelectCallback(key:String, cost:int, type:String, value:String) {
+		private function ItemSelectCallback(key:String, cost:int, type:String, value:String):void {
 			myClient.bigDB.loadMyPlayerObject(function(myPlayer:DatabaseObject):void {
 				if (myPlayer.coin >= cost) {
-					var prompt:InGamePrompt = new InGamePrompt(FlxG.stage, "Are you sure?\n Cost: " + cost + " Coins", function():void{
+					var prompt:InGamePrompt = new InGamePrompt(FlxG.stage, "Are you sure?\n\nThis item costs " + cost + " coins.", function():void{
 						myPlayer.coin -= cost;
-						var skin:String = myPlayer.skin
+						var skin:String = myPlayer.skin;
 						skin = value;
 						myPlayer.items.push(key);
 						myPlayer.save();

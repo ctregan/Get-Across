@@ -24,6 +24,7 @@ package
 		private var _client:Client;
 		private var _nextLevel:String;
 		private var _xpGain:int;
+		private var _coinGain:int;
 		private var characterInfo:Label;
 		private var levelLabel:Label;
 		private var classLabel:Label;
@@ -42,6 +43,7 @@ package
 			_client = client;
 			_nextLevel = nextLevel;
 			_xpGain = gainedXP;
+			_coinGain = coin;
 			super();
 			add(new Background("Map"));
 			characterInfo = new Label("", 12, TextFormatAlign.CENTER);
@@ -50,10 +52,9 @@ package
 			nextLevelButton = new TextButton("blank", null);
 			mainMenuButton.visible = nextLevelButton.visible = false;
 			if (nextLevel == "") {
-				
 				nextLevelButton.visible = nextLevelButton.enabled = false;
-			}else if (nextLevel == "Class_Choose") {
-				FlxG.stage.addChild(new Alert("Congratulations!  You finished all the tutorials!"));
+			}			
+			else if (nextLevel == "Class_Choose") {
 				nextLevelButton = new TextButton("Choose Class", chooseClassCallback);
 				mainMenuButton.visible = mainMenuButton.enabled = false;
 			}else {
@@ -83,6 +84,10 @@ package
 			var xpGainedLabel:Label = new Label("Gained " + gainedXP + " XP!", 20, TextFormatAlign.LEFT, 0xff4af266);
 			xpGainedLabel.setTextFormat(xpGainedTextFormat);
 			
+			var coinsGainedTextFormat:TextFormat = new TextFormat("Abscissa", 20, 0xff488921);
+			var coinsGainedLabel:Label = new Label("Gained " + _coinGain + " coins!", 20, TextFormatAlign.LEFT, 0xff4af266);
+			coinsGainedLabel.setTextFormat(coinsGainedTextFormat);
+			
 			var spGainedTextFormat:TextFormat = new TextFormat("Abscissa", 20, 0xff488921);
 			spGainedLabel = new Label("", 20, TextFormatAlign.LEFT, 0xff4af266);
 			spGainedLabel.setTextFormat(spGainedTextFormat);
@@ -94,6 +99,7 @@ package
 							questLabel,
 							new Columns(levelLabel, classLabel, skillPointLabel),
 							xpGainedLabel,
+							coinsGainedLabel,
 							spGainedLabel,
 							new Columns().spacing(8).margin(10).add(
 							mainMenuButton,
@@ -102,8 +108,16 @@ package
 					)));
 			FlxG.stage.addChild(mainMenu);
 			
+			// context alerts for tutorials
+			if (nextLevel == "Tutorial_2") {
+				FlxG.stage.addChild(new MultiAlert(new Array("Whenever you finish a quest, you'll gain experience points (XP) and coins.", "XP will help you gain levels, which will help you gain more abilities.", "Coins can be used to purchase other goodies, like changes to your avatar!")));
+			} else if (nextLevel == "Class_Choose") {
+				FlxG.stage.addChild(new Alert("Congratulations!  You finished all the tutorials!"));
+			}
+			
+			
 			loader = new Box().fill(0xffffff,.8).add(
-				new Label("Creating Tutorial Level.", 20)
+				new Label("Creating Level.", 20)
 			).add(
 				new Box().margin(20).add(new Label("Please wait while we connect to the server.", 12))
 			)

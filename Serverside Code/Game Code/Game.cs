@@ -15,6 +15,7 @@ namespace GetAcross {
         public int positionX;   // x tile position
         public int positionY;   // y tile position
         public string characterClass;
+        public string costume;
         public int tutorialLevel;
 	}
     
@@ -34,7 +35,6 @@ namespace GetAcross {
         private String levelKey;
         private String mapType; //Indicates which database table the map data should be loaded from (static vs user)
         private String playerConnectUserId;
-        //private int player.AP;       // server's variable to keep track of clientside player AP amount
         private String questID;    // id of the quest player is in
         private DatabaseObject quest;
         private int startX = 0;
@@ -114,6 +114,7 @@ namespace GetAcross {
                     delegate(DatabaseObject result)
                     {
                         player.characterClass = result.GetString("role", "Novice");
+                        player.costume = result.GetString("costume", "novice");
                         player.tutorialLevel = result.GetInt("tutorial", 1);
                         //Console.WriteLine("player class: " + player.characterClass);
                         if (questID != null)
@@ -214,7 +215,7 @@ namespace GetAcross {
                                             result.Save();
                                             //levelKey = addedQuest.Key;
                                             // tell client to initialize (board, monsters, player object & player sprite) with max AP amount
-                                            addedQuest.Save(delegate() { quest = addedQuest; player.Send("init", player.Id, player.ConnectUserId, startX, startY, questID, 20, levelKey, "", player.characterClass); });
+                                            addedQuest.Save(delegate() { quest = addedQuest; player.Send("init", player.Id, player.ConnectUserId, startX, startY, questID, 20, levelKey, "", player.costume); });
                                             Broadcast("UserJoined", player.Id, player.positionX, player.positionY);
                                         });
 
@@ -279,7 +280,7 @@ namespace GetAcross {
                                     }
 
                                     // tell client to initialize (board, monsters, player object & player sprite)
-                                    player.Send("init", player.Id, player.ConnectUserId, player.positionX, player.positionY, questID, player.AP, levelKey, resources, player.characterClass);
+                                    player.Send("init", player.Id, player.ConnectUserId, player.positionX, player.positionY, questID, player.AP, levelKey, resources, player.costume);
                                     Broadcast("UserJoined", player.Id, player.positionX, player.positionY);
                                 }
                             );
