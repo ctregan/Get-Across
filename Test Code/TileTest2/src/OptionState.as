@@ -20,6 +20,7 @@ package
 		private var _myClient:Client;
 		public function OptionState(myClient:Client) 
 		{
+			add(new Background("Map"));
 			_myClient = myClient;
 			//Input
 			nameInput = new Input("",12)

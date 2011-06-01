@@ -324,11 +324,11 @@ package
 						);
 						var menu:Box = new Box().fill(0xFFFFFF, 0.8, 0);
 						// create new menu for player to navigate back to main screen
-						var button:TextButton = new TextButton("Start a new quest!",
+						var button:TextButton = new TextButton("Collect Your Reward!",
 							function ():void
 							{
 								FlxG.stage.removeChild(menu);
-								FlxG.switchState(new MenuState(client));
+								FlxG.switchState(new QuestCompleteState(20, 100, client, ""));
 							}
 						);
 						menu.add(new Box().fill(0x00000, .5, 15).margin(10, 10, 10, 10).minSize(FlxG.width/2, FlxG.height).add(
@@ -1125,8 +1125,8 @@ package
 			amountCherryText = new FlxText(_resourceTextOffsetX, _resourceTextOffsetY + 20, 150, "Cherry: 0", true);
 			amountLumberText.setFormat(null, 12);
 			amountCherryText.setFormat(null, 12);
-			//goalsLabel = new FlxText(_goalsBoxOffsetX, _goalsBoxOffsetY, 150, "Reach the red star!", true).setFormat(null,12); 
-			//goalsLabel.frameHeight = 75;	
+			goalsLabel = new FlxText(_goalsBoxOffsetX, _goalsBoxOffsetY, 150, "Reach the red star!", true).setFormat(null,12); 
+			goalsLabel.frameHeight = 75;	
 			errorMessage = new FlxText(_errorMessageOffsetX, _errorMessageOffsetY, 120, "Errors Appear Here", true);
 			location = new FlxText(_positionInfoOffsetX, _positionInfoOffsetY, 100, "(0,0)", true);
 			mouseLocation = new FlxText(_terrainMessageBoxOffsetX, _terrainMessageBoxOffsetY, 260, "(0,0)", true).setFormat(null,8,0x000000);
@@ -1142,7 +1142,7 @@ package
 			lyrHUD.add(lvl);
 			lyrHUD.add(experience);
 			lyrHUD.add(abilities);
-			//lyrHUD.add(goalsLabel);
+			lyrHUD.add(goalsLabel);
 			lyrHUD.add(secCounter);
 			lyrHUD.add(location);
 			lyrHUD.add(errorMessage);

@@ -1,7 +1,9 @@
 package  
 {
 	import com.Logging.CGSClient;
+	import Facebook.FB;
 	import flash.accessibility.Accessibility;
+	import flash.display.Sprite;
 	import org.flixel.FlxState;
 	import org.flixel.*;
 	import org.flixel.plugin.photonstorm.*;
@@ -19,6 +21,8 @@ package
 	{
 		[Embed(source = "data/testTileSet5_32.png")] public var data_tiles:Class; //Tile Set Image
 		[Embed(source = "data/Selected.png")] public var select:Class; 
+		[Embed(source = "data/Button.png")] public var button:Class; 
+		[Embed(source = "data/Monster1.png")] public var monster:Class; 
 		private static var TILE_VALUES:Array = ["Grass", "Hill", "Tree", "Cherry Tree", "River", "Star"];
 		private var STAR_TILE:int = 4;
 		private var STARTING_TILE:int = 5;
@@ -38,7 +42,14 @@ package
 		private var instructions:FlxText;
 		private var brushInfo:FlxText;
 		private var startX:int = 0;
+		private var Monsters:Array;
+		private var MonsterIcon:FlxSprite
+		private var MonsterCount:int = 0
+		private var Buttons:Array;
+		private var ButtonIcon:FlxSprite
+		private var ButtonCount:int = 0;
 		private var startY:int = 0;
+
 		private var logClient:CGSClient;
 		
 		public function MapEditorState(name:String, height:String, width:String, myClient:Client) 
@@ -48,7 +59,8 @@ package
 			_width = int(width);
 			_name = name;
 			_myClient = myClient;
-			
+			Monsters = new Array();
+			Buttons = new Array();
 			FlxG.stage.addChild(new Alert("Welcome to the Map Editor! Use the palette to choose your tile, then click on the map to place.\n\nOnce you are done, hit upload!"));
 			//Make an all grass map
 			var initialMapData:String = "";
@@ -82,8 +94,14 @@ package
 			selectedTile = new FlxSprite(5, 40, select)
 			add(selectedTile);
 			
-			add(new FlxButtonPlus(10, 80, sendMapData, null, "Upload", 55, 40));
-			add(new FlxButtonPlus(10, 130, back, null, "Main Menu", 55, 40));
+			/*MonsterIcon = new FlxSprite(5, 72, monster);
+			add(MonsterIcon);
+			
+			ButtonIcon = new FlxSprite(37, 72, button);
+			add(ButtonIcon)*/
+			
+			add(new FlxButtonPlus(10, 130, sendMapData, null, "Upload", 55, 40));
+			add(new FlxButtonPlus(10, 180, back, null, "Main Menu", 55, 40));
 			
 			map = new FlxTilemap();
 			map.loadMap(initialMapData, data_tiles, 32, 32,0, 0, 0, 6);
@@ -95,6 +113,9 @@ package
 		override public function update():void 
 		{
 			super.update();
+			/*if (myMouse.justPressed() && tileBrush == -3 && !mouseWithinTileMap()) {
+				FlxG.stage.addChild(new Alert("You must place a gate for your button now"));
+			}else*/
 			if (myMouse.justPressed() &&  mouseWithinTileMap()) {
 				var selectedXTile:int = (myMouse.x - map.x) / _tileSize
 				//(myMouse.x - (myMouse.x % 32)) / 32;
@@ -111,17 +132,58 @@ package
 					startX = selectedXTile;
 					startY = selectedYTile;
 				}
+				/*else if (tileBrush == -1) {
+					add(new FlxSprite((selectedXTile * _tileSize) + map.x, (selectedYTile * _tileSize) + map.y, monster));
+					
+					Monsters[MonsterCount] = new DatabaseObject();
+					Monsters[MonsterCount].Type = "Weak";
+					Monsters[MonsterCount].xTile = selectedXTile;
+					Monsters[MonsterCount].yTile = selectedYTile;
+					Monsters[MonsterCount].AP = 5;
+					//Monsters[MonsterCount] = monsterObj;
+					MonsterCount++;
+					return;
+				}else if (tileBrush == -2) {
+					add(new FlxSprite((selectedXTile * _tileSize) + map.x, (selectedYTile * _tileSize) + map.y, button));
+					var buttonObj:DatabaseObject = new DatabaseObject();
+					buttonObj.xTile = selectedXTile;
+					buttonObj.yTile = selectedYTile;
+					Buttons[ButtonCount] = buttonObj;
+					tileBrush = -3;
+					return;
+				}else if (tileBrush == -3) {
+					var buttonObj:DatabaseObject = DatabaseObject(Buttons[ButtonCount]);
+					buttonObj.xOpen = selectedXTile;
+					buttonObj.yOpen = selectedYTile;
+					Buttons[ButtonCount] = buttonObj;
+					ButtonCount++;
+					tileBrush = 14;
+				}*/
 				
 				map.setTile(selectedXTile, selectedYTile, tileBrush, true)
 			}else if (myMouse.justPressed() && mouseWithinPalet()) {
 				
 				tileBrush = (myMouse.x - palet.x) / _tileSize;
 				selectedTile.x = (tileBrush * _tileSize) + palet.x;
+				selectedTile.y = palet.y;
+			}else if (myMouse.justPressed() && mouseWithinSprite(MonsterIcon)){
+				tileBrush = -1;
+				selectedTile.x = MonsterIcon.x
+				selectedTile.y = MonsterIcon.y
+			}else if(myMouse.justPressed() && mouseWithinSprite(ButtonIcon)){
+				tileBrush = -2;
+				selectedTile.x = ButtonIcon.x
+				selectedTile.y = ButtonIcon.y
 			}
-			
 			// update information about selected til
 			switch (tileBrush)
 			{
+				case -2:
+					brushInfo.text = "You currently have the BUTTON selected.\n\n Place the button then place the gate it will open!."
+					break;
+				case -1:
+					brushInfo.text = "You currently have the MONSTER selected.\n\n This monster will have 5 AP."
+					break;
 				case 0:
 					brushInfo.text = "You currently have GRASS selected.\n\nGrass takes no AP to cross."
 					break;
@@ -195,6 +257,18 @@ package
 		private function switchBrush(tileValue:int):void {
 			tileBrush = tileValue;
 		}
+		
+		private function mouseWithinSprite(sprite:FlxSprite) {
+			if (myMouse.x > sprite.x
+				&& myMouse.x < (sprite.x + sprite.width)
+				&& myMouse.y > sprite.y
+				&& myMouse.y < (sprite.y + sprite.height)) {
+					return true;
+				}
+				else {
+					return false
+				}
+		}
 		//Returns true if the mouse is within the tile map
 		private function mouseWithinTileMap():Boolean
 		{
@@ -233,10 +307,12 @@ package
 				newMap.tileValues = map.getMapData();
 				newMap.XP = 0;
 				newMap.Coin = 0;
-				newMap.MonsterCount = 0;
+				newMap.MonsterCount = MonsterCount;
+				//newMap.Monsters = new DatabaseObject();
+				//newMap.Buttons = Buttons;
 				newMap.startX = startX;
 				newMap.startY = startY;
-				_myClient.bigDB.createObject("UserMaps", null, newMap, function():void {
+				_myClient.bigDB.createObject("UserMaps", null, newMap, function(o:DatabaseObject):void {
 					FlxG.stage.addChild(new Alert("Map Uploaded"));
 				});
 				

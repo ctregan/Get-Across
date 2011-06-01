@@ -101,21 +101,27 @@ package
 		{
 			var inRangeArray:Array = new Array()
 			var bsprite:Array = PlayState.lyrMonster.members;
+			var index:int = 0;
 			for (var monster in bsprite) {
 				var sprite = Monster(bsprite[monster]);
 				if (inRange(sprite._xTile, sprite._yTile) && sprite._ap > 0) {
-					inRangeArray.push(sprite);
+					inRangeArray[index] = sprite;
+					index++;
 				}
 			}
 			if (inRangeArray.length < 1) {
 				addUse(true);
 				return
 			}else {
-				;
-				Monster(inRangeArray[Math.floor(Math.random() * (1+(inRange.length-1)-0)) + 0]).move(xTile, yTile);
+				Monster(inRangeArray[randomNumber(inRange.length - 1, 0)].move(xTile, yTile));
 				addUse(true);
 				return
 			}
+		}
+		
+		function randomNumber(high:Number=1, low:Number=0):Number
+		{
+		  return Math.floor(Math.random() * (1+high-low)) + low;
 		}
 		
 		// when bomb explodes, set tile to rubble

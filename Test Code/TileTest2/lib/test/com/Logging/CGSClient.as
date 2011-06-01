@@ -322,7 +322,7 @@ package com.Logging
 		protected function EncodeObject(obj:Object):String
 		{
 			//add you own encoding code here
-			return(JSON.encode(obj));
+			return(new JSONEncoder( obj ).getString());
 		}
 		
 		//----------- DecodeObject ------------------------------------------------------------------------------
@@ -330,7 +330,7 @@ package com.Logging
 		protected function DecodeObject(str:String):Object
 		{
 			//add you own decoding code here
-			return(JSON.decode(str));
+			return(new JSONDecoder( str, true ).getValue());
 		}
 	}
 

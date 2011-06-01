@@ -21,12 +21,13 @@ package sample.ui{
 			_callback = callback
 			_stage = stage
 			_cancelCallback = cancel;
+			var textLabel = new Label(text, 12, "center")
 			fill(0xffffff,.8).add(
 				new Box().minSize(150,110).fill(0x0,.5,10).margin(10,10,10,10).add(
 					new Box().minSize(150, 110).fill(0xFFFFFF, 1, 10).margin(0, 0, 0, 0).add(
 						new Rows(
 							new Box().margin(10).add(
-								new Label(text)
+								textLabel
 							),	
 							new Columns().spacing(10).margin(10).add(
 									new TextButton("Yes", accept),
