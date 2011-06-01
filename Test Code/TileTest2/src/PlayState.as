@@ -1,5 +1,6 @@
 package  
 {
+	import flash.display.BitmapData;
 	import flash.display.Graphics;
 	import flash.display.Sprite;
 	import flash.events.ContextMenuEvent;
@@ -22,8 +23,7 @@ package
 	import sample.ui.Prompt
 	import sample.ui.Chat
 	import flash.text.TextFormatAlign
-	import flash.utils.*;
-	
+	import flash.utils.*;	
 	import com.Logging.*;
 	
 	/**
@@ -100,7 +100,7 @@ package
 		private var lvl:FlxText;
 		private var experience:FlxText;
 		private var resources:FlxText;
-		
+		private var screen:FlxText;
 		private var level_name:String;
 		private var contextButton:FlxButtonPlus;
 		
@@ -159,12 +159,13 @@ package
 		private static var _tileSize:int = 32;
 		private static var _viewSize:int = 32;
 		private static var _zoomedIn:Boolean = false;
+		private static var _zoomedOut:Boolean = false;
 		private var _lvlTextOffsetX:int = 5;
 		private var _lvlTextOffsetY:int = 5;
 		private var _experienceTextOffsetX:int = 5;
-		private var _experienceTextOffsetY:int = 30;
-		private static var _resourceTextOffsetX:int = 560;
-		private static var _resourceTextOffsetY:int = 250;
+		private var _experienceTextOffsetY:int = 26;
+		private static var _resourceTextOffsetX:int = 540;
+		private static var _resourceTextOffsetY:int = 300;
 		private var _hintOffsetX:int = 650; 
 		private var _hintOffsetY:int = 10;
 		private var _friendsListOffsetX:int = 118;
@@ -187,7 +188,7 @@ package
 		
 		var camOffsetX:int = 0;
 		var camOffsetY:int = 0;
-		var currentZoomView:int = 1;
+		var currentZoomView:Number = 1;
 		public static var amountLumberText:FlxText;
 		public static var amountCherryText:FlxText;
 		
@@ -452,32 +453,15 @@ package
 			if (thingsSet > 1 ) {	
 				myMap.makeStarSparkle(WIN_TILE, sparkleTileImg);
 				trace("make camera");
-				// Camera will show up at where the map should be
-				camMap= new FlxCamera(_mapOffsetX, _mapOffsetY, 320, 320);
-
-				camMap.setBounds(0, _windowHeight, myMap.width, myMap.height, true);
-				camMap.deadzone = new FlxRect(64, 64, 320 - 64 , 320 - 64);
-				
-				//camMap.deadzone = new FlxRect(_viewSize * 2, _viewSize * 2, 320 - _viewSize * 4, 320 - _viewSize * 4);
-				//camMap.color = 0xFFCCCC;
-				camMap.follow(myPlayer, FlxCamera.STYLE_TOPDOWN);
-				FlxG.addCamera(camMap);							// camera that shows where the character is on the map
-				// report the level normally
-				
-				
-				
-				
-				
-				
-			//_zoomedIn = true;
-			//camMap= new FlxCamera(_mapOffsetX, _mapOffsetY, Math.min(myMap.width/2, 160),Math.min(myMap.height/2, 160), 2);
-			//camMap.follow(myPlayer, FlxCamera.STYLE_TOPDOWN);
-			//camMap.setBounds(0, _windowHeight, myMap.width, myMap.height, true);
-			//camMap.deadzone = new FlxRect(32, 32, 48, 48);///new FlxRect(_viewSize * 2, _viewSize * 2, 320 - _viewSize * 4, 320 - _viewSize * 4);
-				FlxG.resetCameras(new FlxCamera(0, 0, _windowWidth, _windowHeight * 2));
-				//FlxG.addCamera(camMap);		
-				zoomOutAction();		// do it just in case...!					
-				
+				zoomOutAction();		// do it just in case...!	
+				//put a green screen over the map
+				screen = new FlxText(0, _windowHeight, myMap.width, "LOADING MAP");
+				screen.width = myMap.width;
+				screen.height = myMap.height;
+				screen.fill(0x608341);
+				screen.alpha = 0.8;
+				add(screen);
+				//defaultViewAction();
 			}
 		}
 		
@@ -549,7 +533,6 @@ package
 						sawWallOpened = true;
 						hintArray.concat(a);
 					}
-					//zoomOutAction();
 				}
 				
 				// tutorial 2 messages
@@ -585,18 +568,18 @@ package
 			if (connected == true) {
 				if (myPlayer != null) {
 					if (firstMove) {
-						zoomOutAction();
+						remove(screen);
+						defaultViewAction();
 						firstMove = false;
 					}
 					if (myMap.getTile(myPlayer.xPos, myPlayer.yPos) == CHERRY_TILE)
 					{
 						gatherLumberButton.x = gatherCherryButton.x = 540;
-						gatherLumberButton.y = 340;
-						gatherCherryButton.y = 310;
+						gatherLumberButton.y = 100;
 						gatherLumberButton.visible = gatherCherryButton.visible = true;						
 					} else if (myMap.getTile(myPlayer.xPos, myPlayer.yPos) == TREE_TILE) {
 						gatherLumberButton.x = 540;
-						gatherLumberButton.y = 340;
+						gatherLumberButton.y = 140;
 						gatherLumberButton.visible = true;							
 					}
 					else { 
@@ -749,14 +732,12 @@ package
 						if (camMap && camMap.scroll) camOffsetX = camMap.scroll.x;
 						if (camMap && camMap.scroll) camOffsetY = camMap.scroll.y;
 						if (_zoomedIn) currentZoomView = 2;	
+						else if (_zoomedOut) currentZoomView = 0.5;
 						else  currentZoomView = 1;	
-						var xTemp:int = getTileX();// Math.floor((myMouse.x - _mapOffsetX) / _viewSize / currentZoomView + camOffsetX / _viewSize);						
-						//var xTemp:int = Math.floor((myMouse.x - _mapOffsetX + camOffsetX + 0) / _viewSize / currentZoomView);		// the tile number
+						var xTemp:int = getTileX();
 						var xTempCoord:int = xTemp * _tileSize + 0;
-						//var yTemp:int = Math.floor((myMouse.y - _mapOffsetY + camOffsetY - _windowHeight) / _viewSize / currentZoomView);	
-						var yTemp:int = getTileY();// Math.floor((myMouse.y - _mapOffsetY) / _viewSize / currentZoomView + (camOffsetY - _windowHeight) / _viewSize );// the tile number
-						var yTempCoord:int = yTemp * _tileSize + _windowHeight;									// the coordinate of that tile
-						//trace("camera offset:" + camOffsetX + "," + camOffsetY + " actualcoord:" + xTemp + "," + yTemp + " coord:" + xTempCoord + "," + yTempCoord);
+						var yTemp:int = getTileY();
+						var yTempCoord:int = yTemp * _tileSize + _windowHeight;	
 						tileHover.x = xTempCoord;
 						tileHover.y = yTempCoord;
 						
@@ -938,11 +919,15 @@ package
 		}
 		
 		private function getTileX():int {
-			return Math.floor((myMouse.x - _mapOffsetX) / _viewSize / currentZoomView + camOffsetX / _viewSize);						
+			var value:Number = Math.floor((myMouse.x - _mapOffsetX) / _viewSize / currentZoomView + camOffsetX / _viewSize);	
+			//trace("==getTileX " + value);
+			return value;
 		}
 		
 		private function getTileY():int {
-			return Math.floor((myMouse.y - _mapOffsetY) / _viewSize / currentZoomView + (camOffsetY - _windowHeight) / _viewSize );
+			var value:Number = Math.floor((myMouse.y - _mapOffsetY) / _viewSize / currentZoomView + (camOffsetY - _windowHeight) / _viewSize );
+			//trace("==getTileY " + value);
+			return value;
 		}
 		
 		//Returns whether an ability has been selected to be used by the player
@@ -966,7 +951,7 @@ package
 		private function playerSetup(posX:int, posY:int, name:String):void {
 			//Load Abilities for Player From Database
 			var abilityObject:DatabaseObject;
-			var abilityTextWidth:int = 210;
+			var abilityTextWidth:int = 185;
 			var abilityTextLeftOffset:int = -25;
 			var abilityTextUpperOffset:int = 20;
 			var tempButton:AbilityButton;
@@ -976,6 +961,7 @@ package
 				try {
 					trace("setup player at this starting position: " + posX + "," + posY);
 					playerName = name;
+					_user_id = name;
 					if (posX < 0) posX = 0;
 					if (posY < 0) posY = 0;
 					myPlayer = new Player(posX, posY, 0, _windowHeight, _tileSize, playerAP, resourcesString, db.role);
@@ -1001,7 +987,7 @@ package
 								lyrStage.add(myAbility);
 								//trace("Loaded Ability " + abilityObject.Name + "\n");
 								tempButton = new AbilityButton(_cardBoxOffsetX, _cardBoxOffsetY + yButtonPlacementModifier, myAbility, abilityObject.Name)
-								abilityText = new FlxText(_cardBoxOffsetX + abilityTextLeftOffset, _cardBoxOffsetY + yButtonPlacementModifier + abilityTextUpperOffset, abilityTextWidth, abilityObject.Description);
+								abilityText = new FlxText(_cardBoxOffsetX + abilityTextLeftOffset + 18, _cardBoxOffsetY + yButtonPlacementModifier + abilityTextUpperOffset, abilityTextWidth - 20, abilityObject.Description);
 								abilityText.text += "\n\tAP cost: " + abilityObject.Cost;
 								if (abilityObject.Lumber != null) abilityText.text += "\n\tLumber needed: " + abilityObject.Lumber;
 								if (abilityObject.Cherry != null) abilityText.text += "\n\tCherries needed: " + abilityObject.Cherry;
@@ -1080,10 +1066,12 @@ package
 			apInfo = new FlxText(_apBoxOffsetX, _apBoxOffsetY, 100, "AP:", true);
 			lvl = new FlxText(_lvlTextOffsetX, _lvlTextOffsetY, 100, "Level 1", true);
 			lvl.setFormat(null, 15);
-			experience = new FlxText(_experienceTextOffsetX, _experienceTextOffsetY, 200, "Experience: 0", true);
+			experience = new FlxText(_experienceTextOffsetX, _experienceTextOffsetY - 5, 200, "Experience: 0", true);
 			experience.setFormat(null, 10);
-			var zoomInButton:FlxButton = new FlxButton(100, 351, "Zoom in", zoomInAction);
-			var zoomOutButton:FlxButton = new FlxButton(100, 370, "Zoom out", zoomOutAction);
+			experience.size -= 2;
+			var zoomInButton:FlxButton = new FlxButton(95, 336, "Zoom in", zoomInAction);
+			var zoomNomralButton:FlxButton = new FlxButton (95, 354, "Default View", defaultViewAction);
+			var zoomOutButton:FlxButton = new FlxButton(95, 372, "Zoom out", zoomOutAction);
 			//Battle HUD
 			//Background
 			
@@ -1162,6 +1150,7 @@ package
 			
 			lyrHUD.add(new FlxButtonPlus(540, 15, mainMenu, null, "Main Menu"));
 			lyrHUD.add(zoomInButton);
+			lyrHUD.add(zoomNomralButton);
 			lyrHUD.add(zoomOutButton);
 			lyrBackground.add(background);
 
@@ -1251,43 +1240,38 @@ package
 		private function zoomInAction():void
 		{
 			_zoomedIn = true;
+			_zoomedOut = false;
 			camMap= new FlxCamera(_mapOffsetX, _mapOffsetY, Math.min(myMap.width/2, 160),Math.min(myMap.height/2, 160), 2);
 			camMap.follow(myPlayer, FlxCamera.STYLE_TOPDOWN);
 			camMap.setBounds(0, _windowHeight, myMap.width, myMap.height, true);
 			camMap.deadzone = new FlxRect(32, 32, 48, 48);///new FlxRect(_viewSize * 2, _viewSize * 2, 320 - _viewSize * 4, 320 - _viewSize * 4);
 			FlxG.resetCameras(new FlxCamera(0, 0, _windowWidth, _windowHeight * 2));
-			FlxG.addCamera(camMap);
-			//action = new ClientAction();
-			//action.aid = ClientActionType.ZOOMED_IN;
-			//action.detail = new Object();			
-			//action.detail["x1"] = myPlayer.xPos;
-			//action.detail["y1"] = myPlayer.yPos;
-			//action.ts = new Date().getTime();
-			//action.ts = new Date().getTime();
-			//trace("+");
-			//logClient.LogAction(action);				
+			FlxG.addCamera(camMap);			
 		}
 		
-		private function zoomOutAction():void 
+		private function defaultViewAction():void 
 		{
 			_zoomedIn = false;
+			_zoomedOut = false;
 			camMap = new FlxCamera(_mapOffsetX, _mapOffsetY, 320, 320);
 			camMap.follow(myPlayer, FlxCamera.STYLE_TOPDOWN);
 			camMap.setBounds(0, _windowHeight, myMap.width, myMap.height, true);
 			camMap.deadzone = new FlxRect(_viewSize * 2, _viewSize * 2, 320 - _viewSize * 4, 320 - _viewSize * 4);
 			FlxG.resetCameras(new FlxCamera(0, 0, _windowWidth, _windowHeight * 2));
-			FlxG.addCamera(camMap);
-			//initialize log stuff if not there yet
-			//action = new ClientAction();
-			//action.ts = new Date().getTime();
-			//action.aid = ClientActionType.ZOOMED_OUT;
-			//action.detail = new Object();			
-			//action.detail["x1"] = myPlayer.xPos;
-			//action.detail["y1"] = myPlayer.yPos;
-			//action.ts = new Date().getTime();
-			//trace("+");
-			//logClient.LogAction(action);				
+			FlxG.addCamera(camMap);			
 		}
+		
+		private function zoomOutAction():void 
+		{
+			_zoomedIn = false;
+			_zoomedOut = true;
+			camMap = new FlxCamera(_mapOffsetX, _mapOffsetY, Math.min(640, myMap.width), Math.min(640, myMap.height), 0.5);
+			camMap.follow(myPlayer, FlxCamera.STYLE_TOPDOWN);
+			camMap.setBounds(0, _windowHeight, myMap.width, myMap.height, true);
+			camMap.deadzone = new FlxRect(_viewSize * 2, _viewSize * 2, 320 - _viewSize * 4 , 320 - _viewSize * 4);
+			FlxG.resetCameras(new FlxCamera(0, 0, _windowWidth, _windowHeight * 2));
+			FlxG.addCamera(camMap);			
+		}		
 		
 		private function levelToInt(s:String):int 
 		{
