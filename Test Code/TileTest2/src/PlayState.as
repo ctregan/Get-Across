@@ -453,8 +453,8 @@ package
 			if (thingsSet > 1 ) {	
 				myMap.makeStarSparkle(WIN_TILE, sparkleTileImg);
 				trace("make camera");
-				zoomOutAction();		// do it just in case...!	
-				//put a green screen over the map
+				if (myMap.width > 320 || myMap.height > 320) zoomOutAction();		// do it just in case...!	
+				else defaultViewAction();//put a green screen over the map
 				screen = new FlxText(0, _windowHeight, myMap.width, "LOADING MAP");
 				screen.width = myMap.width;
 				screen.height = myMap.height;
@@ -569,7 +569,8 @@ package
 				if (myPlayer != null) {
 					if (firstMove) {
 						remove(screen);
-						defaultViewAction();
+						if (myMap.width > 320 || myMap.height > 320) zoomOutAction();		// do it just in case...!	
+						else defaultViewAction();//put a green screen over the map
 						firstMove = false;
 					}
 					if (myMap.getTile(myPlayer.xPos, myPlayer.yPos) == CHERRY_TILE)
@@ -1076,7 +1077,7 @@ package
 			//Background
 			
 			//Weak Attack Button
-			lyrBattle.add(new FlxButtonPlus(540, 290,  function():void { 
+			lyrBattle.add(new FlxButtonPlus(540, 190,  function():void { 
 				if (myPlayer.inBattle) {
 					if (myPlayer.AP > 1){
 						myPlayer.combatant.attack(1, myPlayer);
@@ -1089,7 +1090,7 @@ package
 			}, null, "Weak Attack: 1 AP", 120));
 			
 			//Medium Attack Button
-			lyrBattle.add(new FlxButtonPlus(540, 320, function():void { 
+			lyrBattle.add(new FlxButtonPlus(540, 220, function():void { 
 				if (myPlayer.inBattle ) {
 					if (myPlayer.AP > 3){
 					myPlayer.combatant.attack(2, myPlayer);
@@ -1102,7 +1103,7 @@ package
 			}, null, "Medium Attack: 3 AP", 120));
 			
 			//Strong Attack Button
-			lyrBattle.add(new FlxButtonPlus(540, 350, function():void { 
+			lyrBattle.add(new FlxButtonPlus(540, 250, function():void { 
 				if (myPlayer.inBattle) {
 					if ( myPlayer.AP > 5) {
 					myPlayer.combatant.attack(3, myPlayer);
@@ -1306,9 +1307,9 @@ package
 		}
 		
 		// given x and y position of mouse, returns what tile it is hovering over
-		public static function getTileIdentity(x:int,y:int):uint {
-			var xInt:Number = (x - _mapOffsetX) / _tileSize;
-			var yInt:Number = (y - _mapOffsetY) / _tileSize;
+		public function getTileIdentity(x:int,y:int):uint {
+			var xInt:Number = getTileX();// (x - _mapOffsetX) / _tileSize / this.currentZoomView - camMap.scroll.x;
+			var yInt:Number = getTileY();// (y - _mapOffsetY) / _tileSize / this.currentZoomView - camMap.scroll.y;
 			return myMap.getTile(xInt, yInt);
 		}
 		
@@ -1325,9 +1326,9 @@ package
 		}
 		
 		// return int identity of a tile
-		private function getTileIdentity(x:int,y:int):uint {
-			return myMap.getTile((x - _mapOffsetX) / _tileSize, (y - _mapOffsetY) / _tileSize);
-		}
+		//private function getTileIdentity(x:int,y:int):uint {
+		//	return myMap.getTile((x - _mapOffsetX) / _tileSize, (y - _mapOffsetY) / _tileSize);
+		//}
 		
 		// Callback function for the mainMenu Button
 		// kills connection and returns player to main menu
