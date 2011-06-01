@@ -85,6 +85,8 @@ package
 		private var monsterArray:Array = [];
 		private var buttonArray:Array = []; //Array of all buttons on the board
 		private var effectArray:Array = []; //Array of all effect sprites currently on the board
+		private var coinArray:Array = [];
+		private var coinBonus:int = 0;
 		
 		private var myMouse:Mouse; //Mouse
 		private var errorMessage:FlxText; //Text Field to reflect any errors
@@ -118,6 +120,8 @@ package
 		public static var lyrMonster:FlxGroup;
 		public static var lyrTop:FlxGroup;
 		public static var lyrEffects:FlxGroup;
+		public static var lyrCoins:FlxGroup;
+		
 		private var hintBox:MessageBox;
 		//private var hintBox:ScrollBox;
 		
@@ -343,6 +347,7 @@ package
 					}
 					playerSetup(xStartTile, yStartTile, name);
 					connection.send("LoadPlayers");
+					connection.send("LoadCoins");
 				});
 				
 			})
@@ -400,6 +405,20 @@ package
 				if (userID != imPlayer) {
 					EffectSprite(effectArray[index]).addUse(false);
 				}
+			});
+			
+			//Updates the use for coins
+			connection.addMessageHandler("CoinUse", function (m:Message,userID:int, index:int):void 
+			{
+				if (userID != imPlayer) {
+					EffectSprite(coinArray[index]).addUse(false, "coin");
+				}
+			});
+			//Loads the coins onto the map
+			connection.addMessageHandler("coinSetup", function(m:Message, xTile:int, yTile:int, uses:int) {
+				var newCoin:EffectSprite = new EffectSprite(xTile, yTile, "coin", 0, _tileSize, uses, connection, coinArray.length);
+				lyrCoins.add(newCoin);
+				coinArray.push(newCoin);
 			});
 		}
 		
@@ -468,7 +487,7 @@ package
 		{
 			connection.disconnect();
 			this.kill();
-			FlxG.switchState(new QuestCompleteState(xpGain, coinGain, client, nextLevel));
+			FlxG.switchState(new QuestCompleteState(xpGain, coinGain + coinBonus, client, nextLevel));
 		}
 		
 		override public function update():void 
@@ -833,6 +852,15 @@ package
 							ButtonSprite(buttonArray[button]).clickButton(connection);
 						});
 					}
+					
+					//Detect Coin Collisions
+					for (var coin in coinArray) {
+						FlxG.overlap(coinArray[coin], myPlayer, function():void {
+							EffectSprite(coinArray[coin]).addUse(true, "coin");
+							coinBonus++;
+							fireNotification(myPlayer.x + 20, myPlayer.y - 20, "+ 1 Coin", "coin");
+						});
+					}
 				}
 			}
 			super.update();
@@ -1051,6 +1079,7 @@ package
 			lyrBattle = new FlxGroup;
 			lyrMonster = new FlxGroup;
 			lyrEffects = new FlxGroup;
+			lyrCoins = new FlxGroup;
 			lyrTop = new FlxGroup;
 			myMouse = FlxG.mouse;
 			
@@ -1163,6 +1192,7 @@ package
 			lyrHUD.add(tileHover);
 			lyrSprites.add(lyrMonster);
 			lyrSprites.add(lyrEffects);
+			lyrSprites.add(lyrCoins);
 			lyrHUD.add(gatherLumberButton);
 			lyrHUD.add(gatherCherryButton);
 			removedCherryButton = false;

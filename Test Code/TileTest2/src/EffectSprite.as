@@ -30,6 +30,7 @@ package
 		[Embed(source = "data/bomb.png")] private var bomb:Class;
 		[Embed(source = "data/thornflower.png")] private var thornflower:Class;
 		[Embed(source = "data/snakecandy.png")] private var snakesnack:Class;
+		[Embed(source = "data/coin.png")] private var coin:Class;
 		
 		private var RUBBLE_TILE:int = 17;
 		
@@ -62,6 +63,8 @@ package
 				PlayState.fireParticles(xPixel + (_tileSize), yPixel + (_tileSize), "thornflower");
 			}else if (type == "snakesnack") {
 				classToinitialize = snakesnack
+			}else if (type == "coin") {
+				classToinitialize = coin;
 			}
 			
 			super(xPixel, yPixel , classToinitialize);
@@ -137,12 +140,14 @@ package
 			addUse(true);
 		}
 		
-		public function addUse(propogate:Boolean):void
+		public function addUse(propogate:Boolean, type:String = ""):void
 		{
 			if(!dead){
 				uses++;
-				if (propogate)
+				if (propogate && type == "coin")
 				{
+					connection.send("CoinUse", _index, uses);
+				}else if(propogate){
 					connection.send("SpriteUse", _index, uses);
 				}
 			}
@@ -158,7 +163,7 @@ package
 			if (type == "redflower" && uses >= 5) {
 				kill();
 				dead = true;
-			}else if ((type == "bacon" || type == "wine" || type == "bomb" || type == "snakesnack")&& uses > 0) {
+			}else if ((type == "bacon" || type == "wine" || type == "bomb" || type == "snakesnack" || type == "coin")&& uses > 0) {
 				kill();
 				dead = true;
 			}

@@ -31,12 +31,12 @@ namespace GetAcross {
     {
         private Player[] players;
         private int numPlayers;
-        private Tile[,] field;
         private String levelKey;
         private String mapType; //Indicates which database table the map data should be loaded from (static vs user)
         private String playerConnectUserId;
         private String questID;    // id of the quest player is in
         private DatabaseObject quest;
+        private DatabaseArray Coins;
         private int startX = 0;
         private int startY = 0;
         DateTime startSessionTime, endSessionTime, lastSessionEndTime;
@@ -51,7 +51,6 @@ namespace GetAcross {
         public override void GameStarted()
         {
             players = new Player[2];
-            field = new Tile[10, 10];
             numPlayers = 0;
             levelKey = RoomData["key"];
             if (RoomData["type"] == "user")
@@ -236,6 +235,7 @@ namespace GetAcross {
                                 delegate(DatabaseObject questObject)
                                 {
                                     quest = questObject;
+                                    Coins = questObject.GetArray("Coins");
                                     String resources = ""; // player's resources, to pass to client
                                     if (questObject != null)
                                     {
@@ -378,6 +378,39 @@ namespace GetAcross {
                             {
                                 //Console.WriteLine("Sending Player " + player.Id + " Player " + x.Id + " Position (" + x.positionX + ", " + x.positionY + ")"); //debug
                                 player.Send("UserJoined", x.Id, x.positionX, x.positionY);
+                            }
+                        }
+                        break;
+                    }
+                //Load the coins, randomize them if they dont exist
+                case "LoadCoins":
+                    {
+                        Random random = new Random();
+                        if (Coins == null)
+                        {
+                            DatabaseArray coins = new DatabaseArray();
+                            for (int i = 0; i < 5; i++)
+                            {
+                                DatabaseObject coin = new DatabaseObject();
+                                int randomX = random.Next(0, 9);
+                                int randomY = random.Next(0, 9);
+                                coin.Set("xTile", randomX);
+                                coin.Set("yTile", randomY);
+                                coin.Set("Uses", 0);
+                                player.Send("coinSetup", randomX, randomY, 0);
+                                coins.Set(i,coin);
+                            }
+                            Coins = coins;
+                            quest.Set("Coins",Coins);
+                            quest.Save();
+
+                        }
+                        else
+                        {
+                            for (int i = 0; i < 5; i++)
+                            {
+                                DatabaseObject coin = Coins.GetObject(i);
+                                player.Send("coinSetup", coin.GetInt("xTile"), coin.GetInt("yTile"), coin.GetInt("Uses"));
                             }
                         }
                         break;
@@ -604,6 +637,22 @@ namespace GetAcross {
                             delegate(DatabaseObject dbo)
                             {
                                 DatabaseArray sprites = dbo.GetArray("Effects");
+                                while (index > sprites.Count - 1) { }
+                                DatabaseObject sprite = sprites.GetObject(index);
+                                sprite.Set("Uses", uses);
+                                dbo.Save();
+                            });
+                        break;
+                    }
+                case "CoinUse":
+                    {
+                        int index = message.GetInt(0);
+                        int uses = message.GetInt(1);
+                        Broadcast("CoinUse", player.Id, index);
+                        PlayerIO.BigDB.Load("newQuests", questID,
+                            delegate(DatabaseObject dbo)
+                            {
+                                DatabaseArray sprites = dbo.GetArray("Coins");
                                 while (index > sprites.Count - 1) { }
                                 DatabaseObject sprite = sprites.GetObject(index);
                                 sprite.Set("Uses", uses);
