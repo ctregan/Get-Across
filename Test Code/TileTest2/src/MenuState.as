@@ -132,7 +132,8 @@ package
 							tutorialButton,
 							new TextButton("Start New Quest", newGame),
 							new TextButton("Quest Editor", mapEditor),
-							new TextButton("Spend Skill Points", skillPoints)
+							new TextButton("Spend Skill Points", skillPoints),
+							new TextButton("Spend Coins", coins)
 						).spacing(15)
 					)))
 			FlxG.stage.addChild(mainMenu);
@@ -261,7 +262,17 @@ package
 			FlxG.stage.removeChild(mapTypeSelection);
 			FlxG.stage.addChild(mainMenu);
 		}
-		//Callback function for when Random Map Button is pressed
+		//Callback function for when Spend Coins is pressed
+		private function coins():void {
+			if (tutorialLevel <= 5) {
+				FlxG.stage.addChild(new Alert("To Access This Option You Must Finish All 5 Tutorial Levels"));
+			}else{
+				this.kill();
+				FlxG.stage.removeChild(mainMenu);
+				FlxG.switchState(new StoreState(myClient));
+			}
+		}
+		//Callback function for when Spend Skill Points Button is pressed
 		private function skillPoints():void
 		{
 			if (tutorialLevel <= 5) {
