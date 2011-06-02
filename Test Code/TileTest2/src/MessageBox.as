@@ -10,6 +10,7 @@ package
 	import flash.events.*;
 	import sample.ui.components.*;
 	import org.flixel.*;
+	import sample.ui.components.scroll.ScrollBar;
 	import sample.ui.components.scroll.ScrollBox;	
 	import org.flixel.FlxState;
 	import org.flixel.*;
@@ -19,6 +20,7 @@ package
 	import flash.text.TextFormatAlign;
 	import sample.ui.components.scroll.ScrollBox
 	import flash.events.Event
+	import sample.ui.components.scroll.ScrollButton;
  
 	
     public class MessageBox extends Sprite {
@@ -30,63 +32,71 @@ package
 		private var roomContainer:Rows
 		
 		private var base:ScrollBox 
+		private var textfield:TextField;
 		
-        function MessageBox(x:int, y:int, textArray:Array):void {
-			//base = new ScrollBox().fill(0xffffff,.8).margin(20,20,20,20).add(
-			//	new Box().fill(0x000000,.5,10).margin(10,10,10,10).add(
-			//		new Box().fill(0xffffff,1,5).margin(10,10,10,10).add(
-			//			new Label("Select Map", 20, TextFormatAlign.LEFT)
-			//		).add(
-			//			new Box().margin(35,0,35,0).add(
-			//				new Box().margin(0,0,0,0).fill(0x0,0,10).border(1,0x555555,1).add(
-			//					new Box().margin(3,1,3,3)
-			//				)
-			//			)
-			//		).add(
-			//			new Box().margin(NaN,0,0,0).add(
-			//				new Columns().spacing(10).add(
-			//					new TextButton("Cancel", null)
-			//				)				
-			//			)
-			//		)
-			//	)
-			//)
-			//addChild(base);
-			
+        function MessageBox(x:int, y:int, textArray:Array):void {			
 			var msgbox:Sprite = new Sprite();
-
-			// drawing a white rectangle
 			msgbox.graphics.beginFill(0xB5A642, 0.8); // white
-			msgbox.graphics.drawRect(x,y,400,300); // x, y, width, height
+			msgbox.graphics.drawRect(x,y,300,120); // x, y, width, height
 			msgbox.graphics.endFill();
-
-			// drawing a black border
-			//msgbox.graphics.lineStyle(1, 0x000000, 100);  // line thickness, line color (black), line alpha or opacity
-			//msgbox.graphics.drawRect(x,y,400,300); // x, y, width, height
 			addChild(msgbox)   
-			var textfield:TextField = new TextField()
+			textfield = new TextField()
 			textfield.textColor = 0x000000;
-			textfield.width = 400;
-			textfield.autoSize = TextFieldAutoSize.LEFT;
+			//textfield.width = 300;
+			//textfield.autoSize = TextFieldAutoSize.LEFT;
 			textfield.wordWrap = true;
 			textfield.antiAliasType = AntiAliasType.ADVANCED;
 			//textfield.embedFonts = true;
-			textfield.selectable = false;
+			//textfield.selectable = false;
 			textfield.x = x + 20;
 			textfield.y = y + 20;
-			//textfield.scrollRect = new Rectangle(0, 0, 400, 300);
-			//textfield.scrollH = 1;
-			//textfield.scroll
 			var i:int;
 			for (i = 0; i < textArray.length; i++) {
-				textfield.text += textArray[i] + "\n\n";
-				trace(textfield.text);
+				textfield.appendText(textArray[i] + "\n");
 			}
 
+			textfield.multiline = true;
+			textfield.scrollRect = new Rectangle(0, 0, 260, 120);
+			//textfield.numLines = 10;
+			textfield.mouseEnabled;
+			textfield.mouseWheelEnabled;
+			trace(textfield.numLines);
+			textfield.scrollV = textfield.bottomScrollV;
 			msgbox.addChild(textfield);
 			
-
-		}		
+			// add control for moving up and down the textfield object
+			
+			var upButton:ScrollButton = new ScrollButton(1, 20, scrollUp);
+			upButton.x = x + 270;
+			upButton.y = y + 10;
+			msgbox.addChild(upButton);
+			
+			var downButton:ScrollButton = new ScrollButton(3, 20, scrollDown);
+			downButton.x = x + 270;
+			downButton.y = y + 30;
+			msgbox.addChild(downButton);
+			
+			//var scrollBar:ScrollBar = new ScrollBar();
+			//scrollBar.x = x + 250;
+			//scrollBar.y = y;
+			//scrollBar.height = 200;
+			//scrollBar.
+			//scrollBar.scrollViewable = textfield.height / msgbox.height * 200;
+			//msgbox.addChild(scrollBar);
+		}	
+		
+		public function scrollUp():void {
+			
+			textfield.scrollV -= 1;
+			trace("UP: " + textfield.scrollV);
+			addChild(textfield);
+		}
+		
+		public function scrollDown():void {
+			trace("DOWN: " + textfield.scrollV);
+			textfield.scrollV += 1;
+			addChild(textfield);
+		}
 	}
 
 }
