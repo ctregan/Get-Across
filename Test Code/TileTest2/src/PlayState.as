@@ -234,7 +234,7 @@ package
 			// Connect to the logging database
 			action = new ClientAction();
 			// vid = 1, first release
-			logClient = new CGSClient(CGSClientConstants.URL, 5, 1, 3);
+			logClient = new CGSClient(CGSClientConstants.URL, 5, 1, 4);
 			
 			//Connection successful, load board and player
 			connection.addMessageHandler("init", function(m:Message, iAm:int, name:String, xStartTile:int, yStartTile:int, level:String, startAP:int, levelKey:String, resources:String):void {

@@ -81,7 +81,7 @@ package
 					myPlayer.items.push(classChoice + "_Skin_0");	// push base costume to player
 					myPlayer.abilities = startingAbility;
 					myPlayer.save();
-					var logClient:CGSClient  = new CGSClient(CGSClientConstants.URL, 5, 1, 3);					
+					var logClient:CGSClient  = new CGSClient(CGSClientConstants.URL, 5, 1, 4);					
 					var CHOOSE_CLASS:int = 6;
 					logClient.ReportLevel(logClient.message.dqid, 0, function g(d:String):void {}, CHOOSE_CLASS, myPlayer.name, classChoice);
 										
