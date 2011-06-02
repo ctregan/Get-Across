@@ -289,6 +289,7 @@ package
 			} else if (continueButton.enabled == true) {
 				var prompt:InGamePrompt = new InGamePrompt(FlxG.stage, "You will lose your old quest data if you start a new game. You sure?", function():void {
 					//startNewGameAccept();
+					
 					FlxG.stage.addChild(mapTypeSelection);
 					FlxG.stage.removeChild(mainMenu);
 				});
