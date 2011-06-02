@@ -18,8 +18,10 @@ package sample.ui{
 		private var base:Box
 		private var textLabel:Label;
 		public var unread:Boolean = false;
-		function Alert(text:String) {
-
+		private var callback:Function;
+		function Alert(text:String, callback:Function = null) 
+		{
+			this.callback = callback;
 			textLabel = new Label(text, 12);
 			textLabel.multiline = true;
 			fill(0xffffff,.8).add(
@@ -46,6 +48,10 @@ package sample.ui{
 			unread = false;
 			FlxG.stage.removeEventListener(Event.RESIZE, handleResize)
 			FlxG.stage.removeChild(this);
+			if (callback != null) {
+				callback();
+			}
+
 		}
 		public function changeText(newString:String) {
 			unread = true;

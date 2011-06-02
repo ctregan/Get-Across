@@ -153,8 +153,16 @@ package
             addAnimation("walk" + LEFT, [0, 1, 2], 5, true);
 			addAnimation("walk" + RIGHT, [0, 1, 2], 5, true);
 		}
-		
-		
+		//Meant for players other then myPlayer
+		public function setTile(xChange:Number, yChange:Number, tileSize:int) {
+			if (!isMyPlayer)
+			{
+				var desiredX:int = this.x + (tileSize * xChange);
+				var desiredY:int = this.y + (tileSize * yChange);
+				this.x = desiredX;
+				this.y = desiredY;
+			}
+		}
 		//Public function that can be called to move the position of the player based on a tile change
 		//thus to move one tile to the right send (1,0) as arugments, one to left is (-1,0)
 		//returns true if the move has caused the user to reach the end, False if not

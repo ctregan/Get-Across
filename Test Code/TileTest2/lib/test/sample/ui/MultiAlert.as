@@ -20,10 +20,11 @@ package sample.ui{
 		public var unread:Boolean = false;
 		private var textArray:Array
 		private var index:int = 0;
-		function MultiAlert(text:Array) {
+		private var callback:Function;
+		function MultiAlert(text:Array, callback:Function =null) {
 			
 			textArray = text;
-			
+			this.callback = callback;
 			textLabel = new Label(textArray[0], 12, "center", 0x000000, true);
 			textLabel.width = 300;
 			index++;
@@ -53,7 +54,10 @@ package sample.ui{
 			if (index < textArray.length) {
 				textLabel.text = textArray[index];
 				index++;
-			}else{
+			}else {
+				if(callback != null){
+					callback();
+				}
 				FlxG.stage.removeEventListener(Event.RESIZE, handleResize)
 				FlxG.stage.removeChild(this);
 			}

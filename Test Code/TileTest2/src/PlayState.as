@@ -361,6 +361,13 @@ package
 					Player(playersArray[userID - 1]).kill();
 				}
 			})
+			//Game is currently go back to the Main Menu
+			connection.addMessageHandler("full", function(m:Message):void
+			{
+				FlxG.stage.addChild(new Alert("This quest is currently full. Please try another.", function() {
+					FlxG.switchState(new MenuState(myClient));
+				}))
+			})
 			//New user has joined, make their character
 			connection.addMessageHandler("UserJoined", function(m:Message, userID:int, posX:int, posY:int):void {
 				if (userID != imPlayer) {
@@ -374,7 +381,7 @@ package
 			//Player has moved and we hear about it
 			connection.addMessageHandler("PlayerMove", function(m:Message, userID:int, posX:int, posY:int):void {
 				if(userID != imPlayer){
-					Player(playersArray[userID - 1]).movePlayer(posX, posY, _tileSize, connection);
+					Player(playersArray[userID - 1]).setTile(posX, posY, _tileSize);
 				}
 			})
 			//A tile has changed and needs to be updated locally

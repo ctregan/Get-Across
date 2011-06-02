@@ -232,8 +232,7 @@ package
 				FlxG.stage.removeChild(mainMenu);
 				kill();
 				myPlayer.save();
-				FlxG.switchState(new MenuState(myClient));
-				FlxG.stage.addChild(new Alert("Your changes were saved."));
+				FlxG.stage.addChild(new Alert("Your changes were saved.",function():void{ FlxG.switchState(new MenuState(myClient));}));
 			});
 		}
 		

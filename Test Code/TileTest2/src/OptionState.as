@@ -70,7 +70,7 @@ package
 				error.text = "Error: Please fill in a width for your map!"
 			else if (int(heightInput.text) == 1 && int(widthInput.text) == 1)
 				error.text = "Error: You can't have a 1x1 map!"
-			else if (int(heightInput.text) > 20 || int(widthInput.text) > 20)
+			else if (int(heightInput.text) > 10 || int(widthInput.text) > 10)
 				error.text = "Error: Max Width and Height is 10 tiles"
 			else{
 				FlxG.stage.removeChild(base);
