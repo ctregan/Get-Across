@@ -29,6 +29,7 @@ package
 		
 		public function clickButton(connection:Connection):void {
 			PlayState.myMap.setTile(_xOpen, _yOpen, 0, true);
+			connection.send("MapTileChanged", _xOpen, _yOpen, 0);
 			kill();
 		}
 		

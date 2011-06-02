@@ -381,7 +381,7 @@ package
 			//Player has moved and we hear about it
 			connection.addMessageHandler("PlayerMove", function(m:Message, userID:int, posX:int, posY:int):void {
 				if(userID != imPlayer){
-					Player(playersArray[userID - 1]).movePlayer(posX, posY, _tileSize, connection);
+					Player(playersArray[userID - 1]).setTile(posX, posY, _tileSize);
 				}
 			})
 			//A tile has changed and needs to be updated locally

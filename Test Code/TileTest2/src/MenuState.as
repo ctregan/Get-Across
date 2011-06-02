@@ -90,7 +90,7 @@ package
 			if (myPlayer.costume != null) {
 				switch (myPlayer.costume)
 				{
-					case "cook_normal":
+					case "Cook_normal":
 						playerClassImg.loadGraphic(cookImg);
 						break;
 					case "spaghetti":
@@ -99,7 +99,7 @@ package
 					case "chef":
 						playerClassImg.loadGraphic(cookChefImg);
 						break;
-					case "crafter_normal":
+					case "Crafter_normal":
 						playerClassImg.loadGraphic(crafterImg);
 						break;
 					case "wrench":
@@ -108,7 +108,7 @@ package
 					case "hammer":
 						playerClassImg.loadGraphic(crafterHammerImg);
 						break;
-					case "planter_normal":
+					case "Planter_normal":
 						playerClassImg.loadGraphic(planterImg);
 						break;
 					case "tulips":
