@@ -156,8 +156,8 @@ package
 		private function realign(e:Event = null):void{
 			
 			//base.reset();
-			base.width = FlxG.stage.stageWidth
-			base.height = FlxG.stage.stageHeight
+			base.width = 700;// FlxG.stage.stageWidth
+			base.height = 400;// FlxG.stage.stageHeight
 						
 		}
 		

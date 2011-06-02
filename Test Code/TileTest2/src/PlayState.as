@@ -666,6 +666,7 @@ package
 					{
 						gatherLumberButton.x = gatherCherryButton.x = 540;
 						gatherLumberButton.y = 200;
+						gatherCherryButton.y = 250;
 						gatherLumberButton.visible = gatherCherryButton.visible = true;						
 					} else if (myMap.getTile(myPlayer.xPos, myPlayer.yPos) == TREE_TILE) {
 						gatherLumberButton.x = 540;
