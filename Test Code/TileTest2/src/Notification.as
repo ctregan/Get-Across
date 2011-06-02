@@ -21,10 +21,10 @@ package
 					this.setFormat(null, 8, 0x22ff0000, "left", 1);
 					break;
 				case "gain": // green
-					this.setFormat(null, 8, 0x2200ff00, "left", 1);
+					this.setFormat(null, 8, 0x22FFFF00, "left", 1);
 					break;
 				case "flower":	// blue
-					this.setFormat(null, 8, 0xff3bb9ff, "left", 1);
+					this.setFormat(null, 8, 0x223bb9ff, "left", 1);
 				case "coin": //yellow
 					this.setFormat(null, 8, 0xFFFF00, "left", 1);
 				default: // white

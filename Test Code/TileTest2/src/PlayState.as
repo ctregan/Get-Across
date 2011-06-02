@@ -481,6 +481,7 @@ package
 				if (myMap.width > 320 || myMap.height > 320) zoomOutAction();		// do it just in case...!	
 				else defaultViewAction();//put a green screen over the map
 				screen = new FlxText(0, _windowHeight, myMap.width, "LOADING MAP");
+				screen.size = 100;
 				screen.width = myMap.width;
 				screen.height = myMap.height;
 				screen.fill(0x608341);
@@ -512,15 +513,32 @@ package
 					if (!sawHill && myPlayer.xPos == 4 && myPlayer.yPos == 7)
 					{
 						FlxG.stage.addChild(new MultiAlert(new Array( "A hill!", "It takes 3 AP to get across.", "Exhausting!" )));
-						hintArray.concat(new Array( "A hill!", "It takes 3 AP to get across.", "Exhausting!" ));
+						if (hintArray == null) hintArray = new Array();
+						var i:int;
+						var a:Array = new Array( "A hill!", "It takes 3 AP to get across.", "Exhausting!" );
+						var oldLength:int = hintArray.length;
+						for (i = 0; i < 3; i++) {
+							hintArray[oldLength + i] = a[i];
+						}
+						//hintArray[hintArray.length 
+						//hintArray.concat(new Array( "A hill!", "It takes 3 AP to get across.", "Exhausting!" ));
 						sawHill = true;
+						trace(hintArray[hintArray.length -1]);
 					}
 					
 					else if (!sawMountain && myPlayer.xPos == 7 && myPlayer.yPos == 5)
 					{
 						FlxG.stage.addChild(new MultiAlert(new Array( "A mountain!", "It takes 15 AP to get across.", "SUPER exhausting!" )));
 						sawMountain = true;
+						if (hintArray == null) hintArray = new Array();
+						var i:int;
+						var a:Array = new Array( "A mountain!", "It takes 15 AP to get across.", "SUPER exhausting!" );
+						var oldLength:int = hintArray.length;
+						for (i = 0; i < a.length; i++) {
+							hintArray[oldLength + i] = a[i];
+						}						
 						hintArray.concat(new Array( "A mountain!", "It takes 15 AP to get across.", "SUPER exhausting!" ));
+						trace(hintArray[hintArray.length -1]);
 					}
 					
 					else if (!sawNearStar && myPlayer.xPos == 8 && myPlayer.yPos == 2)
@@ -528,7 +546,15 @@ package
 						var a:Array = new Array( "You're almost at the red star!", "Just go one more place to reach the end!" );
 						FlxG.stage.addChild(new MultiAlert(a));
 						sawNearStar = true;
-						hintArray.concat(a);
+						if (hintArray == null) hintArray = new Array();
+						var i:int;
+						//var a:Array = new Array( "A mountain!", "It takes 15 AP to get across.", "SUPER exhausting!" );
+						var oldLength:int = hintArray.length;
+						for (i = 0; i < a.length; i++) {
+							hintArray[oldLength + i] = a[i];
+						}								
+						//hintArray.concat(a);
+						trace(hintArray[hintArray.length -1]);
 						
 					}
 					
@@ -538,7 +564,15 @@ package
 						FlxG.stage.addChild(new MultiAlert(a));
 						goalsLabel.text += "\n\nPress a button to open the gate!";
 						sawWall = true;
-						hintArray.concat(a);
+						if (hintArray == null) hintArray = new Array();
+						var i:int;
+						var a:Array = new Array( "A mountain!", "It takes 15 AP to get across.", "SUPER exhausting!" );
+						var oldLength:int = hintArray.length;
+						for (i = 0; i < a.length; i++) {
+							hintArray[oldLength + i] = a[i];
+						}								
+						//hintArray.concat(a);
+						trace(hintArray[hintArray.length -1]);
 					}
 					
 					else if (!sawWallOpened && myPlayer.xPos == 0 && myPlayer.yPos == 6)
@@ -547,7 +581,15 @@ package
 						FlxG.stage.addChild(new MultiAlert(a));
 						goalsLabel.text = "Reach the red star!\n\nThe wall is open now -- go for it!";
 						sawWallOpened = true;
-						hintArray.concat(a);
+						if (hintArray == null) hintArray = new Array();
+						var i:int;
+						var a:Array = new Array( "A mountain!", "It takes 15 AP to get across.", "SUPER exhausting!" );
+						var oldLength:int = hintArray.length;
+						for (i = 0; i < a.length; i++) {
+							hintArray[oldLength + i] = a[i];
+						}								
+						//hintArray.concat(a);
+						trace(hintArray[hintArray.length -1]);
 					}
 					
 					else if (!sawWallOpened && myPlayer.xPos == 0 && myPlayer.yPos == 6)
@@ -556,7 +598,15 @@ package
 						FlxG.stage.addChild(new MultiAlert(a));
 						goalsLabel.text = "Reach the red star!\n\nThe wall is open now -- go for it!";
 						sawWallOpened = true;
-						hintArray.concat(a);
+						if (hintArray == null) hintArray = new Array();
+						var i:int;
+						var a:Array = new Array( "A mountain!", "It takes 15 AP to get across.", "SUPER exhausting!" );
+						var oldLength:int = hintArray.length;
+						for (i = 0; i < a.length; i++) {
+							hintArray[oldLength + i] = a[i];
+						}								
+						//hintArray.concat(a);
+						trace(hintArray[hintArray.length -1]);
 					}
 				}
 				
@@ -577,7 +627,14 @@ package
 						var a:Array = new Array(new Array( "You're almost at the monster!  It looks dangerous.", "Step forward to do battle with it!" ));
 						FlxG.stage.addChild(new MultiAlert(a));
 						sawMonster = true;
-						hintArray.concat(a);
+						if (hintArray == null) hintArray = new Array();
+						var i:int;
+						//var a:Array = new Array( "A mountain!", "It takes 15 AP to get across.", "SUPER exhausting!" );
+						var oldLength:int = hintArray.length;
+						for (i = 0; i < a.length; i++) {
+							hintArray[oldLength + i] = a[i];
+						}								
+						//hintArray.concat(a);
 					}
 					
 					else if (!sawBattle && myPlayer.xPos == 6 && myPlayer.yPos == 4)
@@ -585,6 +642,13 @@ package
 						var a:Array = new Array( "You can choose to do weaker or stronger attacks at the bottom right.", "Stronger attacks will take more AP." );
 						FlxG.stage.addChild(new MultiAlert(a));
 						sawBattle = true;
+						if (hintArray == null) hintArray = new Array();
+						var i:int;
+						//var a:Array = new Array( "A mountain!", "It takes 15 AP to get across.", "SUPER exhausting!" );
+						var oldLength:int = hintArray.length;
+						for (i = 0; i < a.length; i++) {
+							hintArray[oldLength + i] = a[i];
+						}								
 						hintArray.concat(a);
 					}
 				}
@@ -601,11 +665,11 @@ package
 					if (myMap.getTile(myPlayer.xPos, myPlayer.yPos) == CHERRY_TILE)
 					{
 						gatherLumberButton.x = gatherCherryButton.x = 540;
-						gatherLumberButton.y = 100;
+						gatherLumberButton.y = 200;
 						gatherLumberButton.visible = gatherCherryButton.visible = true;						
 					} else if (myMap.getTile(myPlayer.xPos, myPlayer.yPos) == TREE_TILE) {
 						gatherLumberButton.x = 540;
-						gatherLumberButton.y = 140;
+						gatherLumberButton.y = 240;
 						gatherLumberButton.visible = true;							
 					}
 					else { 
@@ -1249,6 +1313,16 @@ package
 					{
 						trace("message object: " + dbo.toString());
 						FlxG.stage.addChild(new MultiAlert(dbo.Messages));
+						if (hintArray == null) hintArray = new Array();
+						//hintArray.concat(dbo.Messages);
+						var i:int;
+						//var a:Array = new Array( "A mountain!", "It takes 15 AP to get across.", "SUPER exhausting!" );
+						var oldLength:int = hintArray.length;
+						for (i = 0; i < dbo.Messages.length; i++) {
+							hintArray[oldLength + i] = dbo.Messages[i];
+						}		
+						trace("dbo " + dbo.Messages[dbo.Messages.length -1])
+						trace("hint" + hintArray[hintArray.length - 1]);
 					}
 				}
 			);
