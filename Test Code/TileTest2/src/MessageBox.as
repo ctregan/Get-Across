@@ -37,7 +37,7 @@ package
         function MessageBox(x:int, y:int, textArray:Array):void {			
 			var msgbox:Sprite = new Sprite();
 			msgbox.graphics.beginFill(0xB5A642, 0.8); // white
-			msgbox.graphics.drawRect(x,y,300,120); // x, y, width, height
+			msgbox.graphics.drawRect(x,y,140,120); // x, y, width, height
 			msgbox.graphics.endFill();
 			addChild(msgbox)   
 			textfield = new TextField()
@@ -56,7 +56,7 @@ package
 			}
 
 			textfield.multiline = true;
-			textfield.scrollRect = new Rectangle(0, 0, 260, 120);
+			textfield.scrollRect = new Rectangle(0, 0, 140, 120);
 			//textfield.numLines = 10;
 			textfield.mouseEnabled;
 			textfield.mouseWheelEnabled;
@@ -67,12 +67,12 @@ package
 			// add control for moving up and down the textfield object
 			
 			var upButton:ScrollButton = new ScrollButton(1, 20, scrollUp);
-			upButton.x = x + 270;
+			upButton.x = x + 140;
 			upButton.y = y + 10;
 			msgbox.addChild(upButton);
 			
 			var downButton:ScrollButton = new ScrollButton(3, 20, scrollDown);
-			downButton.x = x + 270;
+			downButton.x = x + 140;
 			downButton.y = y + 30;
 			msgbox.addChild(downButton);
 			
