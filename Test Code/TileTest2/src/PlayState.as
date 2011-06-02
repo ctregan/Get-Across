@@ -1042,7 +1042,8 @@ package
 		private function showHint():void {
 			if (!hintButtonClicked) {
 				trace("show hint");
-				hintBox =  new MessageBox(240, 100, new Array("hey", "world", "go", "awesome", "hello", "wonder", "wonsssssssssssssssssssssssssssssssssssssssderful", "woot", "go", "go", "go"));
+				var a:Array = mew Array("No message");
+				hintBox =  new MessageBox(240, 100, hintArray);//new MessageBox(240, 100, new Array("hey", "world", "go", "awesome", "hello", "wonder", "wonsssssssssssssssssssssssssssssssssssssssderful", "woot", "go", "go", "go"));
 				FlxG.stage.addChild(hintBox);
 				// add it
 			} else {
