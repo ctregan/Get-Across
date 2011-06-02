@@ -111,13 +111,13 @@ package
 			trace("costume: " + playerCostume);
 			switch (playerCostume)
 			{
-				case "cook_normal":
+				case "Cook_normal":
 					loadGraphic(cook_avatar, true, false, 32 , 32);
 					break;
-				case "planter_normal":
+				case "Planter_normal":
 					loadGraphic(planter_avatar, true, false, 32 , 32);
 					break;
-				case "crafter_normal":
+				case "Crafter_normal":
 					loadGraphic(crafter_avatar, true, false, 32 , 32);
 					break;
 				case "spaghetti":
