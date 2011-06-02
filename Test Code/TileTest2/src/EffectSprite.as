@@ -88,6 +88,7 @@ package
 				myTimer.start();
 			}else if ( type == "thornflower") {
 				PlayState.myMap.setTile(xTile, yTile, 0, true);
+				connection.send("MapTileChanged", xTile, yTile, 0);
 			}else if (type == "snakesnack") {
 				var myTimer:Timer = new Timer(1000);
 				myTimer.addEventListener(TimerEvent.TIMER, function (event:TimerEvent):void 
@@ -132,11 +133,13 @@ package
 		private function bombExplode():void {
 			PlayState.fireParticles(this.x, this.y, "bomb");
 			PlayState.myMap.setTile(xTile, yTile, RUBBLE_TILE, true);
+			connection.send("MapTileChanged", xTile, yTile, RUBBLE_TILE);
 			addUse(true);
 		}
 		
 		private function feedSnake() {
 			PlayState.myMap.setTile(xTile, yTile, 21, true);
+			connection.send("MapTileChanged", xTile, yTile, 21);
 			addUse(true);
 		}
 		
