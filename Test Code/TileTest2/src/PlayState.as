@@ -1373,6 +1373,7 @@ package
 		private function mainMenu():void {
 			connection.disconnect();
 			this.kill();
+			if (hintButtonClicked) FlxG.stage.removeChild(hintBox);
 			FlxG.switchState(new MenuState(myClient));
 		}
 		

@@ -34,8 +34,8 @@ package
 		private var currentLobby:Lobby;
 		
 		
-		private var up_button:TextButton;
-		private var down_button:TextButton;
+		private var up_button:ScrollButton;
+		private var down_button:ScrollButton;
 		
 		//[Embed(source = "data/up_button.png")] private static var upButtonImg:Class;
 		//[Embed(source = "data/down_button.png")] private static var downButtonImg:Class;
@@ -47,7 +47,6 @@ package
 			roomContainer = new Rows().spacing(2);
 			_client = myClient;
 			
-			var sb:ScrollBox = new ScrollBox();
 			base = new Box().fill(0xffffff,.8).margin(20,20,20,20).add(
 				new Box().fill(0x000000,.5,10).margin(10,10,10,10).add(
 					new Box().fill(0xffffff,1,5).margin(10,10,10,10).add(
@@ -62,10 +61,10 @@ package
 						new Box().margin(NaN,0,0,0).add(
 							new Columns().spacing(10).add(
 								cancel = new TextButton("Back to Main Menu", hide)
-							).add(
-								new TextButton("down", scrollDown)
-							).add(
-								new TextButton("up", scrollUp)
+							//).add(
+							//	new TextButton("down", scrollDown)
+							//).add(
+							//	new TextButton("up", scrollUp)
 							)
 						)
 					)
@@ -75,23 +74,18 @@ package
 			//roomContainer.y = 40;
 			// add up/down buttons
 			
-			up_button = new TextButton("up", scrollUp);
-			
-			up_button.x = 550;
-			up_button.y = 40;
-			up_button.width = 20;
-			up_button.height = 20;
-			//up_button.loadGraphic(new FlxSprite(550, 40, upButtonImg), new FlxSprite(550, 40,  upButtonHoverImg));
-			down_button = new TextButton("down", scrollDown);
-			down_button.x = 600;
-			down_button.y = 40;
-			down_button.width = 20;
-			down_button.height = 20;
-			//down_button.loadGraphic(new FlxSprite(600, 40, downButtonImg), new FlxSprite(600, 40, downButtonHoverImg));
-			//base.add(up_button);
-			//base.add(down_button);
+			up_button = new ScrollButton(1, 25, scrollUp);
+			up_button.x = 600;
+			up_button.y = 42;
+			down_button = new ScrollButton(3, 25, scrollDown);
+			down_button.x = 630;
+			down_button.y = 42;
+
+			//add(down_button);
 			refresh();
 			realign();
+			base.addChild(up_button);
+			base.addChild(down_button);
 			FlxG.stage.addChild(base);		
 		}
 		private function scrollUp():void {
