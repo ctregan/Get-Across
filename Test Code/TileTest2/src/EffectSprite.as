@@ -30,7 +30,7 @@ package
 		[Embed(source = "data/bomb.png")] private var bomb:Class;
 		[Embed(source = "data/thornflower.png")] private var thornflower:Class;
 		[Embed(source = "data/snakecandy.png")] private var snakesnack:Class;
-		[Embed(source = "data/bomb.png")] private var coin:Class;
+		[Embed(source = "data/coin.png")] private var coin:Class;
 		
 		private var RUBBLE_TILE:int = 17;
 		
