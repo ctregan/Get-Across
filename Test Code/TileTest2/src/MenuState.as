@@ -23,6 +23,7 @@ package
 		private var tutorialLevel:int = 0;
 		private var loader:Box
 		private var _questID:String;
+		private var _roomID:String;
 		private var myPlayer:DatabaseObject;
 		[Embed(source = "data/Planter2.png")] public var planterImg:Class;
 		[Embed(source = "data/Cook2.png")] public var cookImg:Class;
@@ -221,22 +222,28 @@ package
 				_levelKey = "Tutorial_" + tutorialLevel;
 			}
 			showLoader();
-			myClient.multiplayer.createJoinRoom(
-				null,								//Room id, null for auto generted
-				"GetAcross",							//RoomType to create, bounce is a simple bounce server
-				true,								//Hide room from userlist
-				{name:"Tutorial", key:_levelKey, type:"static", continueQuest:_questID },						//Room Join data, data is returned to lobby list. Variabels can be modifed on the server
-				{},
-				function(connection:Connection):void  {
-					FlxG.stage.removeChild(mainMenu);
-					hideLoader();
-					FlxG.switchState( new PlayState(connection,myClient))
-				},
-				function(error:PlayerIOError):void {
-					hideLoader();
-					FlxG.stage.addChild(new Alert("Error finding level data in server!"));
-				}										   
-			)
+			myClient.bigDB.load("NewQuests", _questID,
+				function(quest:DatabaseObject):void 
+				{
+					var roomID:String = quest.RoomID
+					myClient.multiplayer.createJoinRoom(
+						quest.RoomID,								//Room id, null for auto generted
+						"GetAcross",							//RoomType to create, bounce is a simple bounce server
+						true,								//Hide room from userlist
+						{name:"Tutorial", key:_levelKey, type:"static", continueQuest:_questID },						//Room Join data, data is returned to lobby list. Variabels can be modifed on the server
+						{},
+						function(connection:Connection):void  {
+							FlxG.stage.removeChild(mainMenu);
+							hideLoader();
+							FlxG.switchState( new PlayState(connection,myClient))
+						},
+						function(error:PlayerIOError):void {
+							hideLoader();
+							FlxG.stage.addChild(new Alert("Error finding level data in server!"));
+						}										   
+					)
+				})
+	
 		}
 		//Callback function for when Start Tutorial Button is Pressed
 		private function startTutorial():void

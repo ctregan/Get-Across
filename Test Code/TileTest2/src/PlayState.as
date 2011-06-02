@@ -929,7 +929,7 @@ package
 						FlxG.overlap(coinArray[coin], myPlayer, function():void {
 							EffectSprite(coinArray[coin]).addUse(true, "coin");
 							coinBonus++;
-							fireNotification(myPlayer.x + 20, myPlayer.y - 20, "+ 1 Coin", "coin");
+							fireNotification(myPlayer.x - 20, myPlayer.y - 20, "+ 1 Coin", "coin");
 						});
 					}
 				}

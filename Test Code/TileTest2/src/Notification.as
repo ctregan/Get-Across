@@ -26,7 +26,7 @@ package
 				case "flower":	// blue
 					this.setFormat(null, 8, 0x223bb9ff, "left", 1);
 				case "coin": //yellow
-					this.setFormat(null, 8, 0x22FFFF00, "left", 1);
+					this.setFormat(null, 8, 0x22ffff00, "left", 1);
 				default: // white
 					this.setFormat(null, 8, 0xFFFFFFFF, "left", 1);
 			}

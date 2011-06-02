@@ -93,6 +93,12 @@ namespace GetAcross {
         // This method is called when the last player leaves the room, and it's closed down.
         public override void GameClosed()
         {
+            PlayerIO.BigDB.Load("NewQuests", questID,
+                delegate(DatabaseObject dbo)
+                {
+                    dbo.Remove("RoomID");
+                });
+                
             //Console.WriteLine("RoomId: " + RoomId);
         }
 
@@ -116,7 +122,7 @@ namespace GetAcross {
                         player.costume = result.GetString("costume", "novice");
                         player.tutorialLevel = result.GetInt("tutorial", 1);
                         //Console.WriteLine("player class: " + player.characterClass);
-                        if (questID != null)
+                        if (questID != null && (!result.Contains("questID") || result.GetString("questID") == "noQuest"))
                         {
                             result.Set("questID", questID);
                             result.Save();
@@ -125,6 +131,7 @@ namespace GetAcross {
                                 delegate(DatabaseObject quest)
                                 {
                                     this.quest = quest;
+
                                     DatabaseObject questPlayerData = new DatabaseObject();
                                     player.positionX = startX;
                                     player.positionY = startY;
@@ -137,6 +144,7 @@ namespace GetAcross {
                                     {
                                         player.Send("init", player.Id, player.ConnectUserId, startX, startY, questID, 20, levelKey, "", player.characterClass);
                                     });
+                               
                                     Broadcast("UserJoined", player.Id, player.positionX, player.positionY);
                                 });
                         }
@@ -209,6 +217,7 @@ namespace GetAcross {
                                         delegate(DatabaseObject addedQuest)
                                         {
                                             questID = addedQuest.Key;
+                                            addedQuest.Set("RoomID", this.RoomId);
                                             Console.WriteLine("made new questID!  new questID is: " + questID);
                                             result.Set("questID", addedQuest.Key);
                                             result.Save();
@@ -235,6 +244,8 @@ namespace GetAcross {
                                 delegate(DatabaseObject questObject)
                                 {
                                     quest = questObject;
+                                    questObject.Set("RoomID", this.RoomId);
+                                    questObject.Save();
                                     Coins = questObject.GetArray("Coins");
                                     String resources = ""; // player's resources, to pass to client
                                     if (questObject != null)
@@ -302,6 +313,7 @@ namespace GetAcross {
             
 			Broadcast("UserLeft", player.Id);
             endSessionTime = DateTime.Now;
+            numPlayers--;
             //Console.WriteLine("User session end!  Set end session time: " + endSessionTime.ToString(DateTimeFormat));
 
             // if this is a tutorial level, don't save the data
@@ -637,7 +649,6 @@ namespace GetAcross {
                             delegate(DatabaseObject dbo)
                             {
                                 DatabaseArray sprites = dbo.GetArray("Effects");
-                                while (index > sprites.Count - 1) { }
                                 DatabaseObject sprite = sprites.GetObject(index);
                                 sprite.Set("Uses", uses);
                                 dbo.Save();
@@ -653,8 +664,8 @@ namespace GetAcross {
                             delegate(DatabaseObject dbo)
                             {
                                 DatabaseArray sprites = dbo.GetArray("Coins");
-                                while (index > sprites.Count - 1) { }
                                 DatabaseObject sprite = sprites.GetObject(index);
+                                Coins.GetObject(index).Set("Uses", uses);
                                 sprite.Set("Uses", uses);
                                 dbo.Save();
                             });
