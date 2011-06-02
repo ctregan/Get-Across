@@ -87,9 +87,13 @@ package
 										
 				});
 				FlxG.flash(0xFFFFFF, 1, function():void {
-					FlxG.switchState(new MenuState(_client));
+					FlxG.stage.addChild(new MultiAlert(new Array("Congratulations!  You are now a " + classChoice +"!", "Now that you're an expert at Get Across, try playing some campaign levels with your friends or make your own map!"), 
+					function ():void 
+					{
+						FlxG.switchState(new MenuState(_client));
+					}));
 				});
-				FlxG.stage.addChild(new MultiAlert(new Array("Congratulations!  You are now a " + classChoice +"!","Now that you're an expert at Get Across, try playing some campaign levels with your friends or make your own map!")));
+
 			});
 		}
 		

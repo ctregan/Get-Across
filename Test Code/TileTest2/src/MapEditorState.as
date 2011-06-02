@@ -291,7 +291,7 @@ package
 		
 		private function back():void {
 			this.kill()
-			FlxG.switchState(new MenuState(_myClient));
+			FlxG.switchState(new OptionState(_myClient));
 		}
 		
 		//Sends the data to the database and saves
@@ -313,7 +313,7 @@ package
 				newMap.startX = startX;
 				newMap.startY = startY;
 				_myClient.bigDB.createObject("UserMaps", null, newMap, function(o:DatabaseObject):void {
-					FlxG.stage.addChild(new Alert("Map Uploaded"));
+					FlxG.stage.addChild(new Alert("Map Uploaded", function():void{ back() }));
 				});
 				
 				//

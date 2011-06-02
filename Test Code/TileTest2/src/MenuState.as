@@ -359,7 +359,6 @@ package
 		private function mapEditor():void 
 		{
 			FlxG.switchState(new OptionState(myClient));
-			//FlxG.switchState(new MapEditorState("n", "10", "10", myClient));
 			FlxG.stage.removeChild(mainMenu);
 			this.kill();
 		}

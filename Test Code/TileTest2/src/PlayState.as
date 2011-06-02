@@ -361,6 +361,13 @@ package
 					Player(playersArray[userID - 1]).kill();
 				}
 			})
+			//Game is currently go back to the Main Menu
+			connection.addMessageHandler("full", function(m:Message):void
+			{
+				FlxG.stage.addChild(new Alert("This quest is currently full. Please try another.", function() {
+					FlxG.switchState(new MenuState(myClient));
+				}))
+			})
 			//New user has joined, make their character
 			connection.addMessageHandler("UserJoined", function(m:Message, userID:int, posX:int, posY:int):void {
 				if (userID != imPlayer) {
