@@ -175,6 +175,7 @@ package
 		private var _friendsListOffsetY:int = 354; 			
 		
 		private var ContextButton:FlxButtonPlus;
+		private var sentStartOfGame:Boolean = false;
 		
 		private static var myClient:Client;
 		private static var playerName:String;
@@ -372,6 +373,7 @@ package
 			connection.addMessageHandler("UserJoined", function(m:Message, userID:int, posX:int, posY:int):void {
 				if (userID != imPlayer) {
 					logClient.ReportLevel(logClient.message.dqid, 0, function g(d:String):void {}, PLAY_TOGETHER, _user_id, level_name);
+
 					// create other player; AP doesn't matter, so default to 20
 					playersArray[userID-1] = new Player(posX, posY, 0,_windowHeight , _tileSize, 20, null, "Novice", false);
 					if (playersArray[userID-1] != null && lyrSprites != null) lyrSprites.add(playersArray[userID-1]);
@@ -1049,6 +1051,8 @@ package
 		
 		//Set Up the Player
 		private function playerSetup(posX:int, posY:int, name:String):void {
+			_user_id = name;
+			if (sentStartOfGame)logClient.ReportLevel(logClient.message.dqid, 0, function g(d:String):void {}, PLAY, _user_id, level_name);
 			//Load Abilities for Player From Database
 			var abilityObject:DatabaseObject;
 			var abilityTextWidth:int = 185;
@@ -1061,7 +1065,7 @@ package
 				try {
 					trace("setup player at this starting position: " + posX + "," + posY);
 					playerName = name;
-					_user_id = name;
+					
 					if (posX < 0) posX = 0;
 					if (posY < 0) posY = 0;
 					myPlayer = new Player(posX, posY, 0, _windowHeight, _tileSize, playerAP, resourcesString, db.costume);
@@ -1181,7 +1185,7 @@ package
 			//Weak Attack Button
 			lyrBattle.add(new FlxButtonPlus(540, 190,  function():void { 
 				if (myPlayer.inBattle) {
-					if (myPlayer.AP > 1){
+					if (myPlayer.AP >= 1){
 						myPlayer.combatant.attack(1, myPlayer);
 						myPlayer.AP--;
 						connection.send("updateStat", "AP", myPlayer.AP);	
@@ -1194,7 +1198,7 @@ package
 			//Medium Attack Button
 			lyrBattle.add(new FlxButtonPlus(540, 220, function():void { 
 				if (myPlayer.inBattle ) {
-					if (myPlayer.AP > 3){
+					if (myPlayer.AP >= 3){
 					myPlayer.combatant.attack(2, myPlayer);
 					myPlayer.AP -= 3;
 					connection.send("updateStat", "AP", myPlayer.AP);
@@ -1207,7 +1211,7 @@ package
 			//Strong Attack Button
 			lyrBattle.add(new FlxButtonPlus(540, 250, function():void { 
 				if (myPlayer.inBattle) {
-					if ( myPlayer.AP > 5) {
+					if ( myPlayer.AP >= 5) {
 					myPlayer.combatant.attack(3, myPlayer);
 					myPlayer.AP -= 5;
 					connection.send("updateStat", "AP", myPlayer.AP);
@@ -1343,7 +1347,11 @@ package
 				
 					trace("user id" + _user_id);
 					trace("level name" + level_name);
-					logClient.ReportLevel(logClient.message.dqid, 0, function g(d:String):void {}, PLAY, _user_id, level_name);
+					if (_user_id != "Nobody") {
+						sentStartOfGame = true;
+						logClient.ReportLevel(logClient.message.dqid, 0, function g(d:String):void {}, PLAY, _user_id, level_name);
+
+					}					
 					//./logClient.ReportLevel(d, lvl_num, function g(d:String):void {
 					//	trace("-----reporting starting level"); }, 2, level_name);								
 				});
