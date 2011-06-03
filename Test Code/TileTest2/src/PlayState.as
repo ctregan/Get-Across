@@ -370,7 +370,7 @@ package
 				}))
 			})
 			//New user has joined, make their character
-			connection.addMessageHandler("UserJoined", function(m:Message, userID:int, posX:int, posY:int):void {
+			connection.addMessageHandler("UserJoined", function(m:Message, userID:int, posX:int, posY:int, connectUsedID:int):void {
 				if (userID != imPlayer) {
 					logClient.ReportLevel(logClient.message.dqid, 0, function g(d:String):void {}, PLAY_TOGETHER, _user_id, level_name);
 

@@ -389,7 +389,7 @@ namespace GetAcross {
                             if (x != null && x != player)
                             {
                                 //Console.WriteLine("Sending Player " + player.Id + " Player " + x.Id + " Position (" + x.positionX + ", " + x.positionY + ")"); //debug
-                                player.Send("UserJoined", x.Id, x.positionX, x.positionY);
+                                player.Send("UserJoined", x.Id, x.positionX, x.positionY,x.ConnectUserId);
                             }
                         }
                         break;
